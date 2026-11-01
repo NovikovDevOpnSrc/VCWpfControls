@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VCWpfControls/VCWpfControls.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VCWpfControls.Core.Tests/VCWpfControls.Core.Tests.csproj" />
+  </Folder>
+</Solution>

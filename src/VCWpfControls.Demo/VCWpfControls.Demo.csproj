@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>VCWpfControls.Demo</RootNamespace>
+    <AssemblyName>VCWpfControls.Demo</AssemblyName>
+    <AssemblyTitle>Vibe Coded WPF Controls Demo</AssemblyTitle>
+    <!-- The demo window must stay open long enough for UI tests to attach. -->
+    <ApplicationManifest></ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VCWpfControls\VCWpfControls.csproj" />
+  </ItemGroup>
+
+</Project>

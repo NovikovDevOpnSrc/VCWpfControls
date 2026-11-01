@@ -1,0 +1,38 @@
+# Build results
+bin/
+obj/
+artifacts/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test results
+TestResults/
+*.coverage
+*.trx
+coverage/
+
+# DocFX
+docs/_site/
+docs/api/.manifest/
+docs/**/*.tmp/
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Publish output
+publish/
