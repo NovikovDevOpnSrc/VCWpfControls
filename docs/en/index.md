@@ -23,9 +23,9 @@ manual definitions), virtualizes row containers with recycling, and keeps its da
 - **Virtualization** — UI virtualization with container recycling; 1,000,000+ rows scroll smoothly
 - **Sorting** — single- and multi-column, click and Shift+click, sort indicators, custom comparers
 - **Filtering** — engine-level `FilterDescriptions` with operators
-  Equals/Contains/Between/In/IsNull/Custom (built-in filter UI is planned for stage 1.2)
+  Equals/Contains/Between/In/IsNull/Custom, plus a built-in filter row (`ShowFilterRow`)
 - **Grouping** — engine-level `GroupDescriptions` with expand/collapse that survives refreshes
-  (group panel and aggregate summaries are planned for stage 1.2)
+  (group rows with expand/collapse; footer aggregate summaries via `SummaryItems`)
 - **Editing** — F2/Enter/Esc, per-column read-only, validation through
   `IDataErrorInfo` / `INotifyDataErrorInfo`
 - **Selection** — SingleRow/Extended modes, full keyboard support, current cell
@@ -34,7 +34,7 @@ manual definitions), virtualizes row containers with recycling, and keeps its da
   can override per application
 
 See the [roadmap](https://github.com/vibe-coded/VCWpfControls/blob/main/ROADMAP.md) for
-what is planned next (filter row, summaries, export, dark theme, localization).
+also included: filter row, summaries, export (CSV/Excel/HTML), dark theme and localization.
 
 ## Quick start (XAML)
 

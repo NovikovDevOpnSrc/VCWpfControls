@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using VCWpfControls.Demo.ViewModels;
 using VCWpfControls.Grid;
 using VCWpfControls.Grid.Data;
+using VCWpfControls.Grid.Export;
+using VCWpfControls.Themes;
 using VCWpfControls.Localization;
 
 namespace VCWpfControls.Demo.Views;
@@ -38,4 +40,21 @@ public partial class AnalyticsSampleView : UserControl
 
     private void OnSortByName(object sender, RoutedEventArgs e)
         => Grid.SortBy("Name", GridSortDirection.Ascending);
+
+    private void OnExportCsv(object sender, RoutedEventArgs e)
+        => GridExporter.ExportToCsv(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.csv"));
+
+    private void OnExportXlsx(object sender, RoutedEventArgs e)
+        => GridExporter.ExportToXlsx(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.xlsx"));
+
+    private void OnExportHtml(object sender, RoutedEventArgs e)
+        => GridExporter.ExportToHtml(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.html"));
+
+    private void OnToggleTheme(object sender, RoutedEventArgs e)
+    {
+        _dark = !_dark;
+        GridThemeManager.Apply(Grid, _dark ? GridTheme.Dark : GridTheme.Light);
+    }
+
+    private bool _dark;
 }

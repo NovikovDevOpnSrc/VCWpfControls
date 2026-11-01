@@ -7,7 +7,11 @@
             <Button x:Name="GroupByDepartment" Margin="0,0,8,0" Padding="12,4" Click="OnGroupByDepartment">Group by Department</Button>
             <Button x:Name="ClearGroups" Margin="0,0,8,0" Padding="12,4" Click="OnClearGroups">Clear grouping</Button>
             <Button x:Name="SortByName" Margin="0,0,8,0" Padding="12,4" Click="OnSortByName">Sort by Name</Button>
-            <TextBlock x:Name="RowCountText" VerticalAlignment="Center" Opacity="0.7" />
+            <Button x:Name="ExportCsv" Margin="0,0,8,0" Padding="12,4" Click="OnExportCsv">Export CSV</Button>
+            <Button x:Name="ExportXlsx" Margin="0,0,8,0" Padding="12,4" Click="OnExportXlsx">Export XLSX</Button>
+            <Button x:Name="ExportHtml" Margin="0,0,8,0" Padding="12,4" Click="OnExportHtml">Export HTML</Button>
+            <Button x:Name="ToggleTheme" Padding="12,4" Click="OnToggleTheme">Toggle theme</Button>
+            <TextBlock x:Name="RowCountText" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.7" />
         </StackPanel>
         <grid:GridControl x:Name="Grid"
                           ItemsSource="{Binding Employees}"

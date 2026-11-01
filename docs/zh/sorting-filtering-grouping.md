@@ -1,0 +1,177 @@
+---
+title: 排序、筛选与分组
+description: 如何在代码中对 GridControl 排序（点击、Shift+点击、SortBy/AddSortLevel）、筛选（带 17 种运算符的 FilterDescriptions）与分组（GroupDescriptions、GridGroup、SetGroupExpanded）。
+---
+
+# 排序、筛选与分组
+
+这三个功能都由与 UI 无关的数据引擎（`GridDataManager`）实现，并受表格上的三个
+可观察集合驱动：`SortDescriptions`、`FilterDescriptions` 和 `GroupDescriptions`。
+集合一旦变化，视图立即重建（管线：筛选 → 排序 → 分组 → 展平）。
+
+> **状态说明。** 本文描述的引擎 API 完全可用。内置的**筛选行/筛选菜单**以及
+> **内置 UI**：设置 `ShowFilterRow="True"` 即可在表头下方获得筛选行（文本列为包含匹配，数值/日期列为类型化相等）；分组行自带展开/折叠开关；通过 `SummaryItems` 配置页脚汇总。以下引擎 API 与 UI 无关。基于
+> 这些集合构建自己的 UI。
+
+## 排序
+
+### 鼠标与键盘
+
+点击表头按循环切换排序方向：无 → 升序 → 降序 → 无。**Shift+点击**会把该列追加为
+下一个排序级别，而不是替换现有排序（多列排序）。当前方向由表头中的指示器显示。
+
+以上两种操作都可以通过 `Sorting` 事件观测或取消：
+
+```csharp
+grid.Sorting += (s, e) =>
+{
+    if (e.Column.FieldName == "Total")
+    {
+        e.Cancel = true; // 保护该列的服务端排序顺序
+    }
+};
+
+grid.Sorted += (s, e) => { /* 排序已应用，例如更新状态栏 */ };
+```
+
+### 通过代码
+
+```csharp
+// 替换所有排序级别：
+grid.SortBy(nameof(Employee.Name), GridSortDirection.Descending);
+
+// 或传入列实例（使用 SortMemberPath ?? FieldName）：
+grid.SortBy(nameColumn, GridSortDirection.Ascending);
+
+// 添加/更新一个级别，保留其他级别（多列排序）：
+grid.AddSortLevel(nameof(Employee.Department), GridSortDirection.Ascending);
+grid.AddSortLevel(nameof(Employee.Salary), GridSortDirection.Descending);
+
+// 移除所有级别：
+grid.ClearSorting();
+```
+
+`SortDescriptions` 是 `ObservableCollection<GridSortDescription>`，因此也可以直接
+编辑。每个 `GridSortDescription` 包含：
+
+- `FieldName` —— 属性路径（`"Address.City"` 也合法）；
+- `Direction` —— `Ascending` / `Descending` / `None`；
+- `Comparer` —— 可选的自定义 `IComparer`，用于比较单元格值（替换默认的区域感知
+  比较；方向仍由引擎应用）；
+- `Culture` —— 字符串比较所用的区域（默认 `CurrentCulture`）。
+
+```csharp
+grid.SortDescriptions.Add(new GridSortDescription("Salary", GridSortDirection.Descending)
+{
+    Comparer = Comparer<object>.Create((a, b) => ((decimal)a!).CompareTo((decimal)b!)),
+});
+```
+
+列可以通过 `SortMemberPath` 按其他成员排序；将列的 `CanUserSort = false` 可仅对该列
+禁用点击表头排序。
+
+## 筛选
+
+`FilterDescriptions` 是 `GridFilterDescription` 的集合；多个筛选器按**逻辑与**组合。
+
+```csharp
+using VCWpfControls.Grid.Data;
+
+// 薪资在 50,000 到 90,000 之间：
+grid.FilterDescriptions.Add(new GridFilterDescription(
+    nameof(Employee.Salary), GridFilterOperator.Between, 50000m, 90000m));
+
+// 姓名包含 "al"（默认区域感知、不区分大小写）：
+grid.FilterDescriptions.Add(new GridFilterDescription(
+    nameof(Employee.Name), GridFilterOperator.Contains, "al"));
+
+// 移除一个 / 全部筛选器：
+grid.FilterDescriptions.RemoveAt(0);
+grid.FilterDescriptions.Clear();
+```
+
+### 运算符
+
+| 运算符 | 含义 | 使用的操作数 |
+|---|---|---|
+| `None` | 禁用筛选 | — |
+| `Equals`、`NotEquals` | （不）等于 `Value` | `Value` |
+| `Contains`、`NotContains`、`StartsWith`、`EndsWith` | 文本匹配（默认不区分大小写） | `Value` 作为文本 |
+| `GreaterThan`、`GreaterThanOrEqual`、`LessThan`、`LessThanOrEqual` | 比较运算 | `Value` |
+| `Between`、`NotBetween` | 位于/位于闭区间之外 | `Value` 与 `Value2` |
+| `In`、`NotIn` | 值（不）包含在列表中（`Value` 为 `IEnumerable`） | `Value` |
+| `IsNull`、`IsNotNull` | 判空（或 `DBNull`） | — |
+| `Custom` | 作用于整个数据项的自定义谓词 | `CustomPredicate` |
+
+`GridFilterDescription` 的其他配置项：
+
+- `TextComparison` —— 文本运算符使用的 `StringComparison`（默认
+  `CurrentCultureIgnoreCase`）；
+- `CustomPredicate` —— `Custom` 运算符使用的 `Predicate<object>`：
+
+```csharp
+grid.FilterDescriptions.Add(new GridFilterDescription("...")
+{
+    Operator = GridFilterOperator.Custom,
+    CustomPredicate = item => item is Employee e && e.IsActive && e.Salary > 50000m,
+});
+```
+
+null 单元格只会命中显式的 `IsNull` 运算符（以及包含 `null` 的 `In` 列表），
+因此组合筛选器的行为是可预期的。
+
+## 分组
+
+`GroupDescriptions` 是 `GridGroupDescription` 的集合，从最外层到最内层：
+
+```csharp
+grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Employee.Department)));
+grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Employee.Office)));
+```
+
+启用分组后，表格视图会以**分组标题行**与数据行交错展开。展平后的视图可在引擎上
+获取：`grid.DataEngine.View` 是 `IReadOnlyList<GridRowInfo>`，元素为 `GridDataRow`
+（`Kind == GridRowKind.Data`，暴露 `Item`）或 `GridGroupRow`
+（`Kind == GridRowKind.Group`，暴露 `Group`）。
+
+每个 `GridGroup` 提供：
+
+- `Key` —— 分组键（单元格值，可能经过转换）；
+- `Level` 与 `Parent` —— 在分组树中的位置；
+- `ChildGroups` —— 下一级的子分组；
+- `Items` —— 直接落在这个分组中的数据项（仅最深一层有值）；
+- `TotalItems` —— 该分组下的数据行总数；
+- `IsExpanded` —— 展开状态，**在数据刷新后保留**。
+
+### 展开与折叠
+
+通过引擎以编程方式展开或折叠分组 —— 状态会保留到之后的 `Refresh()` 调用：
+
+```csharp
+foreach (var row in grid.DataEngine.View.OfType<GridGroupRow>())
+{
+    if (row.Group.Level == 0 && row.Group.TotalItems < 5)
+    {
+        grid.DataEngine.SetGroupExpanded(row.Group, expanded: false);
+    }
+}
+```
+
+### 自定义分组键
+
+`KeyConverter` 把单元格值转换为分组键（例如把日期按月份分桶）；`KeysComparer`
+控制分组键的顺序：
+
+```csharp
+grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Order.CreatedAt))
+{
+    KeyConverter = value => ((DateTime)value!).ToString("yyyy-MM"),
+});
+```
+
+键盘导航会自动跳过分组行；`ScrollIntoView`、`SelectRange` 等方法面向数据项而非
+分组行。
+
+> **状态说明。** 聚合汇总（每个分组及页脚的 Sum/Min/Max/Avg/Count）计划于
+> 阶段 1.2 提供；在此之前请在视图模型中基于 `GridGroup.Items` / `TotalItems`
+> 自行计算。

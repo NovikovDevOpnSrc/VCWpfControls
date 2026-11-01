@@ -1,0 +1,16 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:grid="clr-namespace:VCWpfControls.Grid">
+    <!-- Light theme palette (same values as the default theme in Generic.xaml). -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="#FFF3F4F6" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FF374151" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBorderKey}" Color="#FFD1D5DB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="#FFCFE3F5" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="#FFE5E7EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="#FF1D4ED8" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="#FFEDF2F9" />
+</ResourceDictionary>

@@ -562,6 +562,10 @@ public partial class GridControl : ItemsControl
     }
 
     /// <inheritdoc />
+    protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer()
+        => new Automation.GridControlAutomationPeer(this);
+
+    /// <inheritdoc />
     protected override DependencyObject GetContainerForItemOverride() => new GridRow();
 
     /// <inheritdoc />

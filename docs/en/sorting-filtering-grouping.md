@@ -10,10 +10,10 @@ three observable collections on the grid: `SortDescriptions`, `FilterDescription
 `GroupDescriptions`. Changing a collection rebuilds the view immediately (pipeline:
 filter → sort → group → flatten).
 
-> **Status note.** The engine APIs described here are fully working. The built-in
-> **filter row / filter menu** and the **group panel with aggregate summaries** are
-> scheduled for stage 1.2 (in development) — until then, build your own UI on top of these
-> collections.
+> **Built-in UI.** Set `ShowFilterRow="True"` to get a filter row under the headers
+> (contains for text columns, typed equality for numeric/date columns). Group rows render
+> with an expand/collapse toggle; add aggregates to `SummaryItems` to show footer summaries
+> (`Sum`, `Min`, `Max`, `Avg`, `Count`). All engine APIs below work regardless of UI.
 
 ## Sorting
 
@@ -177,6 +177,5 @@ grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Order.CreatedAt))
 Group rows are skipped by keyboard navigation, and `ScrollIntoView`, `SelectRange` and
 friends operate on data items, not group rows.
 
-> **Status note.** Aggregate summaries (Sum/Min/Max/Avg/Count per group and in the footer)
-> are planned for stage 1.2; until then compute totals in your view model from
-> `GridGroup.Items` / `TotalItems`.
+> **Footer summaries** are configured via `grid.SummaryItems.Add(new GridSummaryItem("Salary", GridSummaryFunction.Sum, "C"))`.
+> For group-level totals, compute them from `GridGroup.Items` / `TotalItems`.
