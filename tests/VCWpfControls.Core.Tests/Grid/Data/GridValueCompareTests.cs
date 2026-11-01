@@ -37,7 +37,9 @@ public class GridValueCompareTests
     [Fact]
     public void Compare_SameTypeEnums_ComparesByValue()
     {
-        Assert.True(GridValueCompare.Compare(DayOfWeek.Wednesday, DayOfWeek.Friday) > 0);
+        // DayOfWeek.Wednesday = 3, DayOfWeek.Friday = 5.
+        Assert.True(GridValueCompare.Compare(DayOfWeek.Wednesday, DayOfWeek.Friday) < 0);
+        Assert.True(GridValueCompare.Compare(DayOfWeek.Friday, DayOfWeek.Wednesday) > 0);
     }
 
     [Fact]

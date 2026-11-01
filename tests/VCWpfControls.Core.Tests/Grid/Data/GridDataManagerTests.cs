@@ -105,8 +105,8 @@ public class GridDataManagerTests
         manager.Sorts = new[] { new GridSortDescription("Name") };
         manager.Refresh();
 
-        var names = manager.DataRows.Select(r => ((Employee)r.Item).Name).ToList();
-        Assert.Equal(new List<string> { null, "A", "X" }, names);
+        var names = manager.DataRows.Select(r => (string?)((Employee)r.Item).Name).ToList();
+        Assert.Equal(new List<string?> { null, "A", "X" }, names);
     }
 
     [Fact]

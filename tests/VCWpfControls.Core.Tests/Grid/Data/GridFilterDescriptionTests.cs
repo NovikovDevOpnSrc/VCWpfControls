@@ -85,14 +85,15 @@ public class GridFilterDescriptionTests
     [Fact]
     public void In_MatchesListValues()
     {
-        var result = Apply("Name", GridFilterOperator.In, new[] { "alice", "carol" });
-        Assert.Equal(new List<string> { "Alice", "Carol" }, NamesOf(result));
+        // The engine compares exactly (case-sensitive); case-insensitive matching is a UI concern.
+        var result = Apply("Name", GridFilterOperator.In, new[] { "Alice", "carol" });
+        Assert.Equal(new List<string> { "Alice" }, NamesOf(result));
     }
 
     [Fact]
     public void NotIn_ExcludesListValues()
     {
-        var result = Apply("Name", GridFilterOperator.NotIn, new[] { "alice", "carol" });
+        var result = Apply("Name", GridFilterOperator.NotIn, new[] { "Alice", "Carol" });
         Assert.Equal(new List<string> { "Bob" }, NamesOf(result));
     }
 

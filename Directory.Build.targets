@@ -1,0 +1,7 @@
+<Project>
+  <!-- Test projects: relax analyzer rules that fight test naming conventions.
+       Placed in .targets because IsTestProject (set by the test SDK) is only known at this stage. -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <NoWarn>$(NoWarn);CA1707;CA1861;CA1515</NoWarn>
+  </PropertyGroup>
+</Project>
