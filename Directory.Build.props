@@ -23,5 +23,7 @@
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
     <WarningsAsErrors>nullable</WarningsAsErrors>
+    <!-- Perf-style suggestions that conflict with IReadOnlyList/WPF idioms are informational here. -->
+    <NoWarn>$(NoWarn);CA1826;CA1859;CA1861</NoWarn>
   </PropertyGroup>
 </Project>

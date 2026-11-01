@@ -1,0 +1,196 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:grid="clr-namespace:VCWpfControls.Grid"
+    xmlns:primitives="clr-namespace:VCWpfControls.Grid.Primitives">
+
+    <!-- ============ Theme palette (override these keys to re-theme the grid) ============ -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="#FFF3F4F6" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FF374151" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBorderKey}" Color="#FFD1D5DB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="#FFCFE3F5" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="#FFE5E7EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="#FF1D4ED8" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="#FFEDF2F9" />
+
+    <!-- ============ GridControl ============ -->
+    <Style TargetType="{x:Type grid:GridControl}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel
+                        VirtualizationMode="Recycling"
+                        ScrollUnit="Pixel" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type grid:GridControl}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Padding="{TemplateBinding Padding}"
+                        SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <primitives:GridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter" Grid.Row="0" />
+
+                            <ScrollViewer
+                                x:Name="PART_ScrollViewer"
+                                Grid.Row="1"
+                                Focusable="False">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+
+                            <ScrollBar
+                                x:Name="PART_HorizontalScrollBar"
+                                Grid.Row="2"
+                                Orientation="Horizontal"
+                                Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ShowColumnHeaders" Value="False">
+                            <Setter TargetName="PART_ColumnHeadersPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============ GridRow ============ -->
+    <Style TargetType="{x:Type primitives:GridRow}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type primitives:GridRow}">
+                    <Border
+                        x:Name="RowBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{Binding GridLinesBrush, RelativeSource={RelativeSource AncestorType={x:Type grid:GridControl}}, FallbackValue={DynamicResource {x:Static grid:GridResources.GridLineKey}}}"
+                        BorderThickness="0,0,0,1">
+                        <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="HeaderResizeThumbTemplate" TargetType="Thumb">
+        <Rectangle
+            Fill="Transparent"
+            Stroke="Transparent" />
+    </ControlTemplate>
+
+    <!-- ============ GridColumnHeader ============ -->
+    <Style TargetType="{x:Type primitives:GridColumnHeader}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.HeaderForegroundKey}}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type primitives:GridColumnHeader}">
+                    <Grid>
+                        <Border
+                            x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
+                            BorderThickness="0,0,1,1">
+                            <Grid Margin="8,0,6,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <ContentPresenter
+                                    x:Name="HeaderContent"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="{Binding Column.HorizontalContentAlignment, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=Left}"
+                                    Content="{Binding Column.Header, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                                <Grid Grid.Column="1" Width="12" Margin="2,0,0,0" VerticalAlignment="Center">
+                                    <Path
+                                        x:Name="SortUp"
+                                        Data="M 0 4 L 4 0 L 8 4 Z"
+                                        Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}"
+                                        Visibility="Collapsed" />
+                                    <Path
+                                        x:Name="SortDown"
+                                        Data="M 0 0 L 4 4 L 8 0 Z"
+                                        Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Thumb
+                            x:Name="PART_ResizeThumb"
+                            Width="6"
+                            HorizontalAlignment="Right"
+                            Cursor="SizeWE"
+                            Template="{StaticResource HeaderResizeThumbTemplate}" />
+
+                        <Border
+                            x:Name="FrozenEdge"
+                            Width="2"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,6,0"
+                            Background="{DynamicResource {x:Static grid:GridResources.AccentKey}}"
+                            Visibility="Collapsed" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="SortDirection" Value="Ascending">
+                            <Setter TargetName="SortUp" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="HeaderContent" Property="TextBlock.Foreground" Value="{DynamicResource {x:Static grid:GridResources.AccentTextKey}}" />
+                        </Trigger>
+                        <Trigger Property="SortDirection" Value="Descending">
+                            <Setter TargetName="SortDown" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="HeaderContent" Property="TextBlock.Foreground" Value="{DynamicResource {x:Static grid:GridResources.AccentTextKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsFrozen" Value="True">
+                            <Setter TargetName="FrozenEdge" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsDropTarget" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

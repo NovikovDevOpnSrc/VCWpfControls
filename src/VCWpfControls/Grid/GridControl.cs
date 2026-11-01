@@ -1,0 +1,884 @@
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using VCWpfControls.Grid.Columns;
+using VCWpfControls.Grid.Data;
+using VCWpfControls.Grid.Primitives;
+
+namespace VCWpfControls.Grid;
+
+/// <summary>Selection behavior of <see cref="GridControl"/>.</summary>
+public enum GridSelectionMode
+{
+    /// <summary>Only one row can be selected at a time.</summary>
+    SingleRow = 0,
+
+    /// <summary>Multiple rows can be selected with Ctrl/Shift.</summary>
+    Extended = 1,
+}
+
+/// <summary>Clipboard copy behavior of <see cref="GridControl"/>.</summary>
+public enum GridClipboardCopyMode
+{
+    /// <summary>Copy is disabled.</summary>
+    None = 0,
+
+    /// <summary>Copy includes a header line.</summary>
+    IncludeHeaders = 1,
+}
+
+/// <summary>
+/// A fast, virtualized, MVVM-friendly data grid. Bind <see cref="ItemsSource"/> to any
+/// <see cref="IEnumerable"/> (live updates supported through <see cref="ObservableCollection{T}"/>),
+/// define columns manually or let the grid generate them from the item type.
+/// </summary>
+[ContentProperty(nameof(Columns))]
+public partial class GridControl : ItemsControl
+{
+    /// <summary>Template part: the vertical scroll host.</summary>
+    protected const string PartScrollViewer = "PART_ScrollViewer";
+
+    /// <summary>Template part: the horizontal scroll bar.</summary>
+    protected const string PartHorizontalScrollBar = "PART_HorizontalScrollBar";
+
+    /// <summary>Template part: the column headers presenter.</summary>
+    protected const string PartColumnHeadersPresenter = "PART_ColumnHeadersPresenter";
+
+    /// <summary>Identifies the <see cref="ItemsSource"/> dependency property.</summary>
+    public new static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
+        nameof(ItemsSource), typeof(IEnumerable), typeof(GridControl),
+        new PropertyMetadata(null, OnItemsSourceChanged));
+
+    /// <summary>Identifies the <see cref="AutoGenerateColumns"/> dependency property.</summary>
+    public static readonly DependencyProperty AutoGenerateColumnsProperty = DependencyProperty.Register(
+        nameof(AutoGenerateColumns), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnAutoGenerateColumnsChanged));
+
+    /// <summary>Identifies the <see cref="CanUserSortColumns"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserSortColumnsProperty = DependencyProperty.Register(
+        nameof(CanUserSortColumns), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue));
+
+    /// <summary>Identifies the <see cref="CanUserResizeColumns"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserResizeColumnsProperty = DependencyProperty.Register(
+        nameof(CanUserResizeColumns), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue));
+
+    /// <summary>Identifies the <see cref="CanUserReorderColumns"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserReorderColumnsProperty = DependencyProperty.Register(
+        nameof(CanUserReorderColumns), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue));
+
+    /// <summary>Identifies the <see cref="FrozenColumnCount"/> dependency property.</summary>
+    public static readonly DependencyProperty FrozenColumnCountProperty = DependencyProperty.Register(
+        nameof(FrozenColumnCount), typeof(int), typeof(GridControl),
+        new PropertyMetadata(0, OnFrozenColumnCountChanged), ValidateFrozenColumnCount);
+
+    /// <summary>Identifies the <see cref="RowHeight"/> dependency property.</summary>
+    public static readonly DependencyProperty RowHeightProperty = DependencyProperty.Register(
+        nameof(RowHeight), typeof(double), typeof(GridControl),
+        new PropertyMetadata(double.NaN, OnRowMetricsChanged));
+
+    /// <summary>Identifies the <see cref="HeaderHeight"/> dependency property.</summary>
+    public static readonly DependencyProperty HeaderHeightProperty = DependencyProperty.Register(
+        nameof(HeaderHeight), typeof(double), typeof(GridControl),
+        new PropertyMetadata(double.NaN, OnLayoutPropertyChanged));
+
+    /// <summary>Identifies the <see cref="RowBackground"/> dependency property.</summary>
+    public static readonly DependencyProperty RowBackgroundProperty = DependencyProperty.Register(
+        nameof(RowBackground), typeof(Brush), typeof(GridControl), new PropertyMetadata(null));
+
+    /// <summary>Identifies the <see cref="AlternatingRowBackground"/> dependency property.</summary>
+    public static readonly DependencyProperty AlternatingRowBackgroundProperty = DependencyProperty.Register(
+        nameof(AlternatingRowBackground), typeof(Brush), typeof(GridControl), new PropertyMetadata(null));
+
+    /// <summary>Identifies the <see cref="GridLinesBrush"/> dependency property.</summary>
+    public static readonly DependencyProperty GridLinesBrushProperty = DependencyProperty.Register(
+        nameof(GridLinesBrush), typeof(Brush), typeof(GridControl), new PropertyMetadata(null));
+
+    /// <summary>Identifies the <see cref="ShowColumnHeaders"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowColumnHeadersProperty = DependencyProperty.Register(
+        nameof(ShowColumnHeaders), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnLayoutPropertyChanged));
+
+    /// <summary>Identifies the <see cref="SelectionMode"/> dependency property.</summary>
+    public static readonly DependencyProperty SelectionModeProperty = DependencyProperty.Register(
+        nameof(SelectionMode), typeof(GridSelectionMode), typeof(GridControl),
+        new PropertyMetadata(GridSelectionMode.Extended, OnSelectionModeChanged));
+
+    /// <summary>Identifies the <see cref="SelectedItem"/> dependency property.</summary>
+    public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
+        nameof(SelectedItem), typeof(object), typeof(GridControl),
+        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedItemChanged));
+
+    /// <summary>Identifies the <see cref="CurrentItem"/> dependency property.</summary>
+    public static readonly DependencyProperty CurrentItemProperty = DependencyProperty.Register(
+        nameof(CurrentItem), typeof(object), typeof(GridControl),
+        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnCurrentItemChanged));
+
+    /// <summary>Identifies the <see cref="IsReadOnly"/> dependency property.</summary>
+    public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register(
+        nameof(IsReadOnly), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse));
+
+    /// <summary>Identifies the <see cref="CanUserAddRows"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserAddRowsProperty = DependencyProperty.Register(
+        nameof(CanUserAddRows), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse));
+
+    /// <summary>Identifies the <see cref="CanUserDeleteRows"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserDeleteRowsProperty = DependencyProperty.Register(
+        nameof(CanUserDeleteRows), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue));
+
+    /// <summary>Identifies the <see cref="ClipboardCopyMode"/> dependency property.</summary>
+    public static readonly DependencyProperty ClipboardCopyModeProperty = DependencyProperty.Register(
+        nameof(ClipboardCopyMode), typeof(GridClipboardCopyMode), typeof(GridControl),
+        new PropertyMetadata(GridClipboardCopyMode.IncludeHeaders));
+
+    private static readonly DependencyPropertyKey HorizontalOffsetPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HorizontalOffset), typeof(double), typeof(GridControl), new PropertyMetadata(0d, OnHorizontalOffsetChanged));
+
+    /// <summary>Identifies the read-only <see cref="HorizontalOffset"/> dependency property.</summary>
+    public static readonly DependencyProperty HorizontalOffsetProperty = HorizontalOffsetPropertyKey.DependencyProperty;
+
+    private readonly List<GridRow> _rowRegistry = new();
+    private IReadOnlyList<GridColumnBase> _visibleColumns = Array.Empty<GridColumnBase>();
+    private bool _syncingItems;
+    private bool _autoColumnsGenerated;
+
+    static GridControl()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(GridControl),
+            new FrameworkPropertyMetadata(typeof(GridControl)));
+        FocusableProperty.OverrideMetadata(typeof(GridControl), new PropertyMetadata(true));
+    }
+
+    /// <summary>Creates the grid.</summary>
+    public GridControl()
+    {
+        Columns = new GridColumnCollection();
+        Columns.StructureChanged += OnColumnsStructureChanged;
+
+        SortDescriptions = new ObservableCollection<GridSortDescription>();
+        SortDescriptions.CollectionChanged += OnSortDescriptionsChanged;
+
+        FilterDescriptions = new ObservableCollection<GridFilterDescription>();
+        FilterDescriptions.CollectionChanged += OnFilterDescriptionsChanged;
+
+        GroupDescriptions = new ObservableCollection<GridGroupDescription>();
+        GroupDescriptions.CollectionChanged += OnGroupDescriptionsChanged;
+
+        DataEngine = new GridDataManager();
+        DataEngine.ViewReset += OnEngineViewReset;
+
+        Layout = new GridLayoutController();
+        AlternationCount = 2;
+
+        CommandBindings.Add(new CommandBinding(GridCommands.BeginEdit,
+            (s, e) => e.Handled = BeginEdit(), (s, e) => e.CanExecute = CanBeginEdit()));
+        CommandBindings.Add(new CommandBinding(GridCommands.CancelEdit,
+            (s, e) => e.Handled = CancelEdit(), (s, e) => e.CanExecute = IsEditing));
+        CommandBindings.Add(new CommandBinding(GridCommands.CommitEdit,
+            (s, e) => e.Handled = CommitEdit(), (s, e) => e.CanExecute = IsEditing));
+        CommandBindings.Add(new CommandBinding(GridCommands.Delete,
+            (s, e) => { e.Handled = DeleteSelectedItems(); }, (s, e) => e.CanExecute = CanDeleteSelectedItems()));
+        CommandBindings.Add(new CommandBinding(GridCommands.SelectAll,
+            (s, e) => { SelectAll(); e.Handled = true; },
+            (s, e) => e.CanExecute = SelectionMode == GridSelectionMode.Extended));
+        CommandBindings.Add(new CommandBinding(GridCommands.Copy,
+            (s, e) => { CopyToClipboard(); e.Handled = true; },
+            (s, e) => e.CanExecute = ClipboardCopyMode != GridClipboardCopyMode.None));
+    }
+
+    /// <summary>Occurs before a column is auto-generated; allows replacing or cancelling it.</summary>
+    public event EventHandler<GridAutoGeneratingColumnEventArgs>? AutoGeneratingColumn;
+
+    /// <summary>Occurs before sorting is applied; cancellable.</summary>
+    public event EventHandler<GridSortingEventArgs>? Sorting;
+
+    /// <summary>Occurs after sorting has been applied.</summary>
+    public event EventHandler? Sorted;
+
+    /// <summary>Occurs after the selection changed.</summary>
+    public event EventHandler<GridSelectionChangedEventArgs>? SelectionChanged;
+
+    /// <summary>Occurs after the current cell moved.</summary>
+    public event EventHandler? CurrentCellChanged;
+
+    /// <summary>Occurs before a cell enters edit mode; cancellable.</summary>
+    public event EventHandler<GridCellEditEventArgs>? CellEditStarting;
+
+    /// <summary>Occurs before an edit is committed or cancelled; cancellable.</summary>
+    public event EventHandler<GridCellEditEventArgs>? CellEditEnding;
+
+    /// <summary>Occurs after an edit was committed or cancelled.</summary>
+    public event EventHandler<GridCellEditEventArgs>? CellEditEnded;
+
+    /// <summary>The data source. Any <see cref="IEnumerable"/>; changes are tracked when it implements <see cref="INotifyCollectionChanged"/>.</summary>
+    public new IEnumerable? ItemsSource
+    {
+        get => (IEnumerable?)GetValue(ItemsSourceProperty);
+        set => SetValue(ItemsSourceProperty, value);
+    }
+
+    /// <summary>Manual column definitions. Auto-generated when left empty and <see cref="AutoGenerateColumns"/> is on.</summary>
+    public GridColumnCollection Columns { get; }
+
+    /// <summary>Whether columns are generated from the item type when <see cref="Columns"/> is empty.</summary>
+    public bool AutoGenerateColumns
+    {
+        get => (bool)GetValue(AutoGenerateColumnsProperty);
+        set => SetValue(AutoGenerateColumnsProperty, value);
+    }
+
+    /// <summary>Whether the user can sort by clicking column headers.</summary>
+    public bool CanUserSortColumns
+    {
+        get => (bool)GetValue(CanUserSortColumnsProperty);
+        set => SetValue(CanUserSortColumnsProperty, value);
+    }
+
+    /// <summary>Whether the user can resize columns by dragging header edges.</summary>
+    public bool CanUserResizeColumns
+    {
+        get => (bool)GetValue(CanUserResizeColumnsProperty);
+        set => SetValue(CanUserResizeColumnsProperty, value);
+    }
+
+    /// <summary>Whether the user can reorder columns by dragging headers.</summary>
+    public bool CanUserReorderColumns
+    {
+        get => (bool)GetValue(CanUserReorderColumnsProperty);
+        set => SetValue(CanUserReorderColumnsProperty, value);
+    }
+
+    /// <summary>Number of leading columns that stay visible during horizontal scrolling.</summary>
+    public int FrozenColumnCount
+    {
+        get => (int)GetValue(FrozenColumnCountProperty);
+        set => SetValue(FrozenColumnCountProperty, value);
+    }
+
+    /// <summary>Fixed row height; <see cref="double.NaN"/> sizes rows to content.</summary>
+    public double RowHeight
+    {
+        get => (double)GetValue(RowHeightProperty);
+        set => SetValue(RowHeightProperty, value);
+    }
+
+    /// <summary>Fixed header height; <see cref="double.NaN"/> sizes the header to content.</summary>
+    public double HeaderHeight
+    {
+        get => (double)GetValue(HeaderHeightProperty);
+        set => SetValue(HeaderHeightProperty, value);
+    }
+
+    /// <summary>Brush of even data rows.</summary>
+    public Brush? RowBackground
+    {
+        get => (Brush?)GetValue(RowBackgroundProperty);
+        set => SetValue(RowBackgroundProperty, value);
+    }
+
+    /// <summary>Brush of alternating (odd) data rows.</summary>
+    public Brush? AlternatingRowBackground
+    {
+        get => (Brush?)GetValue(AlternatingRowBackgroundProperty);
+        set => SetValue(AlternatingRowBackgroundProperty, value);
+    }
+
+    /// <summary>Brush of horizontal grid lines between rows.</summary>
+    public Brush? GridLinesBrush
+    {
+        get => (Brush?)GetValue(GridLinesBrushProperty);
+        set => SetValue(GridLinesBrushProperty, value);
+    }
+
+    /// <summary>Whether the column headers row is visible.</summary>
+    public bool ShowColumnHeaders
+    {
+        get => (bool)GetValue(ShowColumnHeadersProperty);
+        set => SetValue(ShowColumnHeadersProperty, value);
+    }
+
+    /// <summary>Single or extended (multi) selection.</summary>
+    public GridSelectionMode SelectionMode
+    {
+        get => (GridSelectionMode)GetValue(SelectionModeProperty);
+        set => SetValue(SelectionModeProperty, value);
+    }
+
+    /// <summary>The selected data item (first of <see cref="SelectedItems"/>).</summary>
+    public object? SelectedItem
+    {
+        get => GetValue(SelectedItemProperty);
+        set => SetValue(SelectedItemProperty, value);
+    }
+
+    /// <summary>The data item of the current cell.</summary>
+    public object? CurrentItem
+    {
+        get => GetValue(CurrentItemProperty);
+        set => SetValue(CurrentItemProperty, value);
+    }
+
+    /// <summary>Whether cells can be edited.</summary>
+    public bool IsReadOnly
+    {
+        get => (bool)GetValue(IsReadOnlyProperty);
+        set => SetValue(IsReadOnlyProperty, value);
+    }
+
+    /// <summary>Whether a new-row entry is offered (requires creatable item types).</summary>
+    public bool CanUserAddRows
+    {
+        get => (bool)GetValue(CanUserAddRowsProperty);
+        set => SetValue(CanUserAddRowsProperty, value);
+    }
+
+    /// <summary>Whether the user can delete rows with the Delete key.</summary>
+    public bool CanUserDeleteRows
+    {
+        get => (bool)GetValue(CanUserDeleteRowsProperty);
+        set => SetValue(CanUserDeleteRowsProperty, value);
+    }
+
+    /// <summary>Clipboard copy behavior.</summary>
+    public GridClipboardCopyMode ClipboardCopyMode
+    {
+        get => (GridClipboardCopyMode)GetValue(ClipboardCopyModeProperty);
+        set => SetValue(ClipboardCopyModeProperty, value);
+    }
+
+    /// <summary>Current horizontal scroll offset in pixels.</summary>
+    public double HorizontalOffset => (double)GetValue(HorizontalOffsetProperty);
+
+    /// <summary>Active sort levels, outermost first.</summary>
+    public ObservableCollection<GridSortDescription> SortDescriptions { get; }
+
+    /// <summary>Active filters (logical AND).</summary>
+    public ObservableCollection<GridFilterDescription> FilterDescriptions { get; }
+
+    /// <summary>Active grouping levels, outermost first.</summary>
+    public ObservableCollection<GridGroupDescription> GroupDescriptions { get; }
+
+    /// <summary>The UI-free data engine (exposed for advanced scenarios and export).</summary>
+    public GridDataManager DataEngine { get; }
+
+    /// <summary>Currently visible columns in display order.</summary>
+    public IReadOnlyList<GridColumnBase> VisibleColumns => _visibleColumns;
+
+    /// <summary>The layout controller (internal use).</summary>
+    internal GridLayoutController Layout { get; }
+
+    /// <summary>The vertical scroll host (template part).</summary>
+    internal ScrollViewer? ScrollHost { get; private set; }
+
+    /// <summary>The horizontal scroll bar (template part).</summary>
+    internal ScrollBar? HorizontalScrollBar { get; private set; }
+
+    /// <summary>The headers presenter (template part).</summary>
+    internal GridColumnHeadersPresenter? HeadersPresenter { get; private set; }
+
+    /// <summary>Brush used for the current cell border (theme).</summary>
+    internal Brush? CurrentCellBorderBrush => TryFindResource(GridResources.CurrentCellBorderBrushKey) as Brush;
+
+    /// <summary>The column of the current cell, or <see langword="null"/>.</summary>
+    public GridColumnBase? CurrentColumn { get; internal set; }
+
+    /// <summary>The available content width for columns.</summary>
+    internal double ViewportWidth => ScrollHost?.ViewportWidth is { } width && width > 0 ? width : ActualWidth;
+
+    /// <inheritdoc />
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+
+        if (ScrollHost is not null)
+        {
+            ScrollHost.ScrollChanged -= OnScrollChanged;
+        }
+
+        if (HorizontalScrollBar is not null)
+        {
+            HorizontalScrollBar.Scroll -= OnHorizontalScrollBarScroll;
+        }
+
+        ScrollHost = GetTemplateChild(PartScrollViewer) as ScrollViewer;
+        HorizontalScrollBar = GetTemplateChild(PartHorizontalScrollBar) as ScrollBar;
+        HeadersPresenter = GetTemplateChild(PartColumnHeadersPresenter) as GridColumnHeadersPresenter;
+
+        if (ScrollHost is not null)
+        {
+            ScrollHost.ScrollChanged += OnScrollChanged;
+        }
+
+        if (HorizontalScrollBar is not null)
+        {
+            HorizontalScrollBar.Scroll += OnHorizontalScrollBarScroll;
+        }
+
+        if (HeadersPresenter is not null)
+        {
+            HeadersPresenter.Owner = this;
+            HeadersPresenter.EnsureHeaders();
+        }
+
+        RefreshVisibleColumns(rebuildCells: true);
+    }
+
+    /// <inheritdoc />
+    protected override DependencyObject GetContainerForItemOverride() => new GridRow();
+
+    /// <inheritdoc />
+    protected override bool IsItemItsOwnContainerOverride(object item) => false;
+
+    /// <inheritdoc />
+    protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+    {
+        base.PrepareContainerForItemOverride(element, item);
+
+        if (element is not GridRow row)
+        {
+            return;
+        }
+
+        if (!_rowRegistry.Contains(row))
+        {
+            _rowRegistry.Add(row);
+        }
+
+        if (item is GridRowInfo rowInfo)
+        {
+            row.Prepare(rowInfo, this);
+        }
+
+        row.Background = ItemsControl.GetAlternationIndex(row) % 2 == 1
+            ? AlternatingRowBackground ?? RowBackground
+            : RowBackground;
+    }
+
+    /// <inheritdoc />
+    protected override void ClearContainerForItemOverride(DependencyObject element, object item)
+    {
+        base.ClearContainerForItemOverride(element, item);
+        if (element is GridRow row)
+        {
+            _rowRegistry.Remove(row);
+            row.Clear();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override Size MeasureOverride(Size constraint)
+    {
+        var size = base.MeasureOverride(constraint);
+        EnsureLayout();
+        return size;
+    }
+
+    /// <summary>Recomputes the visible column list; rebuilds headers and cells when columns change structurally.</summary>
+    private void RefreshVisibleColumns(bool rebuildCells)
+    {
+        _visibleColumns = Columns.Where(c => c.Visible).ToArray();
+        foreach (var column in Columns)
+        {
+            column.Owner = this;
+        }
+
+        HeadersPresenter?.PruneHiddenHeaders();
+        HeadersPresenter?.EnsureHeaders();
+
+        if (rebuildCells)
+        {
+            foreach (var row in _rowRegistry)
+            {
+                row.CellsPanel?.EnsureCells();
+                row.CellsPanel?.PrepareCells();
+            }
+        }
+
+        InvalidateLayout();
+    }
+
+    /// <summary>Recomputes layout slots and refreshes everything that depends on them.</summary>
+    internal void InvalidateLayout()
+    {
+        EnsureLayout();
+        HeadersPresenter?.InvalidateMeasure();
+        foreach (var row in _rowRegistry)
+        {
+            row.CellsPanel?.InvalidateMeasure();
+        }
+
+        UpdateHorizontalScrollBar();
+    }
+
+    private void EnsureLayout()
+    {
+        Layout.ViewportWidth = ViewportWidth;
+        Layout.FrozenColumnCount = FrozenColumnCount;
+        Layout.Compute(_visibleColumns);
+    }
+
+    /// <summary>Called by cell/header panels when auto-width hints grew.</summary>
+    internal void NotifyAutoWidthsChanged()
+    {
+        EnsureLayout();
+        HeadersPresenter?.InvalidateMeasure();
+        foreach (var row in _rowRegistry)
+        {
+            row.CellsPanel?.InvalidateArrange();
+        }
+
+        UpdateHorizontalScrollBar();
+    }
+
+    private void UpdateHorizontalScrollBar()
+    {
+        if (HorizontalScrollBar is not { } scrollBar)
+        {
+            return;
+        }
+
+        var viewport = ViewportWidth;
+        var max = Math.Max(0, Layout.TotalWidth - viewport);
+        scrollBar.ViewportSize = double.IsNaN(viewport) || double.IsInfinity(viewport) ? 0 : viewport;
+        scrollBar.Maximum = max;
+        scrollBar.LargeChange = Math.Max(1, viewport * 0.9);
+        scrollBar.SmallChange = 16;
+        scrollBar.Visibility = max > 0.5 ? Visibility.Visible : Visibility.Collapsed;
+        if (scrollBar.Value > max)
+        {
+            SetHorizontalOffsetCore(max);
+        }
+    }
+
+    /// <summary>Scrolls horizontally to the given offset (clamped).</summary>
+    internal void SetHorizontalOffsetCore(double value)
+    {
+        var max = Math.Max(0, Layout.TotalWidth - ViewportWidth);
+        value = Math.Clamp(value, 0, max);
+        if (Math.Abs(value - HorizontalOffset) < 0.01)
+        {
+            return;
+        }
+
+        SetCurrentValue(HorizontalOffsetProperty, value);
+    }
+
+    private static void OnHorizontalOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        grid.HeadersPresenter?.InvalidateArrange();
+        foreach (var row in grid._rowRegistry)
+        {
+            row.CellsPanel?.InvalidateArrange();
+        }
+
+        if (grid.HorizontalScrollBar is { } scrollBar && Math.Abs(scrollBar.Value - (double)e.NewValue) > 0.01)
+        {
+            scrollBar.Value = (double)e.NewValue;
+        }
+    }
+
+    private void OnHorizontalScrollBarScroll(object sender, ScrollEventArgs e)
+    {
+        SetHorizontalOffsetCore(((ScrollBar)sender).Value);
+    }
+
+    private void OnScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (Math.Abs(e.ViewportWidthChange) > 0.01)
+        {
+            InvalidateLayout();
+        }
+    }
+
+    /// <summary>Scrolls so that the given data item becomes visible.</summary>
+    public void ScrollIntoView(object item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        var rowInfo = DataEngine.View.FirstOrDefault(row =>
+            row is GridDataRow data && ReferenceEquals(data.Item, item));
+        if (rowInfo is null)
+        {
+            return;
+        }
+
+        if (ItemContainerGenerator.ContainerFromItem(rowInfo) is GridRow row)
+        {
+            row.BringIntoView();
+        }
+    }
+
+    /// <summary>Applies the current columns to the engine and refreshes the view.</summary>
+    public void Refresh()
+    {
+        DataEngine.Sorts = SortDescriptions;
+        DataEngine.Filters = FilterDescriptions;
+        DataEngine.Groups = GroupDescriptions;
+        DataEngine.Refresh();
+        SyncEngineView();
+    }
+
+    private void SyncEngineView()
+    {
+        if (_syncingItems)
+        {
+            return;
+        }
+
+        _syncingItems = true;
+        try
+        {
+            var items = Items;
+            using (items.DeferRefresh())
+            {
+                items.Clear();
+                foreach (var row in DataEngine.View)
+                {
+                    items.Add(row);
+                }
+            }
+        }
+        finally
+        {
+            _syncingItems = false;
+        }
+    }
+
+    private void OnEngineViewReset(object? sender, EventArgs e)
+    {
+        if (!_autoColumnsGenerated
+            && AutoGenerateColumns
+            && Columns.Count == 0
+            && DataEngine.ResolvedItemType is { } itemType)
+        {
+            GenerateAutoColumns(itemType);
+        }
+
+        SyncEngineView();
+        PruneSelectionToSource();
+        RestoreCurrentItem();
+        InvalidateVisualChildren();
+    }
+
+    private void InvalidateVisualChildren()
+    {
+        foreach (var row in _rowRegistry)
+        {
+            row.CellsPanel?.InvalidateMeasure();
+        }
+    }
+
+    private void GenerateAutoColumns(Type itemType)
+    {
+        foreach (var column in ColumnAutoGenerator.GenerateColumns(itemType))
+        {
+            var args = new GridAutoGeneratingColumnEventArgs(column)
+            {
+                Source = this,
+            };
+            AutoGeneratingColumn?.Invoke(this, args);
+            if (!args.Cancel)
+            {
+                if (!ReferenceEquals(args.Column, column))
+                {
+                    column.Owner = null;
+                }
+
+                Columns.Add(args.Column);
+            }
+        }
+
+        _autoColumnsGenerated = Columns.Count > 0;
+    }
+
+    private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        grid._autoColumnsGenerated = false;
+
+        if (grid.AutoGenerateColumns && grid.Columns.Count == 0 && e.NewValue is IEnumerable source)
+        {
+            if (TryGetItemType(source, out var itemType) && itemType is not null)
+            {
+                grid.GenerateAutoColumns(itemType);
+            }
+        }
+
+        grid.DataEngine.SetSource((IEnumerable?)e.NewValue);
+    }
+
+    private static bool TryGetItemType(IEnumerable source, out Type? itemType)
+    {
+        itemType = null;
+        if (source is IList { Count: > 0 } list)
+        {
+            itemType = list[0]?.GetType();
+            return itemType is not null;
+        }
+
+        foreach (var item in source)
+        {
+            itemType = item?.GetType();
+            return itemType is not null;
+        }
+
+        return false;
+    }
+
+    private static void OnAutoGenerateColumnsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        if ((bool)e.NewValue && grid.Columns.Count == 0 && grid.DataEngine.ResolvedItemType is { } itemType)
+        {
+            grid.GenerateAutoColumns(itemType);
+        }
+    }
+
+    private static void OnFrozenColumnCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        grid.InvalidateLayout();
+    }
+
+    private static void OnRowMetricsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        foreach (var row in grid._rowRegistry)
+        {
+            row.CellsPanel?.InvalidateMeasure();
+            row.InvalidateMeasure();
+        }
+    }
+
+    private static void OnLayoutPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ((GridControl)d).InvalidateLayout();
+    }
+
+    private void OnColumnsStructureChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            _autoColumnsGenerated = false;
+        }
+
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add when e.NewItems is not null:
+                foreach (GridColumnBase column in e.NewItems)
+                {
+                    column.Owner = this;
+                }
+
+                break;
+
+            case NotifyCollectionChangedAction.Remove when e.OldItems is not null:
+                foreach (GridColumnBase column in e.OldItems)
+                {
+                    column.Owner = null;
+                }
+
+                break;
+
+            case NotifyCollectionChangedAction.Replace when e.OldItems is not null && e.NewItems is not null:
+                foreach (GridColumnBase column in e.OldItems)
+                {
+                    column.Owner = null;
+                }
+
+                foreach (GridColumnBase column in e.NewItems)
+                {
+                    column.Owner = this;
+                }
+
+                break;
+
+            case NotifyCollectionChangedAction.Reset:
+            case NotifyCollectionChangedAction.Move:
+                break;
+        }
+
+        RefreshVisibleColumns(rebuildCells: true);
+    }
+
+    /// <summary>Called by a column when one of its layout-relevant properties changed.</summary>
+    internal void NotifyColumnChanged(GridColumnBase column)
+    {
+        if (!column.Visible)
+        {
+            RefreshVisibleColumns(rebuildCells: true);
+            return;
+        }
+
+        var wasHidden = !_visibleColumns.Contains(column);
+        if (wasHidden)
+        {
+            RefreshVisibleColumns(rebuildCells: true);
+            return;
+        }
+
+        InvalidateLayout();
+        foreach (var row in _rowRegistry)
+        {
+            row.CellsPanel?.InvalidateMeasure();
+        }
+    }
+
+    private void OnSortDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        SyncSortStateToColumns();
+        DataEngine.Sorts = SortDescriptions;
+        DataEngine.Refresh();
+        SyncEngineView();
+        InvalidateVisualChildren();
+    }
+
+    private void OnFilterDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        DataEngine.Filters = FilterDescriptions;
+        DataEngine.Refresh();
+        SyncEngineView();
+        InvalidateVisualChildren();
+    }
+
+    private void OnGroupDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        DataEngine.Groups = GroupDescriptions;
+        DataEngine.Refresh();
+        SyncEngineView();
+        InvalidateVisualChildren();
+    }
+
+    private void SyncSortStateToColumns()
+    {
+        foreach (var column in Columns)
+        {
+            column.SortDirection = GridSortDirection.None;
+        }
+
+        foreach (var sort in SortDescriptions)
+        {
+            var column = Columns.FirstOrDefault(c => c.EffectiveSortPath == sort.FieldName);
+            if (column is not null)
+            {
+                column.SortDirection = sort.Direction;
+            }
+        }
+
+        HeadersPresenter?.EnsureHeaders();
+    }
+
+    private static bool ValidateFrozenColumnCount(object value) => value is int and >= 0;
+}

@@ -1,0 +1,123 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using VCWpfControls.Grid.Columns;
+using VCWpfControls.Grid.Data;
+using VCWpfControls.Grid.Primitives;
+
+namespace VCWpfControls.Grid;
+
+/// <summary>Editing logic of <see cref="GridControl"/>.</summary>
+public partial class GridControl
+{
+    private object? _editingItem;
+    private GridColumnBase? _editingColumn;
+
+    /// <summary>Whether a cell is currently in edit mode.</summary>
+    public bool IsEditing => _editingColumn is not null;
+
+    internal bool CanBeginEdit()
+        => CurrentItem is not null && CurrentColumn is not null && !IsReadOnly && !CurrentColumn.ReadOnly;
+
+    /// <summary>Begins editing the current cell.</summary>
+    public bool BeginEdit() => BeginEdit(CurrentItem, CurrentColumn);
+
+    /// <summary>Begins editing the given cell; raises <c>CellEditStarting</c> (cancellable).</summary>
+    public bool BeginEdit(object? item, GridColumnBase? column)
+    {
+        if (IsEditing)
+        {
+            CommitEdit();
+        }
+
+        if (item is null || column is null || IsReadOnly || column.ReadOnly)
+        {
+            return false;
+        }
+
+        var args = new GridCellEditEventArgs(item, column, null, cancelEdit: false) { Source = this };
+        CellEditStarting?.Invoke(this, args);
+        if (args.Cancel)
+        {
+            return false;
+        }
+
+        var row = TryFindRow(item);
+        if (row?.CellsPanel is not { } panel)
+        {
+            return false;
+        }
+
+        panel.BeginCellEdit(column);
+        if (panel.EditingElement is null)
+        {
+            return false;
+        }
+
+        _editingItem = item;
+        _editingColumn = column;
+        row.IsEditing = true;
+        SetCurrentCell(item, column, alignIntoView: true);
+        return true;
+    }
+
+    /// <summary>Commits the current edit; raises <c>CellEditEnding</c>/<c>CellEditEnded</c>.</summary>
+    public bool CommitEdit() => EndEditCore(commit: true);
+
+    /// <summary>Cancels the current edit and restores the previous value.</summary>
+    public bool CancelEdit() => EndEditCore(commit: false);
+
+    private bool EndEditCore(bool commit)
+    {
+        if (!IsEditing || _editingItem is null || _editingColumn is null)
+        {
+            return false;
+        }
+
+        var item = _editingItem;
+        var column = _editingColumn;
+        var row = TryFindRow(item);
+        var editingElement = row?.CellsPanel?.EditingElement;
+
+        var endingArgs = new GridCellEditEventArgs(item, column, editingElement, cancelEdit: !commit) { Source = this };
+        CellEditEnding?.Invoke(this, endingArgs);
+
+        var committed = commit && !endingArgs.Cancel;
+        if (committed && editingElement is not null && column.GetEditingCommitProperty() is { } property)
+        {
+            committed = TryPushValue(editingElement, property);
+        }
+
+        if (!committed && commit && !endingArgs.Cancel)
+        {
+            // Validation error: stay in edit mode so the user can fix the value.
+            return false;
+        }
+
+        _editingItem = null;
+        _editingColumn = null;
+
+        if (row is not null)
+        {
+            row.CellsPanel?.EndCellEdit(committed);
+            row.IsEditing = false;
+        }
+
+        var endedArgs = new GridCellEditEventArgs(item, column, editingElement, cancelEdit: !committed) { Source = this };
+        CellEditEnded?.Invoke(this, endedArgs);
+        Focus();
+        return committed || !commit;
+    }
+
+    /// <summary>Pushes the edited value through the binding and reports whether it is valid.</summary>
+    private static bool TryPushValue(FrameworkElement element, DependencyProperty property)
+    {
+        if (BindingOperations.GetBindingExpression(element, property) is not { } expression)
+        {
+            return true;
+        }
+
+        expression.UpdateSource();
+        return !Validation.GetHasError(element);
+    }
+}
