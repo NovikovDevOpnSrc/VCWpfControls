@@ -348,9 +348,9 @@ public partial class GridControl
             }
         }
 
-        SelectionChanged?.Invoke(this, new GridSelectionChangedEventArgs(added, removed)
+        RaiseEvent(new GridSelectionChangedEventArgs(added, removed)
         {
-            Source = this,
+            RoutedEvent = SelectionChangedEvent,
         });
     }
 

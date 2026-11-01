@@ -1,8 +1,14 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/VCWpfControls.Benchmarks/VCWpfControls.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/src/">
+    <Project Path="src/VCWpfControls.Demo/VCWpfControls.Demo.csproj" />
     <Project Path="src/VCWpfControls/VCWpfControls.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/VCWpfControls.Control.Tests/VCWpfControls.Control.Tests.csproj" />
     <Project Path="tests/VCWpfControls.Core.Tests/VCWpfControls.Core.Tests.csproj" />
+    <Project Path="tests/VCWpfControls.UiTests/VCWpfControls.UiTests.csproj" />
   </Folder>
 </Solution>

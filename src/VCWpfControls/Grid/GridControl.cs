@@ -152,12 +152,13 @@ public partial class GridControl : ItemsControl
     private IReadOnlyList<GridColumnBase> _visibleColumns = Array.Empty<GridColumnBase>();
     private bool _syncingItems;
     private bool _autoColumnsGenerated;
+    private double _lastConstraintWidth;
 
     static GridControl()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(GridControl),
             new FrameworkPropertyMetadata(typeof(GridControl)));
-        FocusableProperty.OverrideMetadata(typeof(GridControl), new PropertyMetadata(true));
+        FocusableProperty.OverrideMetadata(typeof(GridControl), new FrameworkPropertyMetadata(true));
     }
 
     /// <summary>Creates the grid.</summary>
@@ -197,29 +198,91 @@ public partial class GridControl : ItemsControl
             (s, e) => e.CanExecute = ClipboardCopyMode != GridClipboardCopyMode.None));
     }
 
+    /// <summary>Identifies the <see cref="AutoGeneratingColumn"/> routed event.</summary>
+    public static readonly RoutedEvent AutoGeneratingColumnEvent = EventManager.RegisterRoutedEvent(
+        nameof(AutoGeneratingColumn), RoutingStrategy.Direct,
+        typeof(EventHandler<GridAutoGeneratingColumnEventArgs>), typeof(GridControl));
+
+    /// <summary>Identifies the <see cref="Sorting"/> routed event.</summary>
+    public static readonly RoutedEvent SortingEvent = EventManager.RegisterRoutedEvent(
+        nameof(Sorting), RoutingStrategy.Direct,
+        typeof(EventHandler<GridSortingEventArgs>), typeof(GridControl));
+
+    /// <summary>Identifies the <see cref="Sorted"/> routed event.</summary>
+    public static readonly RoutedEvent SortedEvent = EventManager.RegisterRoutedEvent(
+        nameof(Sorted), RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(GridControl));
+
+    /// <summary>Identifies the <see cref="SelectionChanged"/> routed event.</summary>
+    public static readonly RoutedEvent SelectionChangedEvent = EventManager.RegisterRoutedEvent(
+        nameof(SelectionChanged), RoutingStrategy.Direct,
+        typeof(EventHandler<GridSelectionChangedEventArgs>), typeof(GridControl));
+
+    /// <summary>Identifies the <see cref="CellEditStarting"/> routed event.</summary>
+    public static readonly RoutedEvent CellEditStartingEvent = EventManager.RegisterRoutedEvent(
+        nameof(CellEditStarting), RoutingStrategy.Direct,
+        typeof(EventHandler<GridCellEditEventArgs>), typeof(GridControl));
+
+    /// <summary>Identifies the <see cref="CellEditEnding"/> routed event.</summary>
+    public static readonly RoutedEvent CellEditEndingEvent = EventManager.RegisterRoutedEvent(
+        nameof(CellEditEnding), RoutingStrategy.Direct,
+        typeof(EventHandler<GridCellEditEventArgs>), typeof(GridControl));
+
+    /// <summary>Identifies the <see cref="CellEditEnded"/> routed event.</summary>
+    public static readonly RoutedEvent CellEditEndedEvent = EventManager.RegisterRoutedEvent(
+        nameof(CellEditEnded), RoutingStrategy.Direct,
+        typeof(EventHandler<GridCellEditEventArgs>), typeof(GridControl));
+
     /// <summary>Occurs before a column is auto-generated; allows replacing or cancelling it.</summary>
-    public event EventHandler<GridAutoGeneratingColumnEventArgs>? AutoGeneratingColumn;
+    public event EventHandler<GridAutoGeneratingColumnEventArgs> AutoGeneratingColumn
+    {
+        add => AddHandler(AutoGeneratingColumnEvent, value);
+        remove => RemoveHandler(AutoGeneratingColumnEvent, value);
+    }
 
     /// <summary>Occurs before sorting is applied; cancellable.</summary>
-    public event EventHandler<GridSortingEventArgs>? Sorting;
+    public event EventHandler<GridSortingEventArgs> Sorting
+    {
+        add => AddHandler(SortingEvent, value);
+        remove => RemoveHandler(SortingEvent, value);
+    }
 
     /// <summary>Occurs after sorting has been applied.</summary>
-    public event EventHandler? Sorted;
+    public event RoutedEventHandler Sorted
+    {
+        add => AddHandler(SortedEvent, value);
+        remove => RemoveHandler(SortedEvent, value);
+    }
 
     /// <summary>Occurs after the selection changed.</summary>
-    public event EventHandler<GridSelectionChangedEventArgs>? SelectionChanged;
+    public event EventHandler<GridSelectionChangedEventArgs> SelectionChanged
+    {
+        add => AddHandler(SelectionChangedEvent, value);
+        remove => RemoveHandler(SelectionChangedEvent, value);
+    }
 
     /// <summary>Occurs after the current cell moved.</summary>
     public event EventHandler? CurrentCellChanged;
 
     /// <summary>Occurs before a cell enters edit mode; cancellable.</summary>
-    public event EventHandler<GridCellEditEventArgs>? CellEditStarting;
+    public event EventHandler<GridCellEditEventArgs> CellEditStarting
+    {
+        add => AddHandler(CellEditStartingEvent, value);
+        remove => RemoveHandler(CellEditStartingEvent, value);
+    }
 
     /// <summary>Occurs before an edit is committed or cancelled; cancellable.</summary>
-    public event EventHandler<GridCellEditEventArgs>? CellEditEnding;
+    public event EventHandler<GridCellEditEventArgs> CellEditEnding
+    {
+        add => AddHandler(CellEditEndingEvent, value);
+        remove => RemoveHandler(CellEditEndingEvent, value);
+    }
 
     /// <summary>Occurs after an edit was committed or cancelled.</summary>
-    public event EventHandler<GridCellEditEventArgs>? CellEditEnded;
+    public event EventHandler<GridCellEditEventArgs> CellEditEnded
+    {
+        add => AddHandler(CellEditEndedEvent, value);
+        remove => RemoveHandler(CellEditEndedEvent, value);
+    }
 
     /// <summary>The data source. Any <see cref="IEnumerable"/>; changes are tracked when it implements <see cref="INotifyCollectionChanged"/>.</summary>
     public new IEnumerable? ItemsSource
@@ -394,7 +457,27 @@ public partial class GridControl : ItemsControl
     public GridColumnBase? CurrentColumn { get; internal set; }
 
     /// <summary>The available content width for columns.</summary>
-    internal double ViewportWidth => ScrollHost?.ViewportWidth is { } width && width > 0 ? width : ActualWidth;
+    internal double ViewportWidth
+    {
+        get
+        {
+            if (ScrollHost is { } scrollHost)
+            {
+                var width = scrollHost.ViewportWidth;
+                if (!double.IsNaN(width) && !double.IsInfinity(width) && width > 0)
+                {
+                    return width;
+                }
+            }
+
+            if (!double.IsNaN(ActualWidth) && ActualWidth > 0)
+            {
+                return ActualWidth;
+            }
+
+            return _lastConstraintWidth;
+        }
+    }
 
     /// <inheritdoc />
     public override void OnApplyTemplate()
@@ -479,6 +562,11 @@ public partial class GridControl : ItemsControl
     /// <inheritdoc />
     protected override Size MeasureOverride(Size constraint)
     {
+        if (!double.IsInfinity(constraint.Width))
+        {
+            _lastConstraintWidth = constraint.Width;
+        }
+
         var size = base.MeasureOverride(constraint);
         EnsureLayout();
         return size;
@@ -640,15 +728,9 @@ public partial class GridControl : ItemsControl
         _syncingItems = true;
         try
         {
-            var items = Items;
-            using (items.DeferRefresh())
-            {
-                items.Clear();
-                foreach (var row in DataEngine.View)
-                {
-                    items.Add(row);
-                }
-            }
+            // Swap the whole view into the base ItemsSource: a single Reset instead of
+            // per-item collection changes keeps large refreshes cheap.
+            base.ItemsSource = DataEngine.View;
         }
         finally
         {
@@ -686,9 +768,9 @@ public partial class GridControl : ItemsControl
         {
             var args = new GridAutoGeneratingColumnEventArgs(column)
             {
-                Source = this,
+                RoutedEvent = AutoGeneratingColumnEvent,
             };
-            AutoGeneratingColumn?.Invoke(this, args);
+            RaiseEvent(args);
             if (!args.Cancel)
             {
                 if (!ReferenceEquals(args.Column, column))

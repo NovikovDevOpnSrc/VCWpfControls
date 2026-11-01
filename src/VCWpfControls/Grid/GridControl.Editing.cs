@@ -35,8 +35,11 @@ public partial class GridControl
             return false;
         }
 
-        var args = new GridCellEditEventArgs(item, column, null, cancelEdit: false) { Source = this };
-        CellEditStarting?.Invoke(this, args);
+        var args = new GridCellEditEventArgs(item, column, null, cancelEdit: false)
+        {
+            RoutedEvent = CellEditStartingEvent,
+        };
+        RaiseEvent(args);
         if (args.Cancel)
         {
             return false;
@@ -79,8 +82,11 @@ public partial class GridControl
         var row = TryFindRow(item);
         var editingElement = row?.CellsPanel?.EditingElement;
 
-        var endingArgs = new GridCellEditEventArgs(item, column, editingElement, cancelEdit: !commit) { Source = this };
-        CellEditEnding?.Invoke(this, endingArgs);
+        var endingArgs = new GridCellEditEventArgs(item, column, editingElement, cancelEdit: !commit)
+        {
+            RoutedEvent = CellEditEndingEvent,
+        };
+        RaiseEvent(endingArgs);
 
         var committed = commit && !endingArgs.Cancel;
         if (committed && editingElement is not null && column.GetEditingCommitProperty() is { } property)
@@ -103,8 +109,11 @@ public partial class GridControl
             row.IsEditing = false;
         }
 
-        var endedArgs = new GridCellEditEventArgs(item, column, editingElement, cancelEdit: !committed) { Source = this };
-        CellEditEnded?.Invoke(this, endedArgs);
+        var endedArgs = new GridCellEditEventArgs(item, column, editingElement, cancelEdit: !committed)
+        {
+            RoutedEvent = CellEditEndedEvent,
+        };
+        RaiseEvent(endedArgs);
         Focus();
         return committed || !commit;
     }

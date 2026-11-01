@@ -210,6 +210,22 @@ public abstract class GridColumnBase : DependencyObject
     /// </summary>
     internal virtual System.Windows.DependencyProperty? GetEditingCommitProperty() => null;
 
+    /// <summary>
+    /// Re-binds the editing element to the data item with an explicit source so that the binding
+    /// activates immediately, before the element joins the visual tree (programmatic edit flows).
+    /// </summary>
+    internal virtual void RebindEditingElement(FrameworkElement element, object dataItem)
+    {
+    }
+
+    /// <summary>A two-way cell binding with the given explicit source.</summary>
+    protected Binding CreateEditingBinding(object dataItem)
+    {
+        var binding = CreateCellBinding(BindingMode.TwoWay);
+        binding.Source = dataItem;
+        return binding;
+    }
+
     /// <summary>Creates the (unbound) display element for a cell.</summary>
     public FrameworkElement GenerateElement()
         => CellTemplate is { } template

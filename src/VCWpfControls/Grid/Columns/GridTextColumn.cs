@@ -32,6 +32,14 @@ public class GridTextColumn : GridColumnBase
     }
 
     internal override System.Windows.DependencyProperty GetEditingCommitProperty() => TextBox.TextProperty;
+
+    internal override void RebindEditingElement(FrameworkElement element, object dataItem)
+    {
+        if (element is TextBox textBox)
+        {
+            textBox.SetBinding(TextBox.TextProperty, CreateEditingBinding(dataItem));
+        }
+    }
 }
 
 /// <summary>Column for numeric values; right-aligned text, numeric text box while editing.</summary>
@@ -65,6 +73,14 @@ public class GridNumericColumn : GridColumnBase
     }
 
     internal override System.Windows.DependencyProperty GetEditingCommitProperty() => TextBox.TextProperty;
+
+    internal override void RebindEditingElement(FrameworkElement element, object dataItem)
+    {
+        if (element is TextBox textBox)
+        {
+            textBox.SetBinding(TextBox.TextProperty, CreateEditingBinding(dataItem));
+        }
+    }
 }
 
 /// <summary>Column for boolean values displayed as a check box.</summary>
@@ -170,6 +186,23 @@ public class GridComboBoxColumn : GridColumnBase
     internal override System.Windows.DependencyProperty GetEditingCommitProperty()
         => string.IsNullOrEmpty(SelectedValuePath) ? ComboBox.SelectedItemProperty : ComboBox.SelectedValueProperty;
 
+    internal override void RebindEditingElement(FrameworkElement element, object dataItem)
+    {
+        if (element is ComboBox comboBox)
+        {
+            var binding = CreateEditingBinding(dataItem);
+            if (string.IsNullOrEmpty(SelectedValuePath))
+            {
+                comboBox.SetBinding(ComboBox.SelectedItemProperty, binding);
+            }
+            else
+            {
+                comboBox.SelectedValuePath = SelectedValuePath;
+                comboBox.SetBinding(ComboBox.SelectedValueProperty, binding);
+            }
+        }
+    }
+
     private sealed class ComboBoxDisplayConverter : System.Windows.Data.IValueConverter
     {
         private readonly GridComboBoxColumn _column;
@@ -243,6 +276,14 @@ public class GridDateColumn : GridColumnBase
     }
 
     internal override System.Windows.DependencyProperty GetEditingCommitProperty() => DatePicker.SelectedDateProperty;
+
+    internal override void RebindEditingElement(FrameworkElement element, object dataItem)
+    {
+        if (element is DatePicker datePicker)
+        {
+            datePicker.SetBinding(DatePicker.SelectedDateProperty, CreateEditingBinding(dataItem));
+        }
+    }
 }
 
 /// <summary>Column fully defined by <see cref="GridColumnBase.CellTemplate"/> and <c>CellEditingTemplate</c>.</summary>

@@ -20,6 +20,7 @@
     <Style TargetType="{x:Type grid:GridControl}">
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="GridLinesBrush" Value="{DynamicResource {x:Static grid:GridResources.GridLineKey}}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="#FF1F2937" />
         <Setter Property="Padding" Value="0" />
@@ -88,7 +89,7 @@
                     <Border
                         x:Name="RowBorder"
                         Background="{TemplateBinding Background}"
-                        BorderBrush="{Binding GridLinesBrush, RelativeSource={RelativeSource AncestorType={x:Type grid:GridControl}}, FallbackValue={DynamicResource {x:Static grid:GridResources.GridLineKey}}}"
+                        BorderBrush="{Binding GridLinesBrush, RelativeSource={RelativeSource AncestorType={x:Type grid:GridControl}}}"
                         BorderThickness="0,0,0,1">
                         <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
                     </Border>

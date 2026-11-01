@@ -1,0 +1,15 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.BasicSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
+    <grid:GridControl
+                      ItemsSource="{Binding Employees}"
+                      AutoGenerateColumns="True"
+                      CanUserSortColumns="True"
+                      CanUserResizeColumns="True"
+                      CanUserReorderColumns="True"
+                      FrozenColumnCount="1"
+                      SelectionMode="Extended"
+                      RowHeight="28"
+                      AlternatingRowBackground="#FFFAFBFC" />
+</UserControl>

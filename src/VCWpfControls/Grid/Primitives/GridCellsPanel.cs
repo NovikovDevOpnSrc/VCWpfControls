@@ -149,6 +149,7 @@ public sealed class GridCellsPanel : Panel
         }
 
         column.PrepareEditingElement(editingElement, _row.DataItem);
+        column.RebindEditingElement(editingElement, _row.DataItem);
 
         _editingColumn = column;
         _editingElement = editingElement;

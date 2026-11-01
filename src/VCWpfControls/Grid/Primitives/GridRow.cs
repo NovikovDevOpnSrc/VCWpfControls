@@ -29,7 +29,7 @@ public class GridRow : Control
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(GridRow),
             new FrameworkPropertyMetadata(typeof(GridRow)));
-        FocusableProperty.OverrideMetadata(typeof(GridRow), new PropertyMetadata(false));
+        FocusableProperty.OverrideMetadata(typeof(GridRow), new FrameworkPropertyMetadata(false));
     }
 
     /// <summary>Whether the row's data item is selected.</summary>

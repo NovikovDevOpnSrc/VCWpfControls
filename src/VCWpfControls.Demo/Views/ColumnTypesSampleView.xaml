@@ -1,0 +1,31 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.ColumnTypesSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
+             xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls">
+    <grid:GridControl
+                      ItemsSource="{Binding Employees}"
+                      FrozenColumnCount="1"
+                      SelectionMode="Extended"
+                      RowHeight="30">
+        <grid:GridControl.Columns>
+            <columns:GridNumericColumn FieldName="Id" Header="ID" Width="70" ReadOnly="True" HorizontalContentAlignment="Center" />
+            <columns:GridTextColumn FieldName="Name" Header="Name" Width="2*" />
+            <columns:GridTextColumn FieldName="Email" Header="Email" Width="*" />
+            <columns:GridComboBoxColumn FieldName="Department" Header="Department"
+                                        Width="130"
+                                        ItemsSource="{Binding DataContext.Departments, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <columns:GridNumericColumn FieldName="Salary" Header="Salary" Width="120" StringFormat="C" />
+            <columns:GridDateColumn FieldName="HireDate" Header="Hired" Width="120" />
+            <columns:GridCheckBoxColumn FieldName="IsActive" Header="Active" Width="70" />
+            <columns:GridTemplateColumn FieldName="Salary" Header="Level" Width="90">
+                <columns:GridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <ProgressBar Value="{Binding Salary, Converter={StaticResource SalaryToProgress}, Mode=OneWay}"
+                                     Maximum="50000" Height="8" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </columns:GridTemplateColumn.CellTemplate>
+            </columns:GridTemplateColumn>
+        </grid:GridControl.Columns>
+    </grid:GridControl>
+</UserControl>

@@ -1,0 +1,9 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.EditingSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
+    <grid:GridControl
+                      ItemsSource="{Binding Employees}"
+                      IsReadOnly="False"
+                      RowHeight="30" />
+</UserControl>

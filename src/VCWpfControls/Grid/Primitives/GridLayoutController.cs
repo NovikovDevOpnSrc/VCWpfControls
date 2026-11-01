@@ -67,6 +67,11 @@ internal sealed class GridLayoutController
     /// <summary>Recomputes all slots. Returns <see langword="true"/> when any width changed.</summary>
     public bool Compute(IReadOnlyList<GridColumnBase> visibleColumns)
     {
+        if (double.IsNaN(ViewportWidth) || double.IsInfinity(ViewportWidth) || ViewportWidth < 0)
+        {
+            ViewportWidth = 0;
+        }
+
         var changed = false;
         _slots.Clear();
         _slotsByColumn.Clear();

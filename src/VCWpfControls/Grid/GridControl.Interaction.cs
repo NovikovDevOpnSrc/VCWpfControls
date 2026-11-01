@@ -87,8 +87,8 @@ public partial class GridControl
             _ => GridSortDirection.None,
         };
 
-        var args = new GridSortingEventArgs(column, next) { Source = this };
-        Sorting?.Invoke(this, args);
+        var args = new GridSortingEventArgs(column, next) { RoutedEvent = SortingEvent };
+        RaiseEvent(args);
         if (args.Cancel)
         {
             return;
@@ -104,7 +104,7 @@ public partial class GridControl
             SortBy(column, next);
         }
 
-        Sorted?.Invoke(this, EventArgs.Empty);
+        RaiseEvent(new RoutedEventArgs(SortedEvent));
     }
 
     internal void NotifyColumnDragStarted(GridColumnBase column) => _dragColumn = column;
