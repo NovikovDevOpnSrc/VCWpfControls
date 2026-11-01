@@ -20,6 +20,7 @@ public partial class MainWindow : Window
             new SelectionSampleViewModel(),
             new EditingSampleViewModel(),
             new VirtualizationSampleViewModel(),
+            new AnalyticsSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
         NavList.SelectionChanged += (_, _) => ((MainViewModel)DataContext).SelectedSample =

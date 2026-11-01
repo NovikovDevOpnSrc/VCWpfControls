@@ -1,0 +1,182 @@
+---
+title: Sorting, filtering & grouping
+description: How to sort (click, Shift+click, SortBy/AddSortLevel), filter (FilterDescriptions with 17 operators) and group (GroupDescriptions, GridGroup, SetGroupExpanded) GridControl from code.
+---
+
+# Sorting, filtering & grouping
+
+All three features are implemented by the UI-free data engine (`GridDataManager`), driven by
+three observable collections on the grid: `SortDescriptions`, `FilterDescriptions` and
+`GroupDescriptions`. Changing a collection rebuilds the view immediately (pipeline:
+filter → sort → group → flatten).
+
+> **Status note.** The engine APIs described here are fully working. The built-in
+> **filter row / filter menu** and the **group panel with aggregate summaries** are
+> scheduled for stage 1.2 (in development) — until then, build your own UI on top of these
+> collections.
+
+## Sorting
+
+### By mouse and keyboard
+
+Clicking a header cycles the sort direction: none → ascending → descending → none.
+**Shift+click** adds the column as a further sort level instead of replacing the current
+ones (multi-column sort). The direction is shown by a sort indicator in the header.
+
+Both interactions can be observed or cancelled through the `Sorting` event:
+
+```csharp
+grid.Sorting += (s, e) =>
+{
+    if (e.Column.FieldName == "Total")
+    {
+        e.Cancel = true; // protect the server-side order for this column
+    }
+};
+
+grid.Sorted += (s, e) => { /* order applied, e.g. update status bar */ };
+```
+
+### From code
+
+```csharp
+// Replace all sort levels:
+grid.SortBy(nameof(Employee.Name), GridSortDirection.Descending);
+
+// Or via a column instance (uses SortMemberPath ?? FieldName):
+grid.SortBy(nameColumn, GridSortDirection.Ascending);
+
+// Add/update one level, keeping the others (multi-column sort):
+grid.AddSortLevel(nameof(Employee.Department), GridSortDirection.Ascending);
+grid.AddSortLevel(nameof(Employee.Salary), GridSortDirection.Descending);
+
+// Remove all levels:
+grid.ClearSorting();
+```
+
+`SortDescriptions` is an `ObservableCollection<GridSortDescription>`, so you can also edit
+it directly. Each `GridSortDescription` has:
+
+- `FieldName` — property path (`"Address.City"` is valid);
+- `Direction` — `Ascending` / `Descending` / `None`;
+- `Comparer` — optional custom `IComparer` for cell values (replaces the culture-aware
+  default comparison; the direction is still applied by the engine);
+- `Culture` — culture for string comparisons (`CurrentCulture` by default).
+
+```csharp
+grid.SortDescriptions.Add(new GridSortDescription("Salary", GridSortDirection.Descending)
+{
+    Comparer = Comparer<object>.Create((a, b) => ((decimal)a!).CompareTo((decimal)b!)),
+});
+```
+
+A column can sort by another member with `SortMemberPath`; per-column `CanUserSort = false`
+disables header-click sorting for that column only.
+
+## Filtering
+
+`FilterDescriptions` is a collection of `GridFilterDescription`s; multiple filters combine
+with a **logical AND**.
+
+```csharp
+using VCWpfControls.Grid.Data;
+
+// Salary between 50,000 and 90,000:
+grid.FilterDescriptions.Add(new GridFilterDescription(
+    nameof(Employee.Salary), GridFilterOperator.Between, 50000m, 90000m));
+
+// Name contains "al" (culture-aware, case-insensitive by default):
+grid.FilterDescriptions.Add(new GridFilterDescription(
+    nameof(Employee.Name), GridFilterOperator.Contains, "al"));
+
+// Remove one / all filters:
+grid.FilterDescriptions.RemoveAt(0);
+grid.FilterDescriptions.Clear();
+```
+
+### Operators
+
+| Operator | Meaning | Operands used |
+|---|---|---|
+| `None` | Filter disabled | — |
+| `Equals`, `NotEquals` | (Not) equal to `Value` | `Value` |
+| `Contains`, `NotContains`, `StartsWith`, `EndsWith` | Text matching (case-insensitive by default) | `Value` as text |
+| `GreaterThan`, `GreaterThanOrEqual`, `LessThan`, `LessThanOrEqual` | Comparisons | `Value` |
+| `Between`, `NotBetween` | Inside / outside an inclusive range | `Value` and `Value2` |
+| `In`, `NotIn` | Value is (not) contained in a list (`Value` is an `IEnumerable`) | `Value` |
+| `IsNull`, `IsNotNull` | Null (or `DBNull`) check | — |
+| `Custom` | Your predicate over the whole data item | `CustomPredicate` |
+
+Additional knobs on `GridFilterDescription`:
+
+- `TextComparison` — `StringComparison` for text operators (default
+  `CurrentCultureIgnoreCase`);
+- `CustomPredicate` — a `Predicate<object>` used by the `Custom` operator:
+
+```csharp
+grid.FilterDescriptions.Add(new GridFilterDescription("...")
+{
+    Operator = GridFilterOperator.Custom,
+    CustomPredicate = item => item is Employee e && e.IsActive && e.Salary > 50000m,
+});
+```
+
+Null cells match only the explicit `IsNull` operator (and `In` lists that contain `null`),
+so combined filters behave predictably.
+
+## Grouping
+
+`GroupDescriptions` is a collection of `GridGroupDescription`s, outermost level first:
+
+```csharp
+grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Employee.Department)));
+grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Employee.Office)));
+```
+
+When grouping is active, the grid's view interleaves **group header rows** with data rows.
+The flattened view is available on the engine: `grid.DataEngine.View` is a
+`IReadOnlyList<GridRowInfo>` of `GridDataRow` (`Kind == GridRowKind.Data`, exposes `Item`)
+and `GridGroupRow` (`Kind == GridRowKind.Group`, exposes `Group`).
+
+Each `GridGroup` provides:
+
+- `Key` — the group key (the cell value, possibly transformed);
+- `Level` and `Parent` — position in the group tree;
+- `ChildGroups` — sub-groups of the next level;
+- `Items` — data items directly in this group (deepest level only);
+- `TotalItems` — total number of data rows under the group;
+- `IsExpanded` — expansion state, **persisted across data refreshes**.
+
+### Expand and collapse
+
+Collapse or expand a group programmatically through the engine — the state survives
+subsequent `Refresh()` calls:
+
+```csharp
+foreach (var row in grid.DataEngine.View.OfType<GridGroupRow>())
+{
+    if (row.Group.Level == 0 && row.Group.TotalItems < 5)
+    {
+        grid.DataEngine.SetGroupExpanded(row.Group, expanded: false);
+    }
+}
+```
+
+### Custom keys
+
+`KeyConverter` transforms the cell value into the group key (e.g. bucketing dates by
+month); `KeysComparer` controls the order of group keys:
+
+```csharp
+grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Order.CreatedAt))
+{
+    KeyConverter = value => ((DateTime)value!).ToString("yyyy-MM"),
+});
+```
+
+Group rows are skipped by keyboard navigation, and `ScrollIntoView`, `SelectRange` and
+friends operate on data items, not group rows.
+
+> **Status note.** Aggregate summaries (Sum/Min/Max/Avg/Count per group and in the footer)
+> are planned for stage 1.2; until then compute totals in your view model from
+> `GridGroup.Items` / `TotalItems`.

@@ -1,0 +1,176 @@
+---
+title: Columns
+description: GridControl column types (Text, Numeric, CheckBox, ComboBox, Date, Template), auto-generation with data annotations, widths, freezing and cell templates.
+---
+
+# Columns
+
+All column types live in `VCWpfControls.Grid.Columns` and derive from `GridColumnBase`.
+
+```xml
+xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
+xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls"
+```
+
+## Column types
+
+| Type | Displays | Edits with | Notes |
+|---|---|---|---|
+| `GridTextColumn` | `TextBlock` | `TextBox` | The general-purpose column |
+| `GridNumericColumn` | right-aligned text | right-aligned `TextBox` | For numeric fields |
+| `GridCheckBoxColumn` | interactive `CheckBox` | — | Commits immediately on click; `Space` toggles the current cell |
+| `GridComboBoxColumn` | display text of the selected item | `ComboBox` | `ItemsSource`, `DisplayMemberPath`, `SelectedValuePath` |
+| `GridDateColumn` | date text (`"d"` format by default) | `DatePicker` | `StringFormat` overrides the display format |
+| `GridTemplateColumn` | your `CellTemplate` | your `CellEditingTemplate` | Fully custom cells; `CellTemplate` is required |
+
+## Common properties (GridColumnBase)
+
+| Property | Default | Purpose |
+|---|---|---|
+| `Header` | `""` | Header content (text or any object) |
+| `FieldName` | `""` | Binding path inside the row item; dotted paths like `Address.City` work |
+| `Width` | `1*` | `"120"`, `"Auto"`, `"*"`, `"2*"` — see below |
+| `MinWidth` / `MaxWidth` | `0` / `∞` | Pixel limits applied to every sizing mode |
+| `Visible` | `true` | Hide a column without removing it |
+| `ReadOnly` | `false` | Cells of this column cannot enter edit mode |
+| `CanUserSort` | `true` | Per-column switch for header-click sorting |
+| `SortMemberPath` | `null` | Sort by a different path than `FieldName` |
+| `StringFormat` | `null` | Display format, e.g. `"C"` or `"{}{0:N2}"` |
+| `HorizontalContentAlignment` | `Left` | Alignment of cell content |
+| `ElementStyle` | `null` | Style applied to generated cell elements |
+| `HeaderStyle` | `null` | Style applied to the column header |
+| `CellTemplate` / `CellEditingTemplate` | `null` | Override display/edit elements with your own `DataTemplate` |
+
+The `GetCellValue(item)` method reads the cell value of an item using the column's field path.
+
+## Widths
+
+`Width` accepts three unit kinds (XAML strings are converted automatically):
+
+- **Pixels** — `Width="120"`: fixed device-independent pixels.
+- **Star** — `Width="*"` or `Width="2*"`: proportional share of the remaining viewport
+  (the default is `1*`).
+- **Auto** — `Width="Auto"`: fits the widest content.
+
+`MinWidth` and `MaxWidth` apply in all modes — including to user resizing.
+
+## Auto-generation and attributes
+
+With `AutoGenerateColumns="True"` (the default) and an **empty** `Columns` collection, the
+grid reflects over the item type and creates one column per public readable property.
+You can steer that with attributes:
+
+```csharp
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+public class Order
+{
+    [Display(Name = "Order number", Order = 0)]   // header text and position
+    public int Number { get; set; }
+
+    [Display(Name = "Total", Order = 2), DisplayFormat(DataFormatString = "C")]
+    public decimal Total { get; set; }
+
+    [ReadOnly(true)]                              // column becomes read-only
+    public DateTime CreatedAt { get; set; }
+
+    [Browsable(false)]                            // no column at all
+    public byte[] Blob { get; set; } = Array.Empty<byte>();
+}
+```
+
+Rules the generator follows:
+
+- `[Display]` — `ShortName`/`Name` becomes the header, `Order` sorts the columns
+  (`[DisplayName]` is honored as a fallback for the header text).
+- `[ReadOnly(true)]` — the generated column gets `ReadOnly = true`.
+- `[Browsable(false)]` — the property is skipped.
+- Column type mapping: `bool` → CheckBox, `DateTime`/`DateTimeOffset`/`DateOnly` → Date,
+  enums → ComboBox (its `ItemsSource` is filled with `Enum.GetValues`), numeric types →
+  Numeric, everything else → Text.
+
+### AutoGeneratingColumn event
+
+Raised for every generated column; replace the column instance or cancel it:
+
+```csharp
+grid.AutoGeneratingColumn += (s, e) =>
+{
+    if (e.Column.FieldName == "Blob")
+    {
+        e.Cancel = true;                      // skip this column
+        return;
+    }
+
+    if (e.Column is GridNumericColumn { FieldName: "Salary" })
+    {
+        e.Column.StringFormat = "C";          // tweak the generated column
+    }
+};
+```
+
+## Manual columns
+
+Set columns explicitly in XAML — auto-generation stays off while `Columns` is not empty:
+
+```xml
+<grid:GridControl ItemsSource="{Binding Employees}"
+                  FrozenColumnCount="1"
+                  CanUserResizeColumns="True"
+                  CanUserReorderColumns="True">
+    <grid:GridControl.Columns>
+        <columns:GridTextColumn FieldName="Name" Header="Name" Width="2*" MinWidth="120" />
+        <columns:GridNumericColumn FieldName="Salary" Header="Salary" Width="110"
+                                   StringFormat="C" HorizontalContentAlignment="Right" />
+        <columns:GridDateColumn FieldName="HireDate" Header="Hired" Width="120" />
+        <columns:GridCheckBoxColumn FieldName="IsActive" Header="Active" Width="70" />
+    </grid:GridControl.Columns>
+</grid:GridControl>
+```
+
+## Freezing
+
+`FrozenColumnCount` (a property of the grid, not of a column) keeps the first N columns
+pinned while the user scrolls horizontally. Values below 0 are rejected; hidden columns do
+not count. Combined with `CanUserReorderColumns`, users can drag a column to the front and
+pin it by adjusting the count.
+
+## Templates
+
+Use `GridTemplateColumn` (or `CellTemplate`/`CellEditingTemplate` on any column) when the
+built-in elements are not enough. The template's `DataContext` is the row's data item:
+
+```xml
+<columns:GridTemplateColumn FieldName="Progress" Header="Progress" Width="160">
+    <columns:GridTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <ProgressBar Value="{Binding Progress}" Maximum="100" Height="14" />
+        </DataTemplate>
+    </columns:GridTemplateColumn.CellTemplate>
+    <columns:GridTemplateColumn.CellEditingTemplate>
+        <DataTemplate>
+            <TextBox Text="{Binding Progress, UpdateSourceTrigger=PropertyChanged}" />
+        </DataTemplate>
+    </columns:GridTemplateColumn.CellEditingTemplate>
+</columns:GridTemplateColumn>
+```
+
+Note: with `CellEditingTemplate` the grid does not push values itself — your template's own
+bindings update the data item (see [Editing](editing.md)).
+
+## ComboBox columns
+
+`GridComboBoxColumn` chooses its binding mode from `SelectedValuePath`:
+
+- **Without `SelectedValuePath`** — the cell value is the whole list item; the combo binds
+  `SelectedItem`.
+- **With `SelectedValuePath`** — the cell value is a key; the combo binds `SelectedValue`
+  and the display cell resolves the key to the display text via `DisplayMemberPath`.
+
+```xml
+<columns:GridComboBoxColumn FieldName="DepartmentId" Header="Department"
+                            ItemsSource="{Binding Departments}"
+                            DisplayMemberPath="Name"
+                            SelectedValuePath="Id" Width="180" />
+```

@@ -49,22 +49,32 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <primitives:GridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter" Grid.Row="0" />
 
+                            <Border Grid.Row="1" Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}">
+                                <primitives:GridFilterRowPresenter x:Name="PART_FilterRowPresenter" Margin="8,3,8,3" Visibility="Collapsed" />
+                            </Border>
+
                             <ScrollViewer
                                 x:Name="PART_ScrollViewer"
-                                Grid.Row="1"
+                                Grid.Row="2"
                                 Focusable="False">
                                 <ItemsPresenter />
                             </ScrollViewer>
 
+                            <Border Grid.Row="3" Background="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}" BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" BorderThickness="0,1,0,0">
+                                <primitives:GridSummaryRowPresenter x:Name="PART_SummaryRowPresenter" Margin="8,3,8,3" Visibility="Collapsed" />
+                            </Border>
+
                             <ScrollBar
                                 x:Name="PART_HorizontalScrollBar"
-                                Grid.Row="2"
+                                Grid.Row="4"
                                 Orientation="Horizontal"
                                 Visibility="Collapsed" />
                         </Grid>
@@ -72,6 +82,12 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="ShowColumnHeaders" Value="False">
                             <Setter TargetName="PART_ColumnHeadersPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="ShowFilterRow" Value="True">
+                            <Setter TargetName="PART_FilterRowPresenter" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger SourceName="PART_SummaryRowPresenter" Property="HasContent" Value="True">
+                            <Setter TargetName="PART_SummaryRowPresenter" Property="Visibility" Value="Visible" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -91,9 +107,44 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{Binding GridLinesBrush, RelativeSource={RelativeSource AncestorType={x:Type grid:GridControl}}}"
                         BorderThickness="0,0,0,1">
-                        <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                        <Grid>
+                            <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                            <Border x:Name="PART_GroupHost" Visibility="Collapsed" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton x:Name="PART_GroupToggle" Width="16" Height="16" Focusable="False">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent">
+                                                    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                        <Path x:Name="ArrowRight"
+                                                              Data="M 0 0 L 5 4 L 0 8 Z"
+                                                              Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}" />
+                                                        <Path x:Name="ArrowDown"
+                                                              Data="M 0 0 L 8 0 L 4 5 Z"
+                                                              Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}"
+                                                              Visibility="Collapsed" />
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter TargetName="ArrowRight" Property="Visibility" Value="Collapsed" />
+                                                        <Setter TargetName="ArrowDown" Property="Visibility" Value="Visible" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <TextBlock x:Name="PART_GroupText" Margin="6,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsGroupRow" Value="True">
+                            <Setter TargetName="PART_GroupHost" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_Cells" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
                         </Trigger>

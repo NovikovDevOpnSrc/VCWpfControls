@@ -1,0 +1,75 @@
+using System.Globalization;
+using System.Resources;
+
+namespace VCWpfControls.Localization;
+
+/// <summary>
+/// Access to the grid's built-in localized strings (English, Russian and Chinese ship with the
+/// package; add more by dropping additional <c>Strings.&lt;culture&gt;.resx</c> resources into
+/// your application and registering the culture).
+/// </summary>
+public static class GridStrings
+{
+    private static readonly ResourceManager Manager = new("VCWpfControls.Localization.Strings", typeof(GridStrings).Assembly);
+
+    /// <summary>Formats the group header row: group key and item count.</summary>
+    public static string GroupRowItemCount(object? key, int count)
+        => string.Format(CultureInfo.CurrentCulture, Get("GroupRowItemCount"), key ?? string.Empty, count);
+
+    /// <summary>Watermark-free hint shown in empty filter cells.</summary>
+    public static string FilterRowHint => Get("FilterRowHint");
+
+    /// <summary>Context menu: sort ascending.</summary>
+    public static string SortAscending => Get("SortAscending");
+
+    /// <summary>Context menu: sort descending.</summary>
+    public static string SortDescending => Get("SortDescending");
+
+    /// <summary>Context menu: clear sorting.</summary>
+    public static string ClearSorting => Get("ClearSorting");
+
+    /// <summary>Context menu: hide the column.</summary>
+    public static string HideColumn => Get("HideColumn");
+
+    /// <summary>Context menu: columns section header.</summary>
+    public static string ColumnsHeader => Get("ColumnsHeader");
+
+    /// <summary>Context menu: export completed message.</summary>
+    public static string ExportCompleted => Get("ExportCompleted");
+
+    /// <summary>Formats a summary cell for the given function, field and value.</summary>
+    public static string Summary(GridSummaryFunction function, string fieldName, object? value)
+        => string.Format(
+            CultureInfo.CurrentCulture,
+            Get(function switch
+            {
+                GridSummaryFunction.Sum => "SummarySum",
+                GridSummaryFunction.Min => "SummaryMin",
+                GridSummaryFunction.Max => "SummaryMax",
+                GridSummaryFunction.Avg => "SummaryAvg",
+                _ => "SummaryCount",
+            }),
+            fieldName,
+            value);
+
+    private static string Get(string key) => Manager.GetString(key, CultureInfo.CurrentUICulture) ?? key;
+}
+
+/// <summary>Aggregate functions available for grid summaries.</summary>
+public enum GridSummaryFunction
+{
+    /// <summary>Sum of numeric values.</summary>
+    Sum = 0,
+
+    /// <summary>Minimum value.</summary>
+    Min = 1,
+
+    /// <summary>Maximum value.</summary>
+    Max = 2,
+
+    /// <summary>Average of numeric values.</summary>
+    Avg = 3,
+
+    /// <summary>Number of rows.</summary>
+    Count = 4,
+}

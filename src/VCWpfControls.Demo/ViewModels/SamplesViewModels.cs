@@ -73,6 +73,19 @@ public partial class SelectionSampleViewModel : SampleViewModelBase
     private int _selectedCount;
 }
 
+/// <summary>Grouping, filter row and footer summaries.</summary>
+public partial class AnalyticsSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Grouping & filters";
+
+    /// <inheritdoc />
+    public override string Description => "Group rows by column, use the built-in filter row and footer summaries.";
+
+    /// <summary>Sample rows.</summary>
+    public ObservableCollection<Employee> Employees { get; } = new(SampleData.CreateEmployees());
+}
+
 /// <summary>Virtualization with a large data set.</summary>
 public partial class VirtualizationSampleViewModel : SampleViewModelBase
 {

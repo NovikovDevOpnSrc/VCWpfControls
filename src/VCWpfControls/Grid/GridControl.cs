@@ -50,6 +50,12 @@ public partial class GridControl : ItemsControl
     /// <summary>Template part: the column headers presenter.</summary>
     protected const string PartColumnHeadersPresenter = "PART_ColumnHeadersPresenter";
 
+    /// <summary>Template part: the optional filter row presenter.</summary>
+    protected const string PartFilterRowPresenter = "PART_FilterRowPresenter";
+
+    /// <summary>Template part: the summary footer presenter.</summary>
+    protected const string PartSummaryRowPresenter = "PART_SummaryRowPresenter";
+
     /// <summary>Identifies the <see cref="ItemsSource"/> dependency property.</summary>
     public new static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         nameof(ItemsSource), typeof(IEnumerable), typeof(GridControl),
@@ -106,6 +112,11 @@ public partial class GridControl : ItemsControl
     public static readonly DependencyProperty ShowColumnHeadersProperty = DependencyProperty.Register(
         nameof(ShowColumnHeaders), typeof(bool), typeof(GridControl),
         new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnLayoutPropertyChanged));
+
+    /// <summary>Identifies the <see cref="ShowFilterRow"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowFilterRowProperty = DependencyProperty.Register(
+        nameof(ShowFilterRow), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse, OnLayoutPropertyChanged));
 
     /// <summary>Identifies the <see cref="SelectionMode"/> dependency property.</summary>
     public static readonly DependencyProperty SelectionModeProperty = DependencyProperty.Register(
@@ -175,6 +186,9 @@ public partial class GridControl : ItemsControl
 
         GroupDescriptions = new ObservableCollection<GridGroupDescription>();
         GroupDescriptions.CollectionChanged += OnGroupDescriptionsChanged;
+
+        SummaryItems = new ObservableCollection<GridSummaryItem>();
+        SummaryItems.CollectionChanged += OnSummaryItemsChanged;
 
         DataEngine = new GridDataManager();
         DataEngine.ViewReset += OnEngineViewReset;
@@ -371,6 +385,13 @@ public partial class GridControl : ItemsControl
         set => SetValue(ShowColumnHeadersProperty, value);
     }
 
+    /// <summary>Whether the filter row under the headers is visible.</summary>
+    public bool ShowFilterRow
+    {
+        get => (bool)GetValue(ShowFilterRowProperty);
+        set => SetValue(ShowFilterRowProperty, value);
+    }
+
     /// <summary>Single or extended (multi) selection.</summary>
     public GridSelectionMode SelectionMode
     {
@@ -398,6 +419,9 @@ public partial class GridControl : ItemsControl
         get => (bool)GetValue(IsReadOnlyProperty);
         set => SetValue(IsReadOnlyProperty, value);
     }
+
+    /// <summary>Aggregate definitions shown in the footer row.</summary>
+    public ObservableCollection<GridSummaryItem> SummaryItems { get; }
 
     /// <summary>Whether a new-row entry is offered (requires creatable item types).</summary>
     public bool CanUserAddRows
@@ -450,6 +474,12 @@ public partial class GridControl : ItemsControl
     /// <summary>The headers presenter (template part).</summary>
     internal GridColumnHeadersPresenter? HeadersPresenter { get; private set; }
 
+    /// <summary>The filter row presenter (template part).</summary>
+    internal GridFilterRowPresenter? FilterRowPresenter { get; private set; }
+
+    /// <summary>The summary footer presenter (template part).</summary>
+    internal GridSummaryRowPresenter? SummaryRowPresenter { get; private set; }
+
     /// <summary>Brush used for the current cell border (theme).</summary>
     internal Brush? CurrentCellBorderBrush => TryFindResource(GridResources.CurrentCellBorderBrushKey) as Brush;
 
@@ -497,6 +527,8 @@ public partial class GridControl : ItemsControl
         ScrollHost = GetTemplateChild(PartScrollViewer) as ScrollViewer;
         HorizontalScrollBar = GetTemplateChild(PartHorizontalScrollBar) as ScrollBar;
         HeadersPresenter = GetTemplateChild(PartColumnHeadersPresenter) as GridColumnHeadersPresenter;
+        FilterRowPresenter = GetTemplateChild(PartFilterRowPresenter) as GridFilterRowPresenter;
+        SummaryRowPresenter = GetTemplateChild(PartSummaryRowPresenter) as GridSummaryRowPresenter;
 
         if (ScrollHost is not null)
         {
@@ -512,6 +544,18 @@ public partial class GridControl : ItemsControl
         {
             HeadersPresenter.Owner = this;
             HeadersPresenter.EnsureHeaders();
+        }
+
+        FilterRowPresenter?.EnsureEditors();
+        if (FilterRowPresenter is not null)
+        {
+            FilterRowPresenter.Owner = this;
+        }
+
+        SummaryRowPresenter?.EnsureCells();
+        if (SummaryRowPresenter is not null)
+        {
+            SummaryRowPresenter.Owner = this;
         }
 
         RefreshVisibleColumns(rebuildCells: true);
@@ -583,6 +627,8 @@ public partial class GridControl : ItemsControl
 
         HeadersPresenter?.PruneHiddenHeaders();
         HeadersPresenter?.EnsureHeaders();
+        FilterRowPresenter?.EnsureEditors();
+        SummaryRowPresenter?.EnsureCells();
 
         if (rebuildCells)
         {
@@ -752,6 +798,7 @@ public partial class GridControl : ItemsControl
         PruneSelectionToSource();
         RestoreCurrentItem();
         InvalidateVisualChildren();
+        SummaryRowPresenter?.RefreshValues();
     }
 
     private void InvalidateVisualChildren()
@@ -963,4 +1010,62 @@ public partial class GridControl : ItemsControl
     }
 
     private static bool ValidateFrozenColumnCount(object value) => value is int and >= 0;
+
+    private void OnSummaryItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        => SummaryRowPresenter?.RefreshValues();
+
+    /// <summary>Expands or collapses a group; the flattened view is rebuilt.</summary>
+    public void SetGroupExpanded(Data.GridGroup group, bool expanded)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+        DataEngine.SetGroupExpanded(group, expanded);
+    }
+
+    /// <summary>
+    /// Applies a text filter for a column from the filter row: contains for text-like columns,
+    /// equals (with conversion) otherwise. Empty text removes the filter.
+    /// </summary>
+    internal void ApplyFilterText(GridColumnBase column, string text)
+    {
+        var field = column.FieldName;
+        var existing = FilterDescriptions.FirstOrDefault(f => f.FieldName == field);
+        if (existing is not null)
+        {
+            FilterDescriptions.Remove(existing);
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        if (column is GridTextColumn or GridTemplateColumn)
+        {
+            FilterDescriptions.Add(new GridFilterDescription(field, GridFilterOperator.Contains, text));
+            return;
+        }
+
+        // Typed comparison: try converting to the column's value type.
+        var itemType = DataEngine.ResolvedItemType;
+        var targetType = itemType is null
+            ? typeof(object)
+            : PropertyAccessor.GetOrCreate(itemType, field).ValueType;
+        var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        object? value = null;
+        try
+        {
+            value = Convert.ChangeType(text, underlying, System.Globalization.CultureInfo.CurrentCulture);
+        }
+        catch (FormatException)
+        {
+            // Fall back to text contains.
+        }
+        catch (InvalidCastException)
+        {
+        }
+
+        FilterDescriptions.Add(value is null
+            ? new GridFilterDescription(field, GridFilterOperator.Contains, text)
+            : new GridFilterDescription(field, GridFilterOperator.Equals, value));
+    }
 }

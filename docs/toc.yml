@@ -1,0 +1,6 @@
+- name: English
+  href: en/
+- name: Русский
+  href: ru/
+- name: 中文
+  href: zh/

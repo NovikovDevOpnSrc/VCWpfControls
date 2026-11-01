@@ -24,6 +24,6 @@
 
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <!-- Perf-style suggestions that conflict with IReadOnlyList/WPF idioms are informational here. -->
-    <NoWarn>$(NoWarn);CA1826;CA1859;CA1861</NoWarn>
+    <NoWarn>$(NoWarn);CA1826;CA1859;CA1861;CA1863</NoWarn> <!-- CA1863: CompositeFormat is net8-only, library targets net6 too -->
   </PropertyGroup>
 </Project>

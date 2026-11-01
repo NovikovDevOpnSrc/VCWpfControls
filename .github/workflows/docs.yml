@@ -1,0 +1,56 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one Pages deployment at a time.
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  docfx:
+    name: Build and publish docs
+    runs-on: windows-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install docfx
+        run: dotnet tool update -g docfx
+
+      # docs/docfx.json does not exist yet. The step is allowed to fail until
+      # the docs stabilize; remove continue-on-error once docfx.json is in place.
+      - name: Build docs with docfx
+        continue-on-error: true
+        run: docfx docs/docfx.json --output docs/_site
+
+      # Upload and deploy only when docfx.json actually exists,
+      # so the workflow stays green while docs are being bootstrapped.
+      - name: Upload GitHub Pages artifact
+        if: hashFiles('docs/docfx.json') != ''
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        if: hashFiles('docs/docfx.json') != ''
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,103 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore VCWpfControls.slnx
+
+      # TreatWarningsAsErrors=true comes from Directory.Build.props.
+      - name: Build (Release)
+        run: dotnet build VCWpfControls.slnx -c Release --no-restore
+
+      - name: Unit tests (Core.Tests, with coverage)
+        run: >
+          dotnet test tests/VCWpfControls.Core.Tests/VCWpfControls.Core.Tests.csproj
+          -c Release --no-build --collect:"XPlat Code Coverage"
+
+      - name: Control tests (STA)
+        run: >
+          dotnet test tests/VCWpfControls.Control.Tests/VCWpfControls.Control.Tests.csproj
+          -c Release --no-build
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: tests/VCWpfControls.Core.Tests/TestResults/**/coverage*.cobertura.xml
+          if-no-files-found: error
+
+  ui-tests:
+    name: UI tests (FlaUI)
+    needs: build-and-test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore VCWpfControls.slnx
+
+      - name: Build UI tests and demo app
+        run: >
+          dotnet build tests/VCWpfControls.UiTests/VCWpfControls.UiTests.csproj
+          -c Release --no-restore
+
+      # FlaUI drives the demo application and needs an interactive desktop,
+      # which windows-latest runners provide. The job must stay blocking:
+      # do not flip continue-on-error to true for flaky UI tests.
+      - name: Run UI tests
+        continue-on-error: false
+        run: >
+          dotnet test tests/VCWpfControls.UiTests/VCWpfControls.UiTests.csproj
+          -c Release --no-build
+
+  pack:
+    name: Pack NuGet package
+    needs: build-and-test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Pack
+        run: >
+          dotnet pack src/VCWpfControls/VCWpfControls.csproj
+          -c Release -o artifacts/package
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget
+          path: |
+            artifacts/package/*.nupkg
+            artifacts/package/*.snupkg
+          if-no-files-found: error

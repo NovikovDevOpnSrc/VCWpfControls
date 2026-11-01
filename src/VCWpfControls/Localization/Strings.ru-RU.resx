@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="GroupRowItemCount" xml:space="preserve"><value>{0}: элементов — {1}</value></data>
+  <data name="FilterRowHint" xml:space="preserve"><value>Фильтр...</value></data>
+  <data name="SortAscending" xml:space="preserve"><value>Сортировать по возрастанию</value></data>
+  <data name="SortDescending" xml:space="preserve"><value>Сортировать по убыванию</value></data>
+  <data name="ClearSorting" xml:space="preserve"><value>Отменить сортировку</value></data>
+  <data name="HideColumn" xml:space="preserve"><value>Скрыть столбец</value></data>
+  <data name="ColumnsHeader" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="SummarySum" xml:space="preserve"><value>Сумма «{0}»: {1}</value></data>
+  <data name="SummaryMin" xml:space="preserve"><value>Минимум «{0}»: {1}</value></data>
+  <data name="SummaryMax" xml:space="preserve"><value>Максимум «{0}»: {1}</value></data>
+  <data name="SummaryAvg" xml:space="preserve"><value>Среднее «{0}»: {1}</value></data>
+  <data name="SummaryCount" xml:space="preserve"><value>Количество: {0}</value></data>
+  <data name="ExportCompleted" xml:space="preserve"><value>Экспорт завершён</value></data>
+</root>

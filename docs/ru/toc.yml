@@ -1,0 +1,16 @@
+- name: Обзор
+  href: index.md
+- name: Начало работы
+  href: getting-started.md
+- name: Колонки
+  href: columns.md
+- name: Сортировка, фильтрация и группировка
+  href: sorting-filtering-grouping.md
+- name: Редактирование
+  href: editing.md
+- name: Выделение
+  href: selection.md
+- name: Темы оформления
+  href: theming.md
+- name: Рецепты
+  href: cookbook.md
