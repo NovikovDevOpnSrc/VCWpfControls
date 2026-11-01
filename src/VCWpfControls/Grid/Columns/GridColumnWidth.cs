@@ -78,7 +78,7 @@ public readonly struct GridColumnWidth : IEquatable<GridColumnWidth>
     public override string ToString() => UnitType switch
     {
         GridUnitType.Auto => "Auto",
-        GridUnitType.Star => FormattableString.Invariant($"{Value:0.###}*"),
+        GridUnitType.Star => Value.Equals(1d) ? "*" : FormattableString.Invariant($"{Value:0.###}*"),
         _ => FormattableString.Invariant($"{Value:0.###}"),
     };
 }

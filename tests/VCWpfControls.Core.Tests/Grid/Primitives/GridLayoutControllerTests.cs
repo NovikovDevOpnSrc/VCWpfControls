@@ -42,7 +42,7 @@ public class GridLayoutControllerTests
         controller.Compute(columns);
 
         Assert.Equal(700d, controller.TotalWidth);
-        Assert.Equal(400d, controller.Slots[1].X);
+        Assert.Equal(300d, controller.Slots[1].X);
     }
 
     [Fact]

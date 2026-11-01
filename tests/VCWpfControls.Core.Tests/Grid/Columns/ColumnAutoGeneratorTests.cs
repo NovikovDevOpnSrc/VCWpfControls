@@ -89,6 +89,6 @@ public class ColumnAutoGeneratorTests
         var combo = (GridComboBoxColumn)columns.First(c => c.FieldName == "Day");
 
         Assert.NotNull(combo.ItemsSource);
-        Assert.Equal(Enum.GetValues(typeof(DayOfWeek)), combo.ItemsSource);
+        Assert.Equal(Enum.GetValues<DayOfWeek>(), combo.ItemsSource);
     }
 }
