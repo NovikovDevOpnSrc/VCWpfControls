@@ -46,6 +46,9 @@ public static class ColumnAutoGenerator
         column.Header = ResolveHeader(property);
         column.ReadOnly = !property.CanWrite
             || property.GetCustomAttribute<ReadOnlyAttribute>() is { } readOnly && readOnly.IsReadOnly;
+        // Content-based sizing by default: columns fit their data, a horizontal
+        // scrollbar appears when the content is wider than the viewport.
+        column.Width = GridColumnWidth.Auto;
         return column;
     }
 

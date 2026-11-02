@@ -117,12 +117,21 @@ public class GridColumnHeader : Control
             _resizeThumb.DragCompleted -= OnResizeCompleted;
         }
 
+        if (_resizeThumb is not null)
+        {
+            _resizeThumb.DragDelta -= OnResizeDelta;
+            _resizeThumb.DragStarted -= OnResizeStarted;
+            _resizeThumb.DragCompleted -= OnResizeCompleted;
+            _resizeThumb.MouseLeftButtonDown -= OnResizeThumbDoubleClick;
+        }
+
         _resizeThumb = GetTemplateChild("PART_ResizeThumb") as Thumb;
         if (_resizeThumb is not null)
         {
             _resizeThumb.DragDelta += OnResizeDelta;
             _resizeThumb.DragStarted += OnResizeStarted;
             _resizeThumb.DragCompleted += OnResizeCompleted;
+            _resizeThumb.MouseLeftButtonDown += OnResizeThumbDoubleClick;
         }
 
         if (GetTemplateChild("PART_FilterButton") is ToggleButton filterButton)
@@ -217,6 +226,16 @@ public class GridColumnHeader : Control
     }
 
     private GridControl? Owner => Column?.Owner;
+
+    private void OnResizeThumbDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount >= 2 && Owner is { } owner && Column is { } column)
+        {
+            // Excel-style: double-clicking the splitter best-fits the column.
+            owner.BestFitColumn(column);
+            e.Handled = true;
+        }
+    }
 
     private void OnResizeStarted(object sender, DragStartedEventArgs e)
     {

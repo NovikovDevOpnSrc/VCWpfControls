@@ -174,3 +174,19 @@ bindings update the data item (see [Editing](editing.md)).
                             DisplayMemberPath="Name"
                             SelectedValuePath="Id" Width="180" />
 ```
+
+### Content fit (BestFit)
+
+Auto-generated columns are sized to their content by default (`Width="Auto"`: header width
+plus the widths of the currently visible rows, growing as rows realize). When the content is
+wider than the viewport, a horizontal scrollbar appears; `FrozenColumnCount` keeps the leading
+columns in place while scrolling.
+
+Exact one-shot sizing (measures up to 1000 rows of the current view by default, all rows with `0`):
+
+```csharp
+grid.BestFitColumn(column);        // one column (header included)
+grid.BestFitAllColumns();          // every visible column
+```
+
+Double-clicking a column's resize splitter best-fits that column (Excel-style).

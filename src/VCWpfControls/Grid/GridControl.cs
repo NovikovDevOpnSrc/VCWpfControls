@@ -709,6 +709,7 @@ public partial class GridControl : ItemsControl
 
         var size = base.MeasureOverride(constraint);
         EnsureLayout();
+        UpdateHorizontalScrollBar();
         return size;
     }
 

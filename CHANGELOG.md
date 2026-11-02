@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
+### Added (follow-up iteration 4)
+
+- **Column content fit**: auto-generated columns now default to `Width="Auto"` (content-based;
+  horizontal scrollbar when content exceeds the viewport) instead of equal star shares;
+  `BestFitColumn`/`BestFitAllColumns` measure the current view exactly (row sampling, header
+  included); double-clicking a column splitter best-fits the column; the horizontal scrollbar
+  now refreshes on every layout pass.
+
 ### Added (follow-up iteration 3)
 
 - **Docking drag-to-redock**: dragging a pane tab highlights the drop zone (quarter edges +

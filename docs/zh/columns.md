@@ -171,3 +171,17 @@ grid.AutoGeneratingColumn += (s, e) =>
                             DisplayMemberPath="Name"
                             SelectedValuePath="Id" Width="180" />
 ```
+
+### 按内容适配（BestFit）
+
+自动生成的列默认按内容设定宽度（`Width="Auto"`：表头宽度加上已呈现行的宽度，随行的
+呈现而增长）。内容宽于视口时出现水平滚动条；`FrozenColumnCount` 在滚动时固定前几列。
+
+一次性精确适配（默认测量当前视图最多 1000 行，传 `0` 测量全部行）：
+
+```csharp
+grid.BestFitColumn(column);        // 单列（含表头）
+grid.BestFitAllColumns();          // 所有可见列
+```
+
+双击列的分隔条可按内容适配该列（类似 Excel）。

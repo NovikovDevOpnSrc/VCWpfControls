@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using VCWpfControls.Grid.Columns;
 using VCWpfControls.Grid.Data;
 using VCWpfControls.Grid.Primitives;
@@ -71,6 +72,81 @@ public partial class GridControl
     {
         var width = Math.Clamp(newWidth, column.MinWidth, column.MaxWidth);
         column.Width = new GridColumnWidth(width, GridUnitType.Pixel);
+    }
+
+    /// <summary>
+    /// Sizes the column to its widest content (header included). Text widths are measured with
+    /// the grid's font; at most <paramref name="maxRowCount"/> data rows are sampled (pass 0 to
+    /// measure all rows of the current view).
+    /// </summary>
+    public void BestFitColumn(GridColumnBase column, int maxRowCount = 1000)
+    {
+        ArgumentNullException.ThrowIfNull(column);
+
+        var width = MeasureHeaderWidth(column);
+        var sampled = 0;
+        foreach (var row in DataEngine.DataRows)
+        {
+            if (maxRowCount > 0 && sampled >= maxRowCount)
+            {
+                break;
+            }
+
+            sampled++;
+            var value = PropertyAccessor.GetOrCreate(row.Item.GetType(), column.FieldName).GetValue(row.Item);
+            var text = FormatCellText(column, value);
+            width = Math.Max(width, MeasureTextWidth(text) + BestFitCellPadding);
+        }
+
+        ResizeColumn(column, Math.Ceiling(width));
+        EnsureColumnVisible(column);
+    }
+
+    /// <summary>Runs <see cref="BestFitColumn"/> for every visible column.</summary>
+    public void BestFitAllColumns(int maxRowCount = 1000)
+    {
+        foreach (var column in VisibleColumns.ToArray())
+        {
+            BestFitColumn(column, maxRowCount);
+        }
+    }
+
+    private const double BestFitCellPadding = 10d;
+    private const double BestFitHeaderPadding = 34d; // text + funnel/sort-glyph space
+
+    private double MeasureHeaderWidth(GridColumnBase column)
+        => MeasureTextWidth(Convert.ToString(column.Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty) + BestFitHeaderPadding;
+
+    private static string FormatCellText(GridColumnBase column, object? value)
+    {
+        if (value is null or DBNull)
+        {
+            return string.Empty;
+        }
+
+        return string.IsNullOrEmpty(column.StringFormat)
+            ? Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:" + column.StringFormat + "}", value);
+    }
+
+    private double MeasureTextWidth(string text)
+    {
+        if (text.Length == 0)
+        {
+            return 0d;
+        }
+
+        var fontFamily = FontFamily ?? SystemFonts.MessageFontFamily;
+        var fontSize = double.IsNaN(FontSize) ? SystemFonts.MessageFontSize : FontSize;
+        var formatted = new FormattedText(
+            text,
+            System.Globalization.CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            new Typeface(fontFamily, FontStyle, FontWeight, FontStretch),
+            fontSize,
+            Brushes.Black,
+            1.0d);
+        return formatted.Width;
     }
 
     internal void NotifyHeaderClick(GridColumnBase column, ModifierKeys modifiers)
