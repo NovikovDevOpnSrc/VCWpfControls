@@ -57,7 +57,7 @@ jobs:
       # and storing it in the repository secret NUGET_API_KEY
       # (remove `if: false` below).
       - name: Publish to NuGet.org
-        if: false
+        if: env.NUGET_API_KEY != ''
         shell: pwsh
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
