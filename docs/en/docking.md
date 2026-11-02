@@ -43,6 +43,10 @@ and validated in unit tests.
 
 `FloatPane(pane)` moves a pane into a floating window above the application window; closing the window or `DockPaneBack(pane)` returns it to its zone. Floating state and window bounds are part of the saved layout.
 
+## Drag-to-redock
+
+Drag a pane's tab and drop it over a zone: the left/top/right/bottom quarters and the center of the manager light up while dragging; dropping moves the pane. The drop hint is drawn with an adorner using the library theme brushes.
+
 ## Not yet (see ROADMAP)
 
-Drag-to-redock, auto-hide and nested splitter groups.
+Auto-hide and nested splitter groups.

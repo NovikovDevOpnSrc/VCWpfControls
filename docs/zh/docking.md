@@ -38,4 +38,4 @@ manager.LoadLayout(xml);             // 按面板 Name（回退到标题）匹�
 
 ## 暂不支持（见 ROADMAP）
 
-拖拽换区、自动隐藏、嵌套分隔组。
+自动隐藏、嵌套分隔组。

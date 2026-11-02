@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
 using System.Windows.Markup;
 
 namespace VCWpfControls.Docking;
@@ -124,7 +126,149 @@ public class DockingManager : Control
             {
                 host.SelectionChanged -= OnZoneSelectionChanged;
                 host.SelectionChanged += OnZoneSelectionChanged;
+                host.PaneDragStarted -= OnPaneDragStarted;
+                host.PaneDragStarted += OnPaneDragStarted;
             }
+        }
+    }
+
+    private DockPane? _dragPane;
+    private DockDropAdorner? _dragAdorner;
+
+    /// <summary>Called by a zone host when the user drags a pane tab.</summary>
+    private void OnPaneDragStarted(object? sender, DockPane pane)
+    {
+        StartPaneDrag(pane);
+    }
+
+    /// <summary>Begins a drag-to-redock operation (mouse is captured by the manager).</summary>
+    internal void StartPaneDrag(DockPane pane)
+    {
+        _dragPane = pane;
+        CaptureMouse();
+    }
+
+    /// <summary>The zone under the given point (manager coordinates).</summary>
+    private static DockZone ZoneAt(Point point, Size size)
+    {
+        if (size.Width <= 0 || size.Height <= 0)
+        {
+            return DockZone.Center;
+        }
+
+        if (point.X < size.Width * 0.25)
+        {
+            return DockZone.Left;
+        }
+
+        if (point.X > size.Width * 0.75)
+        {
+            return DockZone.Right;
+        }
+
+        if (point.Y < size.Height * 0.25)
+        {
+            return DockZone.Top;
+        }
+
+        if (point.Y > size.Height * 0.75)
+        {
+            return DockZone.Bottom;
+        }
+
+        return DockZone.Center;
+    }
+
+    private void ShowDropAdorner(DockZone zone)
+    {
+        var layer = AdornerLayer.GetAdornerLayer(this);
+        if (layer is null)
+        {
+            return;
+        }
+
+        if (_dragAdorner is not null)
+        {
+            layer.Remove(_dragAdorner);
+            _dragAdorner = null;
+        }
+
+        var fill = TryFindResource(VCWpfControls.Grid.GridResources.SelectionBackgroundKey) as Brush ?? Brushes.DodgerBlue;
+        var border = TryFindResource(VCWpfControls.Grid.GridResources.AccentKey) as Brush ?? Brushes.DodgerBlue;
+        _dragAdorner = new DockDropAdorner(this, zone, fill, border);
+        layer.Add(_dragAdorner);
+    }
+
+    private void ClearDropAdorner()
+    {
+        if (_dragAdorner is null)
+        {
+            return;
+        }
+
+        AdornerLayer.GetAdornerLayer(this)?.Remove(_dragAdorner);
+        _dragAdorner = null;
+    }
+
+    /// <inheritdoc />
+    protected override void OnMouseMove(System.Windows.Input.MouseEventArgs e)
+    {
+        base.OnMouseMove(e);
+        if (_dragPane is null)
+        {
+            return;
+        }
+
+        ShowDropAdorner(ZoneAt(e.GetPosition(this), RenderSize));
+    }
+
+    /// <inheritdoc />
+    protected override void OnMouseLeftButtonUp(System.Windows.Input.MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonUp(e);
+        if (_dragPane is null)
+        {
+            return;
+        }
+
+        var zone = ZoneAt(e.GetPosition(this), RenderSize);
+        var pane = _dragPane;
+        _dragPane = null;
+        ReleaseMouseCapture();
+        ClearDropAdorner();
+
+        if (pane.Zone != zone)
+        {
+            pane.Zone = zone; // SyncPane moves it
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnLostMouseCapture(System.Windows.Input.MouseEventArgs e)
+    {
+        base.OnLostMouseCapture(e);
+        _dragPane = null;
+        ClearDropAdorner();
+    }
+
+    /// <summary>Test access to the zone hit-testing.</summary>
+    internal DockZone ZoneAtForTest(Point point) => ZoneAt(point, RenderSize);
+
+    /// <summary>Test hook: applies a drop at the given manager-relative point.</summary>
+    internal void CompletePaneDragAtForTest(Point point)
+    {
+        if (_dragPane is null)
+        {
+            return;
+        }
+
+        var zone = ZoneAt(point, RenderSize);
+        var pane = _dragPane;
+        _dragPane = null;
+        ClearDropAdorner();
+        if (pane.Zone != zone)
+        {
+            pane.Zone = zone;
         }
     }
 

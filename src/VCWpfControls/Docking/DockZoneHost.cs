@@ -65,6 +65,39 @@ public sealed class DockZoneHost : ContentControl
     /// <summary>Raised when the zone selection changed (bubbles the pane up to the manager).</summary>
     public event EventHandler? SelectionChanged;
 
+    /// <summary>Raised when the user starts dragging a pane tab (for drag-to-redock).</summary>
+    public event EventHandler<DockPane>? PaneDragStarted;
+
+    private Point _dragStart;
+    private bool _pressed;
+
+    /// <summary>Wires mouse-drag detection on a tab button.</summary>
+    private void HookDrag(ToggleButton toggle, DockPane pane)
+    {
+        toggle.PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            _dragStart = e.GetPosition(this);
+            _pressed = true;
+        };
+        toggle.MouseMove += (_, e) =>
+        {
+            if (!_pressed)
+            {
+                return;
+            }
+
+            var delta = e.GetPosition(this) - _dragStart;
+            if (Math.Abs(delta.X) < 4 && Math.Abs(delta.Y) < 4)
+            {
+                return;
+            }
+
+            _pressed = false;
+            PaneDragStarted?.Invoke(this, pane);
+        };
+        toggle.MouseLeftButtonUp += (_, _) => _pressed = false;
+    }
+
     private void OnPanesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         foreach (var pane in e.OldItems?.Cast<DockPane>() ?? Array.Empty<DockPane>())
@@ -125,6 +158,7 @@ public sealed class DockZoneHost : ContentControl
             Tag = pane,
         };
         toggle.Checked += (_, _) => Select(pane);
+        HookDrag(toggle, pane);
         _buttons[pane] = toggle;
         return toggle;
     }

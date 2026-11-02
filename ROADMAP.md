@@ -32,4 +32,4 @@
 
 ## Stage 3 (candidates)
 - Editors: masked input and spin buttons (done)
-- Docking panels: zones + splitters + layout persistence (done; floating windows and drag-to-redock pending)
+- Docking panels: zones + splitters + layout persistence, floating windows, drag-to-redock (done)
