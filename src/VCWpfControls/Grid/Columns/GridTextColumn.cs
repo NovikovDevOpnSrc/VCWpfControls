@@ -42,19 +42,27 @@ public class GridTextColumn : GridColumnBase
     }
 }
 
-/// <summary>Column for numeric values; right-aligned text, numeric text box while editing.</summary>
+/// <summary>Column for numeric values; right-aligned by default (header follows), numeric text box while editing.</summary>
 public class GridNumericColumn : GridColumnBase
 {
+    static GridNumericColumn()
+    {
+        // Numbers read best right-aligned; the header follows the same alignment.
+        HorizontalContentAlignmentProperty.OverrideMetadata(
+            typeof(GridNumericColumn), new PropertyMetadata(HorizontalAlignment.Right));
+    }
+
     /// <summary>Creates the numeric display element.</summary>
     protected override FrameworkElement GenerateElementCore()
     {
         var textBlock = new TextBlock
         {
             VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Right,
             TextAlignment = TextAlignment.Right,
             TextTrimming = TextTrimming.CharacterEllipsis,
         };
+        textBlock.SetBinding(TextBlock.HorizontalAlignmentProperty,
+            new System.Windows.Data.Binding(nameof(HorizontalContentAlignment)) { Source = this });
         textBlock.SetBinding(TextBlock.TextProperty, CreateCellBinding(BindingMode.OneWay));
         return textBlock;
     }
@@ -96,8 +104,9 @@ public class GridCheckBoxColumn : GridColumnBase
             IsTabStop = false,
             Focusable = false,
         };
-        // Two-way with default trigger: the check box commits immediately on click.
-        var binding = CreateCellBinding(BindingMode.TwoWay);
+        // Two-way with immediate trigger so clicks commit at once; read-only columns
+        // bind one-way (the source property may not have a setter at all).
+        var binding = CreateCellBinding(ReadOnly ? BindingMode.OneWay : BindingMode.TwoWay);
         binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
         checkBox.SetBinding(CheckBox.IsCheckedProperty, binding);
         return checkBox;

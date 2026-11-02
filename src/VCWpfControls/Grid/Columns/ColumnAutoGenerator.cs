@@ -44,7 +44,8 @@ public static class ColumnAutoGenerator
         var column = CreateTypedColumn(property.PropertyType);
         column.FieldName = property.Name;
         column.Header = ResolveHeader(property);
-        column.ReadOnly = property.GetCustomAttribute<ReadOnlyAttribute>() is { } readOnly && readOnly.IsReadOnly;
+        column.ReadOnly = !property.CanWrite
+            || property.GetCustomAttribute<ReadOnlyAttribute>() is { } readOnly && readOnly.IsReadOnly;
         return column;
     }
 

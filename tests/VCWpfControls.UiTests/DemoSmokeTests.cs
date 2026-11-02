@@ -27,12 +27,36 @@ public sealed class DemoSmokeTests : IDisposable
         Assert.NotNull(navList);
         Assert.True(navList!.Items.Length >= 6, $"expected at least 6 samples, got {navList.Items.Length}");
 
-        // Walk through every sample page; each switch must not crash the app.
+        // Every navigation click must switch the page: the sample's content control
+        // (registered automation id) must appear after selecting the item.
+        var expectedIds = new Dictionary<string, string>
+        {
+            ["Basic binding"] = "BasicGrid",
+            ["Column types"] = "ColumnTypesGrid",
+            ["Sorting"] = "SortingGrid",
+            ["Selection"] = "SelectionGrid",
+            ["Editing & validation"] = "EditingGrid",
+            ["Virtualization (100k rows)"] = "VirtualizationGrid",
+            ["Grouping & filters"] = "AnalyticsGrid",
+            ["Property grid"] = "PropertyGridSample",
+            ["Tree list"] = "TreeListSample",
+            ["Editors"] = "EditorsSample",
+            ["Docking"] = "DockingSample",
+        };
+
         foreach (var item in navList.Items)
         {
+            var label = item.Text;
             item.Select();
             _app.WaitWhileBusy(TimeSpan.FromSeconds(10));
-            Assert.False(_app.HasExited, $"application crashed after opening '{item.Text}'");
+            Assert.False(_app.HasExited, $"application crashed after opening '{label}'");
+
+            if (expectedIds.TryGetValue(label, out var automationId))
+            {
+                var content = _window.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+                Assert.True(content is not null,
+                    $"page '{label}' did not switch (automation id '{automationId}' not found)");
+            }
         }
     }
 

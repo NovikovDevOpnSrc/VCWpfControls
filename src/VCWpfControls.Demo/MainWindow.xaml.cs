@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 using VCWpfControls.Demo.ViewModels;
 
 namespace VCWpfControls.Demo;
@@ -27,13 +28,11 @@ public partial class MainWindow : Window
             new DockingSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
-        NavList.SelectionChanged += (_, _) => ((MainViewModel)DataContext).SelectedSample =
-            (SampleViewModelBase)NavList.SelectedItem;
     }
 }
 
-/// <summary>Holds the sample list and the selected sample.</summary>
-public partial class MainViewModel
+/// <summary>Holds the sample list and the selected sample (raises change notifications).</summary>
+public partial class MainViewModel : ObservableObject
 {
     /// <summary>Creates the shell view model.</summary>
     public MainViewModel(ObservableCollection<SampleViewModelBase> samples)
@@ -45,16 +44,6 @@ public partial class MainViewModel
     /// <summary>All available samples.</summary>
     public ObservableCollection<SampleViewModelBase> Samples { get; }
 
+    [ObservableProperty]
     private SampleViewModelBase _selectedSample;
-
-    /// <summary>The currently selected sample.</summary>
-    public SampleViewModelBase SelectedSample
-    {
-        get => _selectedSample;
-        set
-        {
-            _selectedSample = value;
-        }
-    }
-
 }
