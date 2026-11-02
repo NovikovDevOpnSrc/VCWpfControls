@@ -5,7 +5,7 @@ description: VCWpfControls 是基于 MIT 许可证的免费开源 WPF 控件库�
 
 # GridControl 概述
 
-**Vibe Coded WPF Controls** 是基于 [MIT 许可证](https://github.com/vibe-coded/VCWpfControls/blob/main/LICENSE)
+**Vibe Coded WPF Controls** 是基于 [MIT 许可证](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/LICENSE)
 的免费开源 WPF 控件库。**第一阶段**提供 **GridControl** —— 一个快速、支持虚拟化、
 对 MVVM 友好的数据表格。
 
@@ -32,7 +32,7 @@ description: VCWpfControls 是基于 MIT 许可证的免费开源 WPF 控件库�
 - **主题** —— 默认主题基于 `ComponentResourceKey` 资源键，可在应用中覆盖
 
 后续计划（筛选行、汇总、导出、深色主题、本地化）请查看
-[路线图](https://github.com/vibe-coded/VCWpfControls/blob/main/ROADMAP.md)。
+[路线图](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/ROADMAP.md)。
 
 ## 快速开始（XAML）
 

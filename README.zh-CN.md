@@ -1,6 +1,6 @@
 # Vibe Coded WPF Controls
 
-[![CI](https://github.com/vibe-coded/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/vibe-coded/VCWpfControls/actions/workflows/ci.yml)
+[![CI](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 免费开源的 WPF 控件库。**第一阶段**提供 **GridControl** —— 一个快速、对 MVVM 友好的数据表格控件，功能不逊于免费的 WPF 表格控件。

@@ -5,9 +5,9 @@
     <Authors>Vibe Coded WPF Controls contributors</Authors>
     <Product>Vibe Coded WPF Controls</Product>
     <Copyright>Copyright (c) 2026 Vibe Coded WPF Controls contributors</Copyright>
-    <RepositoryUrl>https://github.com/vibe-coded/VCWpfControls</RepositoryUrl>
+    <RepositoryUrl>https://github.com/NovikovDevOpnSrc/VCWpfControls</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/vibe-coded/VCWpfControls</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/NovikovDevOpnSrc/VCWpfControls</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <NeutralLanguage>en</NeutralLanguage>
 

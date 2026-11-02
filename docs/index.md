@@ -26,10 +26,10 @@ A free, open-source library of WPF controls (MIT license). **Stage 1** delivers
 
 ## Links
 
-- GitHub repository: <https://github.com/vibe-coded/VCWpfControls>
-- License: [MIT](https://github.com/vibe-coded/VCWpfControls/blob/main/LICENSE) — free for any use, commercial included
+- GitHub repository: <https://github.com/NovikovDevOpnSrc/VCWpfControls>
+- License: [MIT](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/LICENSE) — free for any use, commercial included
 - NuGet: `dotnet add package VCWpfControls`
-- Roadmap: [ROADMAP.md](https://github.com/vibe-coded/VCWpfControls/blob/main/ROADMAP.md)
+- Roadmap: [ROADMAP.md](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/ROADMAP.md)
 
 ## Installation
 

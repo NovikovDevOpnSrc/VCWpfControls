@@ -6,7 +6,7 @@ description: VCWpfControls — бесплатная WPF-библиотека к�
 # Обзор GridControl
 
 **Vibe Coded WPF Controls** — бесплатная библиотека WPF-контролов с открытым кодом под
-лицензией [MIT](https://github.com/vibe-coded/VCWpfControls/blob/main/LICENSE).
+лицензией [MIT](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/LICENSE).
 **Этап 1** — **GridControl**: быстрая, виртуализованная, дружественная к MVVM таблица данных.
 
 Грид привязывается к любому `IEnumerable`, генерирует колонки по типу элемента (или берёт
@@ -36,7 +36,7 @@ description: VCWpfControls — бесплатная WPF-библиотека к�
   переопределять в приложении
 
 Также реализованы: строка фильтров, итоги, экспорт (CSV/Excel/HTML), тёмная тема и локализация. Дальше —
-смотрите [дорожную карту](https://github.com/vibe-coded/VCWpfControls/blob/main/ROADMAP.md).
+смотрите [дорожную карту](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/ROADMAP.md).
 
 ## Быстрый старт (XAML)
 

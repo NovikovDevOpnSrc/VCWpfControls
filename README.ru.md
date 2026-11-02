@@ -1,6 +1,6 @@
 # Vibe Coded WPF Controls
 
-[![CI](https://github.com/vibe-coded/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/vibe-coded/VCWpfControls/actions/workflows/ci.yml)
+[![CI](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Бесплатная библиотека WPF-контролов с открытым исходным кодом. **Этап 1** — **GridControl**: быстрая, дружественная к MVVM таблица данных с функционалом не хуже бесплатных аналогов.

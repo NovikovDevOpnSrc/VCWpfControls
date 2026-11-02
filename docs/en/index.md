@@ -6,7 +6,7 @@ description: Vibe Coded WPF Controls — a free, MIT-licensed WPF control librar
 # GridControl overview
 
 **Vibe Coded WPF Controls** is a free, open-source library of WPF controls licensed under
-[MIT](https://github.com/vibe-coded/VCWpfControls/blob/main/LICENSE). Stage 1 delivers
+[MIT](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/LICENSE). Stage 1 delivers
 **GridControl** — a fast, virtualized, MVVM-friendly data grid.
 
 The grid binds to any `IEnumerable`, generates columns from your item type (or takes
@@ -33,7 +33,7 @@ manual definitions), virtualizes row containers with recycling, and keeps its da
 - **Theming** — the default theme is defined with `ComponentResourceKey` resources that you
   can override per application
 
-See the [roadmap](https://github.com/vibe-coded/VCWpfControls/blob/main/ROADMAP.md) for
+See the [roadmap](https://github.com/NovikovDevOpnSrc/VCWpfControls/blob/main/ROADMAP.md) for
 also included: filter row, summaries, export (CSV/Excel/HTML), dark theme and localization.
 
 ## Quick start (XAML)

@@ -44,7 +44,7 @@
     "output": "_site",
     "globalMetadata": {
       "_appTitle": "Vibe Coded WPF Controls",
-      "_appFooter": "Vibe Coded WPF Controls — <a href=\"https://github.com/vibe-coded/VCWpfControls\">GitHub</a> · MIT License",
+      "_appFooter": "Vibe Coded WPF Controls — <a href=\"https://github.com/NovikovDevOpnSrc/VCWpfControls\">GitHub</a> · MIT License",
       "_enableSearch": true
     },
     "template": [
