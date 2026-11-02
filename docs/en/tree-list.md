@@ -45,6 +45,10 @@ Changes in the roots collection or in any materialized children collection
 
 Set `FilterPredicate` (any `Predicate<object>`): a node is visible when it matches or any descendant matches; ancestors of matches are shown and temporarily expanded. Manual expansion state is restored when the predicate is cleared.
 
+## Lazy loading
+
+Set `ChildrenProvider` (a `Func<object, IEnumerable?>`) instead of `ChildMemberPath` to load children on first expansion only; combine with `HasChildrenPredicate` to control expander visibility without loading. Loaded children are cached across rebuilds; live provider collections (`ObservableCollection`) invalidate the cache.
+
 ## Not yet (see ROADMAP)
 
 Filtering of tree nodes, load-on-demand children, group panel/filter row do not apply.

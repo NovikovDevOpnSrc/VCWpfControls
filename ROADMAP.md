@@ -27,7 +27,7 @@
 - Row details, context menus
 
 ## Stage 2 (candidates)
-- TreeListView (done: hierarchy + columns, expand/collapse, per-level sorting, live updates)
+- TreeListView (done: hierarchy + columns, expand/collapse, per-level sorting, live updates, filtering, lazy loading)
 - PropertyGrid (done: typed editors, categories, search, expandable objects, INPC refresh)
 
 ## Stage 3 (candidates)

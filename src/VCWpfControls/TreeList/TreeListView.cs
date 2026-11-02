@@ -37,9 +37,20 @@ public class TreeListView : GridControl
         nameof(FilterPredicate), typeof(Predicate<object>), typeof(TreeListView),
         new PropertyMetadata(null, OnTreeFilterChanged));
 
+    /// <summary>Identifies the <see cref="ChildrenProvider"/> dependency property.</summary>
+    public static readonly DependencyProperty ChildrenProviderProperty = DependencyProperty.Register(
+        nameof(ChildrenProvider), typeof(Func<object, IEnumerable?>), typeof(TreeListView),
+        new PropertyMetadata(null, OnTreeStructureChanged));
+
+    /// <summary>Identifies the <see cref="HasChildrenPredicate"/> dependency property.</summary>
+    public static readonly DependencyProperty HasChildrenPredicateProperty = DependencyProperty.Register(
+        nameof(HasChildrenPredicate), typeof(Func<object, bool>), typeof(TreeListView),
+        new PropertyMetadata(null, OnTreeStructureChanged));
+
     private readonly List<TreeListNode> _roots = new();
     private readonly Dictionary<object, TreeListNode> _nodesByItem = new();
     private readonly Dictionary<object, bool> _expandState = new();
+    private readonly Dictionary<object, List<TreeListNode>> _loadedChildren = new();
     private IEnumerable? _rootsSource;
     private INotifyCollectionChanged? _rootsNotifier;
     private readonly List<INotifyCollectionChanged> _childNotifiers = new();
@@ -79,6 +90,26 @@ public class TreeListView : GridControl
     {
         get => (Predicate<object>?)GetValue(FilterPredicateProperty);
         set => SetValue(FilterPredicateProperty, value);
+    }
+
+    /// <summary>
+    /// Lazy children source; when set, it takes precedence over <see cref="ChildMemberPath"/>
+    /// and children are loaded on first expansion only.
+    /// </summary>
+    public Func<object, IEnumerable?>? ChildrenProvider
+    {
+        get => (Func<object, IEnumerable?>?)GetValue(ChildrenProviderProperty);
+        set => SetValue(ChildrenProviderProperty, value);
+    }
+
+    /// <summary>
+    /// Decides whether a node shows its expander without loading children
+    /// (used with <see cref="ChildrenProvider"/>).
+    /// </summary>
+    public Func<object, bool>? HasChildrenPredicate
+    {
+        get => (Func<object, bool>?)GetValue(HasChildrenPredicateProperty);
+        set => SetValue(HasChildrenPredicateProperty, value);
     }
 
     private static void OnTreeFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -142,9 +173,20 @@ public class TreeListView : GridControl
     }
 
     private static void OnTreeStructureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        => ((TreeListView)d).RebuildTree();
+    {
+        var tree = (TreeListView)d;
+        tree._loadedChildren.Clear();
+        tree.RebuildTree();
+    }
 
     private void OnRootsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildTree();
+
+    private void OnProviderChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Live provider collections invalidate the whole cache.
+        _loadedChildren.Clear();
+        RebuildTree();
+    }
 
     /// <inheritdoc />
     protected override void RebuildDataView() => RebuildTree();
@@ -197,6 +239,7 @@ public class TreeListView : GridControl
         foreach (var notifier in _childNotifiers)
         {
             notifier.CollectionChanged -= OnChildrenChanged;
+            notifier.CollectionChanged -= OnProviderChildrenChanged;
         }
 
         _childNotifiers.Clear();
@@ -220,7 +263,11 @@ public class TreeListView : GridControl
                 };
                 _roots.Add(node);
                 _nodesByItem[root] = node;
-                ResolveChildren(node);
+                if (ChildrenProvider is null)
+                {
+                    // Path mode materializes eagerly; provider mode loads on first expansion.
+                    ResolveChildren(node);
+                }
             }
         }
 
@@ -247,7 +294,7 @@ public class TreeListView : GridControl
         var expanded = FilterPredicate is not null && HasMatchingDescendant(node)
             ? true
             : node.IsExpanded == true;
-        if (!expanded || node.ChildrenCount == 0)
+        if (!expanded || !EnsureChildrenLoaded(node))
         {
             return;
         }
@@ -256,9 +303,42 @@ public class TreeListView : GridControl
         foreach (var child in node.Children!)
         {
             _nodesByItem[child.Item] = child;
-            ResolveChildren(child);
             AppendNode(view, child);
         }
+    }
+
+    /// <summary>Whether the node may have children (expander visibility) without loading them.</summary>
+    private bool HasChildrenHint(TreeListNode node)
+    {
+        if (ChildrenProvider is { } provider)
+        {
+            if (node.Children is not null)
+            {
+                return node.Children.Count > 0;
+            }
+
+            return HasChildrenPredicate is { } predicate && predicate(node.Item);
+        }
+
+        ResolveChildren(node);
+        return node.ChildrenCount > 0;
+    }
+
+    /// <summary>Loads children if needed; returns whether any children exist.</summary>
+    private bool EnsureChildrenLoaded(TreeListNode node)
+    {
+        if (ChildrenProvider is not null)
+        {
+            if (node.Children is null)
+            {
+                ResolveChildren(node);
+            }
+
+            return node.ChildrenCount > 0;
+        }
+
+        ResolveChildren(node);
+        return node.ChildrenCount > 0;
     }
 
     private void ResolveChildren(TreeListNode node)
@@ -268,9 +348,17 @@ public class TreeListView : GridControl
             return;
         }
 
+        // Provider mode: reuse previously loaded children across rebuilds (cache by item).
+        if (ChildrenProvider is not null && _loadedChildren.TryGetValue(node.Item, out var cached))
+        {
+            node.Children = cached;
+            return;
+        }
+
         node.Children = new List<TreeListNode>();
-        var children = PropertyAccessor.GetOrCreate(node.Item.GetType(), ChildMemberPath).GetValue(node.Item)
-            as IEnumerable;
+        IEnumerable? children = ChildrenProvider is { } provider
+            ? provider(node.Item)
+            : PropertyAccessor.GetOrCreate(node.Item.GetType(), ChildMemberPath).GetValue(node.Item) as IEnumerable;
         if (children is not null)
         {
             foreach (var child in children)
@@ -292,10 +380,15 @@ public class TreeListView : GridControl
         }
 
         node.IsExpanded ??= false;
+        if (ChildrenProvider is not null)
+        {
+            _loadedChildren[node.Item] = node.Children;
+        }
+
         if (children is INotifyCollectionChanged notifier)
         {
             _childNotifiers.Add(notifier);
-            notifier.CollectionChanged += OnChildrenChanged;
+            notifier.CollectionChanged += ChildrenProvider is not null ? OnProviderChildrenChanged : OnChildrenChanged;
         }
     }
 
@@ -348,7 +441,7 @@ public class TreeListView : GridControl
         if (_nodesByItem.TryGetValue(dataItem, out var node))
         {
             row.TreeLevel = node.Level;
-            row.TreeHasChildren = node.ChildrenCount > 0;
+            row.TreeHasChildren = HasChildrenHint(node);
             row.TreeIsExpanded = node.IsExpanded == true;
             row.UpdateTreeToggle();
         }
