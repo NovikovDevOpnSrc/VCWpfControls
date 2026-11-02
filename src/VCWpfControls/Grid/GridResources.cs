@@ -32,6 +32,9 @@ public static class GridResources
     /// <summary>Brush of the accent (sort glyph, frozen edge).</summary>
     public static readonly ComponentResourceKey AccentKey = new(typeof(GridResources), "Accent");
 
+    /// <summary>Foreground brush of data text (switches with the theme).</summary>
+    public static readonly ComponentResourceKey TextBrushKey = new(typeof(GridResources), "TextBrush");
+
     /// <summary>Hover background brush of rows and headers.</summary>
     public static readonly ComponentResourceKey HoverBackgroundKey = new(typeof(GridResources), "HoverBackground");
 

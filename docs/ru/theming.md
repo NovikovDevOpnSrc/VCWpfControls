@@ -108,3 +108,11 @@ description: Тема GridControl по умолчанию, ключи ресур
 (`PART_ScrollViewer`, `PART_HorizontalScrollBar`, `PART_ColumnHeadersPresenter`) — можно
 заменить весь `ControlTemplate`. Но для подавляющего большинства приложений хватает
 переопределения ключей ресурсов.
+
+### Кисть текста
+
+`GridResources.TextBrushKey` хранит цвет текста данных и переключается вместе с темой (Light `#1F2937`, Dark `#D8DAE3`). Все контролы библиотеки биндят `Foreground` к ней — в своих шаблонах делайте так же, без хардкода цветов.
+
+### UX-стандарт
+
+Библиотека следует чеклисту [ux-checklist.md](../ux-checklist.md): типографика Fluent (основной текст 14 px, заголовки SemiBold высотой 32 px), сетка отступов 4 px, состояния hover+pressed, локализованный empty-state, контраст WCAG AA в обеих темах.

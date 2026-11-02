@@ -27,4 +27,5 @@
   <data name="BestFitAll" xml:space="preserve"><value>适配所有列宽</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>固定至此列</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>按此列分组</value></data>
+  <data name="NoData" xml:space="preserve"><value>无数据</value></data>
 </root>

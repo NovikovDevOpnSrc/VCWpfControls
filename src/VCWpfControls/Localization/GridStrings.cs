@@ -49,6 +49,9 @@ public static class GridStrings
     /// <summary>Header menu: fit this column to its content.</summary>
     public static string BestFit => Get("BestFit");
 
+    /// <summary>Shown centered when the grid has no rows.</summary>
+    public static string NoData => Get("NoData");
+
     /// <summary>Header menu: fit all columns.</summary>
     public static string BestFitAll => Get("BestFitAll");
 

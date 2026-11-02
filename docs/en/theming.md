@@ -108,3 +108,11 @@ For deeper restyling, the control exposes the usual template parts
 (`PART_ScrollViewer`, `PART_HorizontalScrollBar`, `PART_ColumnHeadersPresenter`) if you
 replace the whole `ControlTemplate`. Overriding the resource keys above is enough for the
 vast majority of applications.
+
+### Text brush
+
+`GridResources.TextBrushKey` carries the data foreground color and switches with the theme (Light `#1F2937`, Dark `#D8DAE3`). All library controls bind their `Foreground` to it — custom templates should do the same instead of hardcoding colors.
+
+### UX standard
+
+The library follows the checklist in [ux-checklist.md](../ux-checklist.md): Fluent-style typography (body 14 px, SemiBold 32 px headers), 4 px spacing grid, hover+pressed states, localized empty state, WCAG AA contrast in both themes.

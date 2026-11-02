@@ -27,4 +27,5 @@
   <data name="BestFitAll" xml:space="preserve"><value>Подогнать все колонки</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Закрепить до этой колонки</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Группировать по этой колонке</value></data>
+  <data name="NoData" xml:space="preserve"><value>Нет данных</value></data>
 </root>

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
+### Added (follow-up iteration 6)
+
+- **UX pass (Fluent-inspired)**: fixed the Dark theme showing dark text on dark surface —
+  new `GridResources.TextBrushKey` carries the data foreground and switches with the theme
+  (all controls re-bound, hardcoded colors removed); body typography 14 px; headers SemiBold
+  with 32 px touch targets and hover/pressed states; localized empty state ("No data") shown
+  when the view has no rows; `docs/ux-checklist.md` records the library UX standard.
+  Note: RDP sessions return black frames on screen capture — verified structurally instead.
+
 ### Added (follow-up iteration 5)
 
 - **Header context menu** (right-click, localized EN/RU/ZH): sort ascending/descending with

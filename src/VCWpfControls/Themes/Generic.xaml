@@ -21,13 +21,16 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="#FF1D4ED8" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="#FFEDF2F9" />
 
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.TextBrushKey}" Color="#FF1F2937" />
+
     <!-- ============ GridControl ============ -->
     <Style TargetType="{x:Type grid:GridControl}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="GridLinesBrush" Value="{DynamicResource {x:Static grid:GridResources.GridLineKey}}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="#FF1F2937" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -75,6 +78,16 @@
                                 Focusable="False">
                                 <ItemsPresenter />
                             </ScrollViewer>
+
+                            <TextBlock
+                                x:Name="PART_EmptyState"
+                                Grid.Row="3"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Opacity="0.55"
+                                Text="{x:Static localization:GridStrings.NoData}"
+                                Visibility="Collapsed" />
 
                             <Border Grid.Row="4" Background="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}" BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" BorderThickness="0,1,0,0">
                                 <primitives:GridSummaryRowPresenter x:Name="PART_SummaryRowPresenter" Margin="8,3,8,3" Visibility="Collapsed" />
@@ -261,8 +274,9 @@
     <Style TargetType="{x:Type primitives:GridColumnHeader}">
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.HeaderForegroundKey}}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
-        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="MinHeight" Value="32" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type primitives:GridColumnHeader}">
@@ -365,8 +379,11 @@
                         <Trigger Property="IsDropTarget" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
                         </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
+                        <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -380,7 +397,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="8" />
-        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type propertyGrid:PropertyGrid}">
@@ -425,7 +442,7 @@
 
     <!-- ============ NumericUpDown ============ -->
     <Style TargetType="{x:Type editors:NumericUpDown}">
-        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -491,7 +508,7 @@
 
     <!-- ============ MaskedTextBox ============ -->
     <Style TargetType="{x:Type editors:MaskedTextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
-        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -580,7 +597,7 @@
     </Style>
 
     <Style TargetType="{x:Type docking:DockPane}">
-        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type docking:DockPane}">

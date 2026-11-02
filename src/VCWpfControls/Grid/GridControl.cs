@@ -72,6 +72,9 @@ public partial class GridControl : ItemsControl
     /// <summary>Template part: the summary footer presenter.</summary>
     protected const string PartSummaryRowPresenter = "PART_SummaryRowPresenter";
 
+    /// <summary>Template part: the centered message shown when there are no rows.</summary>
+    protected const string PartEmptyState = "PART_EmptyState";
+
     /// <summary>Identifies the <see cref="ItemsSource"/> dependency property.</summary>
     public new static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         nameof(ItemsSource), typeof(IEnumerable), typeof(GridControl),
@@ -205,6 +208,7 @@ public partial class GridControl : ItemsControl
     private bool _syncingItems;
     private bool _autoColumnsGenerated;
     private double _lastConstraintWidth;
+    private System.Windows.Controls.TextBlock? _emptyState;
 
     static GridControl()
     {
@@ -638,6 +642,9 @@ public partial class GridControl : ItemsControl
             HeadersPresenter.EnsureHeaders();
         }
 
+        _emptyState = GetTemplateChild(PartEmptyState) as System.Windows.Controls.TextBlock;
+        UpdateEmptyState();
+
         FilterRowPresenter?.EnsureEditors();
         if (FilterRowPresenter is not null)
         {
@@ -931,10 +938,13 @@ public partial class GridControl : ItemsControl
 
                 RestoreCurrentItem();
                 SummaryRowPresenter?.RefreshValues();
+                UpdateEmptyState();
                 break;
 
             case NotifyCollectionChangedAction.Add:
+            case NotifyCollectionChangedAction.Remove:
                 SummaryRowPresenter?.RefreshValues();
+                UpdateEmptyState();
                 break;
         }
     }
@@ -974,6 +984,16 @@ public partial class GridControl : ItemsControl
         RestoreCurrentItem();
         InvalidateVisualChildren();
         SummaryRowPresenter?.RefreshValues();
+        UpdateEmptyState();
+    }
+
+    /// <summary>Shows the localized empty-state message when the view has no rows.</summary>
+    private void UpdateEmptyState()
+    {
+        if (_emptyState is not null)
+        {
+            _emptyState.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
     private void InvalidateVisualChildren()

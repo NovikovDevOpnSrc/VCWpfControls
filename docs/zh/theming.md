@@ -106,3 +106,11 @@ WPF 之所以能找到它，是因为 `GridControl` 重写了自身的 `DefaultS
 如需更深入的样式定制，控件在替换整个 `ControlTemplate` 时暴露常见的模板部件
 （`PART_ScrollViewer`、`PART_HorizontalScrollBar`、`PART_ColumnHeadersPresenter`）。
 不过对绝大多数应用来说，覆盖上述资源键已经足够。
+
+### 文本画笔
+
+`GridResources.TextBrushKey` 承载数据文字颜色并随主题切换（Light `#1F2937`，Dark `#D8DAE3`）。库内所有控件的前景都绑定到它 —— 自定义模板也应如此，不要硬编码颜色。
+
+### UX 标准
+
+库遵循 [ux-checklist.md](../ux-checklist.md)：Fluent 风格排版（正文 14 px，表头 SemiBold、高 32 px）、4 px 间距网格、hover+按下态、本地化空状态、两种主题均满足 WCAG AA 对比度。
