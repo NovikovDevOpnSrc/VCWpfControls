@@ -32,6 +32,11 @@ public class TreeListView : GridControl
         nameof(InitiallyExpanded), typeof(bool), typeof(TreeListView),
         new PropertyMetadata(false));
 
+    /// <summary>Identifies the <see cref="FilterPredicate"/> dependency property.</summary>
+    public static readonly DependencyProperty FilterPredicateProperty = DependencyProperty.Register(
+        nameof(FilterPredicate), typeof(Predicate<object>), typeof(TreeListView),
+        new PropertyMetadata(null, OnTreeFilterChanged));
+
     private readonly List<TreeListNode> _roots = new();
     private readonly Dictionary<object, TreeListNode> _nodesByItem = new();
     private readonly Dictionary<object, bool> _expandState = new();
@@ -63,6 +68,58 @@ public class TreeListView : GridControl
     {
         get => (bool)GetValue(InitiallyExpandedProperty);
         set => SetValue(InitiallyExpandedProperty, value);
+    }
+
+    /// <summary>
+    /// Node filter: a node is visible when it matches or any of its descendants matches.
+    /// Ancestors of matches are shown and temporarily expanded while the filter is active;
+    /// manual expansion state is restored when the filter is cleared.
+    /// </summary>
+    public Predicate<object>? FilterPredicate
+    {
+        get => (Predicate<object>?)GetValue(FilterPredicateProperty);
+        set => SetValue(FilterPredicateProperty, value);
+    }
+
+    private static void OnTreeFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((TreeListView)d).RebuildTree();
+
+    private bool PassesFilter(TreeListNode node)
+    {
+        if (FilterPredicate is not { } filter)
+        {
+            return true;
+        }
+
+        if (filter(node.Item))
+        {
+            return true;
+        }
+
+        ResolveChildren(node);
+        foreach (var child in node.Children!)
+        {
+            if (PassesFilter(child))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasMatchingDescendant(TreeListNode node)
+    {
+        ResolveChildren(node);
+        foreach (var child in node.Children!)
+        {
+            if (PassesFilter(child))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void OnTreeItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -179,8 +236,18 @@ public class TreeListView : GridControl
 
     private void AppendNode(List<GridRowInfo> view, TreeListNode node)
     {
+        if (!PassesFilter(node))
+        {
+            return;
+        }
+
         view.Add(new GridDataRow(node.Item));
-        if (node.IsExpanded != true || node.ChildrenCount == 0)
+
+        // While filtering, ancestors of matches are temporarily expanded so matches are visible.
+        var expanded = FilterPredicate is not null && HasMatchingDescendant(node)
+            ? true
+            : node.IsExpanded == true;
+        if (!expanded || node.ChildrenCount == 0)
         {
             return;
         }

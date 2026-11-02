@@ -41,6 +41,10 @@ Header clicks and `SortBy`/`AddSortLevel` order the children **within each level
 Changes in the roots collection or in any materialized children collection
 (`ObservableCollection` recommended) rebuild the view automatically.
 
+## Filtering
+
+Set `FilterPredicate` (any `Predicate<object>`): a node is visible when it matches or any descendant matches; ancestors of matches are shown and temporarily expanded. Manual expansion state is restored when the predicate is cleared.
+
 ## Not yet (see ROADMAP)
 
 Filtering of tree nodes, load-on-demand children, group panel/filter row do not apply.

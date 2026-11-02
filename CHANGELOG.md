@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
+### Added (follow-up iteration)
+
+- **TreeListView filtering**: `FilterPredicate` — a node is visible when it or any descendant
+  matches; ancestors of matches are temporarily expanded, manual expansion state restored on clear.
+- **Docking floating windows**: `FloatPane`/`DockPaneBack`, floating windows with cascade
+  positioning above the app window, dock-back on window close; floating state and window
+  bounds included in the persisted layout.
+
 ### Added (stage 3)
 
 - **Docking** (`VCWpfControls.Docking`): `DockingManager` with five zones (left/top/right/
@@ -92,4 +100,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filter row input is debounced (300 ms, configurable per presenter).
 
 ### Known limitations (next releases)
-- TreeListView: tree-node filtering and load-on-demand children are planned.
+- TreeListView: load-on-demand children; docking: drag-to-redock and auto-hide.

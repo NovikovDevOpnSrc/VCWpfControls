@@ -39,6 +39,10 @@ manager.LoadLayout(xml);             // matched by pane Name (fallback: header t
 The serializer is UI-free (`DockLayoutSerializer`) — layouts can be stored in settings files
 and validated in unit tests.
 
+## Floating windows
+
+`FloatPane(pane)` moves a pane into a floating window above the application window; closing the window or `DockPaneBack(pane)` returns it to its zone. Floating state and window bounds are part of the saved layout.
+
 ## Not yet (see ROADMAP)
 
-Floating windows, drag-to-redock, auto-hide and nested splitter groups.
+Drag-to-redock, auto-hide and nested splitter groups.

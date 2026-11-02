@@ -30,6 +30,7 @@ public class DockingManager : Control
     private const string PartBottomRow = "PART_BottomRow";
 
     private readonly ObservableCollection<DockPane> _panes = new();
+    private readonly Dictionary<DockPane, Window> _floatingWindows = new();
 
     /// <summary>Shared converter hiding zone splitters of empty zones (template use).</summary>
     public static readonly System.Windows.Data.IValueConverter BoolToVisibility = new System.Windows.Controls.BooleanToVisibilityConverter();
@@ -170,8 +171,26 @@ public class DockingManager : Control
 
         if (pane.IsHidden)
         {
+            if (_floatingWindows.Remove(pane, out var closed))
+            {
+                CloseFloatingWindow(closed);
+            }
+
             RefreshZoneVisibility();
             return;
+        }
+
+        if (pane.IsFloating)
+        {
+            EnsureFloatingWindow(pane);
+            RefreshZoneVisibility();
+            return;
+        }
+
+        if (_floatingWindows.Remove(pane, out var dockedBack))
+        {
+            // Programmatic dock-back: close the window without triggering the user-close path.
+            CloseFloatingWindow(dockedBack);
         }
 
         var target = pane.Zone switch
@@ -276,6 +295,9 @@ public class DockingManager : Control
         return null;
     }
 
+    /// <summary>Test access to the floating windows.</summary>
+    internal List<Window> FloatingWindowsForTest() => _floatingWindows.Values.ToList();
+
     /// <summary>Test access to the zone hosts.</summary>
     internal DockZoneHost LeftHostForTest() => LeftHost!;
 
@@ -308,6 +330,70 @@ public class DockingManager : Control
         }
     }
 
+    /// <summary>Moves the pane into a floating window above the manager's window.</summary>
+    public void FloatPane(DockPane pane)
+    {
+        ArgumentNullException.ThrowIfNull(pane);
+        pane.Manager = this;
+        pane.IsHidden = false;
+        pane.IsFloating = true; // SyncPane detaches it from zones and opens the window
+    }
+
+    /// <summary>Docks a floating pane back into its zone.</summary>
+    public void DockPaneBack(DockPane pane)
+    {
+        ArgumentNullException.ThrowIfNull(pane);
+        pane.Manager = this;
+        pane.IsFloating = false;
+    }
+
+    private void EnsureFloatingWindow(DockPane pane)
+    {
+        if (_floatingWindows.ContainsKey(pane))
+        {
+            return;
+        }
+
+        var window = new Window
+        {
+            Title = Convert.ToString(pane.Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty,
+            Content = pane,
+            Width = 420,
+            Height = 320,
+            WindowStartupLocation = WindowStartupLocation.Manual,
+            Owner = Window.GetWindow(this),
+            ShowInTaskbar = false,
+        };
+
+        // The pane is already detached at this point, so cascade the window over the manager.
+        var cascade = 24 * (_floatingWindows.Count % 6);
+        var topLeft = PointToScreen(new Point(0, 0));
+        window.Left = topLeft.X + 40 + cascade;
+        window.Top = topLeft.Y + 40 + cascade;
+
+        window.Closing += OnFloatingWindowClosing;
+        _floatingWindows[pane] = window;
+        window.Show();
+    }
+
+    private void OnFloatingWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (sender is Window { Content: DockPane pane } window)
+        {
+            window.Closing -= OnFloatingWindowClosing;
+            if (_floatingWindows.Remove(pane))
+            {
+                pane.IsFloating = false; // docks back; no window teardown (it is closing already)
+            }
+        }
+    }
+
+    private void CloseFloatingWindow(Window window)
+    {
+        window.Closing -= OnFloatingWindowClosing;
+        window.Close();
+    }
+
     /// <summary>Serializes the current layout to a compact XML string.</summary>
     public string SaveLayout()
     {
@@ -320,9 +406,18 @@ public class DockingManager : Control
                 Name = pane.LayoutKey,
                 Zone = pane.Zone,
                 IsHidden = pane.IsHidden,
+                IsFloating = pane.IsFloating,
                 Width = ResolveSize(pane, zone, horizontal: true),
                 Height = ResolveSize(pane, zone, horizontal: false),
             };
+
+            if (pane.IsFloating && _floatingWindows.TryGetValue(pane, out var floating))
+            {
+                entry.FloatingLeft = floating.Left;
+                entry.FloatingTop = floating.Top;
+                entry.FloatingWidth = floating.Width;
+                entry.FloatingHeight = floating.Height;
+            }
 
             model.Panes.Add(entry);
         }
@@ -376,6 +471,25 @@ public class DockingManager : Control
 
             pane.Zone = entry.Zone;
             pane.IsHidden = entry.IsHidden;
+            if (entry.IsFloating)
+            {
+                pane.Manager = this;
+                pane.IsFloating = true;
+                if (_floatingWindows.TryGetValue(pane, out var window))
+                {
+                    window.Left = entry.FloatingLeft;
+                    window.Top = entry.FloatingTop;
+                    if (entry.FloatingWidth > 0)
+                    {
+                        window.Width = entry.FloatingWidth;
+                    }
+
+                    if (entry.FloatingHeight > 0)
+                    {
+                        window.Height = entry.FloatingHeight;
+                    }
+                }
+            }
             if (entry.Width > 0)
             {
                 pane.DockWidth = new GridLength(entry.Width);

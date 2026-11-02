@@ -38,6 +38,21 @@ public sealed class DockPaneLayout
 
     /// <summary>Whether the pane is closed/hidden.</summary>
     public bool IsHidden { get; set; }
+
+    /// <summary>Whether the pane lives in a floating window.</summary>
+    public bool IsFloating { get; set; }
+
+    /// <summary>Floating window left edge (screen coordinates).</summary>
+    public double FloatingLeft { get; set; }
+
+    /// <summary>Floating window top edge (screen coordinates).</summary>
+    public double FloatingTop { get; set; }
+
+    /// <summary>Floating window width.</summary>
+    public double FloatingWidth { get; set; }
+
+    /// <summary>Floating window height.</summary>
+    public double FloatingHeight { get; set; }
 }
 
 /// <summary>UI-free layout snapshot of a whole docking layout.</summary>
@@ -66,7 +81,12 @@ public static class DockLayoutSerializer
                 new XAttribute("zone", pane.Zone.ToString()),
                 new XAttribute("width", pane.Width.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("height", pane.Height.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-                new XAttribute("hidden", pane.IsHidden ? "1" : "0")));
+                new XAttribute("hidden", pane.IsHidden ? "1" : "0"),
+                new XAttribute("floating", pane.IsFloating ? "1" : "0"),
+                new XAttribute("fx", pane.FloatingLeft.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                new XAttribute("fy", pane.FloatingTop.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                new XAttribute("fw", pane.FloatingWidth.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                new XAttribute("fh", pane.FloatingHeight.ToString(System.Globalization.CultureInfo.InvariantCulture))));
         }
 
         return root.ToString(SaveOptions.DisableFormatting);
@@ -98,11 +118,21 @@ public static class DockLayoutSerializer
                 Width = ParseDouble(element.Attribute("width")),
                 Height = ParseDouble(element.Attribute("height")),
                 IsHidden = (string?)element.Attribute("hidden") == "1",
+                IsFloating = (string?)element.Attribute("floating") == "1",
+                FloatingLeft = ReadDouble(element, "fx"),
+                FloatingTop = ReadDouble(element, "fy"),
+                FloatingWidth = ReadDouble(element, "fw"),
+                FloatingHeight = ReadDouble(element, "fh"),
             });
         }
 
         return model;
     }
+
+    private static double ReadDouble(XElement element, string attributeName)
+        => double.TryParse((string?)element.Attribute(attributeName), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : 0;
 
     private static double ParseDouble(XAttribute? attribute)
         => attribute is not null

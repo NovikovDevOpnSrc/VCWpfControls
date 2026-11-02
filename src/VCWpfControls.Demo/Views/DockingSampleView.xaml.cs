@@ -36,6 +36,19 @@ public partial class DockingSampleView : UserControl
     private void OnHideProperties(object sender, RoutedEventArgs e)
         => Dock.HidePane(FindPane("propertiesPane"));
 
+    private void OnFloatProperties(object sender, RoutedEventArgs e)
+    {
+        var pane = FindPane("propertiesPane");
+        if (pane.IsFloating)
+        {
+            Dock.DockPaneBack(pane);
+        }
+        else
+        {
+            Dock.FloatPane(pane);
+        }
+    }
+
     private DockPane FindPane(string name)
     {
         foreach (var pane in Dock.Panes)

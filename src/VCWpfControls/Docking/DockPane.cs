@@ -31,6 +31,11 @@ public class DockPane : HeaderedContentControl
     public static readonly DependencyProperty DockHeightProperty = DependencyProperty.Register(
         nameof(DockHeight), typeof(GridLength), typeof(DockPane), new PropertyMetadata(new GridLength(220)));
 
+    /// <summary>Identifies the <see cref="IsFloating"/> dependency property.</summary>
+    public static readonly DependencyProperty IsFloatingProperty = DependencyProperty.Register(
+        nameof(IsFloating), typeof(bool), typeof(DockPane),
+        new PropertyMetadata(false, OnFloatingChanged));
+
     /// <summary>Identifies the <see cref="Closed"/> routed event.</summary>
     public static readonly RoutedEvent ClosedEvent = EventManager.RegisterRoutedEvent(
         nameof(Closed), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(DockPane));
@@ -83,6 +88,16 @@ public class DockPane : HeaderedContentControl
         get => (GridLength)GetValue(DockHeightProperty);
         set => SetValue(DockHeightProperty, value);
     }
+
+    /// <summary>Whether the pane currently lives in a floating window.</summary>
+    public bool IsFloating
+    {
+        get => (bool)GetValue(IsFloatingProperty);
+        internal set => SetValue(IsFloatingProperty, value);
+    }
+
+    private static void OnFloatingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((DockPane)d).Manager?.SyncPane((DockPane)d);
 
     /// <summary>The owning manager, set when the pane is added to <see cref="DockingManager.Panes"/>.</summary>
     internal DockingManager? Manager { get; set; }

@@ -6,7 +6,8 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
             <Button x:Name="SaveLayout" Margin="0,0,8,0" Padding="12,4" Click="OnSaveLayout">Save layout</Button>
             <Button x:Name="RestoreLayout" Margin="0,0,8,0" Padding="12,4" Click="OnRestoreLayout">Restore layout</Button>
-            <Button x:Name="HideProperties" Padding="12,4" Click="OnHideProperties">Hide properties</Button>
+            <Button x:Name="HideProperties" Margin="0,0,8,0" Padding="12,4" Click="OnHideProperties">Hide properties</Button>
+            <Button x:Name="FloatProperties" Padding="12,4" Click="OnFloatProperties">Float properties</Button>
         </StackPanel>
         <docking:DockingManager x:Name="Dock">
             <docking:DockPane Header="Welcome" Zone="Center" Name="welcomePane">
