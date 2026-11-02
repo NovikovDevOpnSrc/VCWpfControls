@@ -50,8 +50,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built-in localization: English, Russian, Chinese (`Strings.*.resx`, extendable).
 - Accessibility: UI Automation peer with Grid/Table/Selection patterns.
 
+### Added (stage 1.2.x)
+
+- **Incremental collection updates**: single-item `Add`/`Remove`/`Replace` in an
+  `ObservableCollection` no longer rebuild the view — rows are inserted at the
+  binary-searched sorted position (or skipped by active filters); grouped views still
+  rebuild. Selection, current cell and summaries stay in sync automatically.
+- **Background refresh**: `UseAsyncRefresh="True"` computes filter/sort/group on the thread
+  pool and applies the result on the UI thread; stale results are dropped and recomputed.
+- **Group panel with drag-to-group**: `ShowGroupPanel` (on by default) — drop a column
+  header to group by it (`CanUserGroupColumns`), removable chips per grouping level.
+- **Column filter menu**: funnel button in every header (`CanUserFilter`) opening a
+  localized value-list menu (search, check list, select all, clear).
+- Filter row input is debounced (300 ms, configurable per presenter).
+
 ### Known limitations (next releases)
-- Collection changes rebuild the whole pipeline (incremental updates and asynchronous
-  sort/filter for very large sets are planned for 1.2.x).
-- Drag-to-group panel and per-column filter menu UI are not built-in yet (engine APIs work).
 - Row details templates are planned.

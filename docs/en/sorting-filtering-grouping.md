@@ -11,9 +11,26 @@ three observable collections on the grid: `SortDescriptions`, `FilterDescription
 filter → sort → group → flatten).
 
 > **Built-in UI.** Set `ShowFilterRow="True"` to get a filter row under the headers
-> (contains for text columns, typed equality for numeric/date columns). Group rows render
-> with an expand/collapse toggle; add aggregates to `SummaryItems` to show footer summaries
-> (`Sum`, `Min`, `Max`, `Avg`, `Count`). All engine APIs below work regardless of UI.
+> (contains for text columns, typed equality for numeric/date columns; applied with a
+> 300 ms debounce). Every column header carries a funnel button opening a value-list filter
+> menu (search box + check list of distinct values, `(Select all)`/`Clear`/`OK`).
+> Drag a column header into the **group panel** above the headers to group by it
+> (`CanUserGroupColumns="True"` by default); chips in the panel remove grouping levels.
+> Group rows render with an expand/collapse toggle; add aggregates to `SummaryItems` to show
+> footer summaries (`Sum`, `Min`, `Max`, `Avg`, `Count`). All engine APIs below work
+> regardless of UI.
+
+## Performance modes
+
+- **Incremental updates.** Single-item `Add`/`Remove`/`Replace` in an
+  `ObservableCollection` are applied without rebuilding the view: the engine inserts the row
+  at the binary-searched position under the active sorts and skips items filtered out
+  (grouped views still rebuild). Selection, current cell and summaries are updated to match.
+- **Background refresh.** `UseAsyncRefresh="True"` moves filtering/sorting/grouping to the
+  thread pool and applies the result on the UI thread. Stale results (state changed while
+  computing) are dropped and recomputed, so rapid keystrokes or header clicks always settle
+  on the latest state. The demo page “Virtualization (100k rows)” has a toggle to feel the
+  difference.
 
 ## Sorting
 

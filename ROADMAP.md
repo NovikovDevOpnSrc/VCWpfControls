@@ -12,11 +12,12 @@
 - Editing with validation (IDataErrorInfo, INotifyDataErrorInfo), add/delete rows
 - Keyboard navigation, clipboard copy
 
-### 1.2 Analytics
+### 1.2 Analytics (done)
 - Filter row + per-column filter menu (text, value list, numeric/date ranges)
-- Grouping with group panel, expand/collapse
-- Aggregate summaries (Sum, Min, Max, Avg, Count) — footer and group level
-- Asynchronous sorting/filtering for large data sets
+- Grouping with group panel, drag-to-group, expand/collapse
+- Aggregate summaries (Sum, Min, Max, Avg, Count) — footer level
+- Asynchronous sorting/filtering for large data sets (`UseAsyncRefresh`)
+- Incremental ObservableCollection updates without full rebuilds
 
 ### 1.3 Completion of feature parity
 - Export: CSV, Excel (xlsx), HTML; clipboard as HTML

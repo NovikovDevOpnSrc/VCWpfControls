@@ -2,8 +2,18 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
-    <grid:GridControl
-                      ItemsSource="{Binding Employees}"
-                      RowHeight="26"
-                      FrozenColumnCount="1" />
+    <DockPanel>
+        <CheckBox x:Name="AsyncToggle"
+                  DockPanel.Dock="Top"
+                  Margin="0,0,0,8"
+                  IsChecked="False"
+                  Checked="OnAsyncToggle"
+                  Unchecked="OnAsyncToggle">
+            <TextBlock Text="Background refresh (sorting/filtering on a background thread)" />
+        </CheckBox>
+        <grid:GridControl x:Name="Grid"
+                          ItemsSource="{Binding Employees}"
+                          RowHeight="26"
+                          FrozenColumnCount="1" />
+    </DockPanel>
 </UserControl>

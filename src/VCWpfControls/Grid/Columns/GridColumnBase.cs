@@ -50,6 +50,10 @@ public abstract class GridColumnBase : DependencyObject
     public static readonly DependencyProperty CanUserSortProperty = DependencyProperty.Register(
         nameof(CanUserSort), typeof(bool), typeof(GridColumnBase), new PropertyMetadata(Boxed.BoolTrue));
 
+    /// <summary>Identifies the <see cref="CanUserFilter"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserFilterProperty = DependencyProperty.Register(
+        nameof(CanUserFilter), typeof(bool), typeof(GridColumnBase), new PropertyMetadata(Boxed.BoolTrue));
+
     /// <summary>Identifies the <see cref="SortMemberPath"/> dependency property.</summary>
     public static readonly DependencyProperty SortMemberPathProperty = DependencyProperty.Register(
         nameof(SortMemberPath), typeof(string), typeof(GridColumnBase), new PropertyMetadata(null));
@@ -133,6 +137,13 @@ public abstract class GridColumnBase : DependencyObject
     {
         get => (bool)GetValue(CanUserSortProperty);
         set => SetValue(CanUserSortProperty, value);
+    }
+
+    /// <summary>Whether the user can open the column filter menu from the header.</summary>
+    public bool CanUserFilter
+    {
+        get => (bool)GetValue(CanUserFilterProperty);
+        set => SetValue(CanUserFilterProperty, value);
     }
 
     /// <summary>Property path used for sorting; defaults to <see cref="FieldName"/>.</summary>

@@ -17,4 +17,8 @@
   <data name="SummaryAvg" xml:space="preserve"><value>{0} 平均值：{1}</value></data>
   <data name="SummaryCount" xml:space="preserve"><value>计数：{0}</value></data>
   <data name="ExportCompleted" xml:space="preserve"><value>导出完成</value></data>
+  <data name="GroupPanelHint" xml:space="preserve"><value>将列标题拖到此处按该列分组</value></data>
+  <data name="FilterMenuSelectAll" xml:space="preserve"><value>（全选）</value></data>
+  <data name="FilterMenuClear" xml:space="preserve"><value>清除</value></data>
+  <data name="FilterMenuOk" xml:space="preserve"><value>确定</value></data>
 </root>

@@ -50,6 +50,9 @@ public partial class GridControl : ItemsControl
     /// <summary>Template part: the column headers presenter.</summary>
     protected const string PartColumnHeadersPresenter = "PART_ColumnHeadersPresenter";
 
+    /// <summary>Template part: the group panel (drag-to-group drop target).</summary>
+    protected const string PartGroupPanel = "PART_GroupPanel";
+
     /// <summary>Template part: the optional filter row presenter.</summary>
     protected const string PartFilterRowPresenter = "PART_FilterRowPresenter";
 
@@ -117,6 +120,21 @@ public partial class GridControl : ItemsControl
     public static readonly DependencyProperty ShowFilterRowProperty = DependencyProperty.Register(
         nameof(ShowFilterRow), typeof(bool), typeof(GridControl),
         new PropertyMetadata(GridColumnBase.Boxed.BoolFalse, OnLayoutPropertyChanged));
+
+    /// <summary>Identifies the <see cref="UseAsyncRefresh"/> dependency property.</summary>
+    public static readonly DependencyProperty UseAsyncRefreshProperty = DependencyProperty.Register(
+        nameof(UseAsyncRefresh), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse));
+
+    /// <summary>Identifies the <see cref="ShowGroupPanel"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowGroupPanelProperty = DependencyProperty.Register(
+        nameof(ShowGroupPanel), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnLayoutPropertyChanged));
+
+    /// <summary>Identifies the <see cref="CanUserGroupColumns"/> dependency property.</summary>
+    public static readonly DependencyProperty CanUserGroupColumnsProperty = DependencyProperty.Register(
+        nameof(CanUserGroupColumns), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolTrue));
 
     /// <summary>Identifies the <see cref="SelectionMode"/> dependency property.</summary>
     public static readonly DependencyProperty SelectionModeProperty = DependencyProperty.Register(
@@ -192,6 +210,7 @@ public partial class GridControl : ItemsControl
 
         DataEngine = new GridDataManager();
         DataEngine.ViewReset += OnEngineViewReset;
+        DataEngine.View.CollectionChanged += OnViewCollectionChanged;
 
         Layout = new GridLayoutController();
         AlternationCount = 2;
@@ -392,6 +411,32 @@ public partial class GridControl : ItemsControl
         set => SetValue(ShowFilterRowProperty, value);
     }
 
+    /// <summary>
+    /// When <see langword="true"/>, sorting/filtering/grouping changes rebuild the view on a
+    /// background thread and apply the result on the UI thread (keeps the UI responsive on
+    /// large data sets). Incremental collection changes are processed without full rebuilds
+    /// regardless of this setting.
+    /// </summary>
+    public bool UseAsyncRefresh
+    {
+        get => (bool)GetValue(UseAsyncRefreshProperty);
+        set => SetValue(UseAsyncRefreshProperty, value);
+    }
+
+    /// <summary>Whether the group panel (drop target for column headers) is shown above the headers.</summary>
+    public bool ShowGroupPanel
+    {
+        get => (bool)GetValue(ShowGroupPanelProperty);
+        set => SetValue(ShowGroupPanelProperty, value);
+    }
+
+    /// <summary>Whether the user can group by dragging column headers into the group panel.</summary>
+    public bool CanUserGroupColumns
+    {
+        get => (bool)GetValue(CanUserGroupColumnsProperty);
+        set => SetValue(CanUserGroupColumnsProperty, value);
+    }
+
     /// <summary>Single or extended (multi) selection.</summary>
     public GridSelectionMode SelectionMode
     {
@@ -474,6 +519,11 @@ public partial class GridControl : ItemsControl
     /// <summary>The headers presenter (template part).</summary>
     internal GridColumnHeadersPresenter? HeadersPresenter { get; private set; }
 
+    /// <summary>The group panel (template part).</summary>
+    internal GridGroupPanel? GroupPanel { get; private set; }
+
+    private Primitives.GridColumnFilterMenu? _openFilterMenu;
+
     /// <summary>The filter row presenter (template part).</summary>
     internal GridFilterRowPresenter? FilterRowPresenter { get; private set; }
 
@@ -529,6 +579,11 @@ public partial class GridControl : ItemsControl
         HeadersPresenter = GetTemplateChild(PartColumnHeadersPresenter) as GridColumnHeadersPresenter;
         FilterRowPresenter = GetTemplateChild(PartFilterRowPresenter) as GridFilterRowPresenter;
         SummaryRowPresenter = GetTemplateChild(PartSummaryRowPresenter) as GridSummaryRowPresenter;
+        GroupPanel = GetTemplateChild(PartGroupPanel) as GridGroupPanel;
+        if (GroupPanel is not null)
+        {
+            GroupPanel.Owner = this;
+        }
 
         if (ScrollHost is not null)
         {
@@ -758,14 +813,82 @@ public partial class GridControl : ItemsControl
         }
     }
 
-    /// <summary>Applies the current columns to the engine and refreshes the view.</summary>
+    /// <summary>Applies the current sort/filter/group settings and rebuilds the view synchronously.</summary>
     public void Refresh()
+    {
+        PushEngineSettings();
+        DataEngine.Refresh();
+    }
+
+    /// <summary>Applies the settings and rebuilds the view, honoring <see cref="UseAsyncRefresh"/>.</summary>
+    private void RefreshView()
+    {
+        PushEngineSettings();
+        if (UseAsyncRefresh)
+        {
+            _ = RefreshViewAsyncCore();
+        }
+        else
+        {
+            DataEngine.Refresh();
+        }
+    }
+
+    private async Task RefreshViewAsyncCore()
+    {
+        // A dropped result means the state changed while computing; recompute.
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            if (await DataEngine.RefreshAsync())
+            {
+                return;
+            }
+        }
+
+        DataEngine.Refresh();
+    }
+
+    private void PushEngineSettings()
     {
         DataEngine.Sorts = SortDescriptions;
         DataEngine.Filters = FilterDescriptions;
         DataEngine.Groups = GroupDescriptions;
-        DataEngine.Refresh();
-        SyncEngineView();
+    }
+
+    private void OnViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Incremental view changes (single-item source Add/Remove): ItemsControl already
+        // processed the collection change; keep selection, current item and summaries in sync.
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove when e.OldItems is not null:
+                var removedItems = new List<object>();
+                foreach (var rowInfo in e.OldItems)
+                {
+                    if (rowInfo is GridDataRow data && _selectedItems.Contains(data.Item))
+                    {
+                        removedItems.Add(data.Item);
+                    }
+                }
+
+                foreach (var item in removedItems)
+                {
+                    _selectedItems.Remove(item);
+                }
+
+                if (removedItems.Count > 0)
+                {
+                    OnSelectionChanged(Array.Empty<object>(), removedItems);
+                }
+
+                RestoreCurrentItem();
+                SummaryRowPresenter?.RefreshValues();
+                break;
+
+            case NotifyCollectionChangedAction.Add:
+                SummaryRowPresenter?.RefreshValues();
+                break;
+        }
     }
 
     private void SyncEngineView()
@@ -972,26 +1095,19 @@ public partial class GridControl : ItemsControl
     private void OnSortDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         SyncSortStateToColumns();
-        DataEngine.Sorts = SortDescriptions;
-        DataEngine.Refresh();
-        SyncEngineView();
-        InvalidateVisualChildren();
+        RefreshView();
     }
 
     private void OnFilterDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        DataEngine.Filters = FilterDescriptions;
-        DataEngine.Refresh();
-        SyncEngineView();
-        InvalidateVisualChildren();
+        RefreshView();
+        SyncFilterIndicators();
     }
 
     private void OnGroupDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        DataEngine.Groups = GroupDescriptions;
-        DataEngine.Refresh();
-        SyncEngineView();
-        InvalidateVisualChildren();
+        GroupPanel?.EnsureChips();
+        RefreshView();
     }
 
     private void SyncSortStateToColumns()
@@ -1071,5 +1187,74 @@ public partial class GridControl : ItemsControl
         FilterDescriptions.Add(value is null
             ? new GridFilterDescription(field, GridFilterOperator.Contains, text)
             : new GridFilterDescription(field, GridFilterOperator.Equals, value));
+    }
+
+    /// <summary>Adds a grouping level for the column (the drag-to-group drop action).</summary>
+    public void GroupByColumn(GridColumnBase column)
+    {
+        ArgumentNullException.ThrowIfNull(column);
+        if (!CanUserGroupColumns)
+        {
+            return;
+        }
+
+        var field = column.EffectiveSortPath;
+        if (GroupDescriptions.Any(g => string.Equals(g.FieldName, field, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        GroupDescriptions.Add(new GridGroupDescription(field));
+    }
+
+    /// <summary>Whether the given point (grid coordinates) lies over the group panel.</summary>
+    internal bool IsPointOverGroupPanel(Point pointInGrid)
+    {
+        if (GroupPanel is not { } panel || !ShowGroupPanel || !CanUserGroupColumns)
+        {
+            return false;
+        }
+
+        var bounds = panel.TransformToAncestor(this).TransformBounds(new Rect(0, 0, panel.ActualWidth, panel.ActualHeight));
+        return bounds.Contains(pointInGrid);
+    }
+
+    /// <summary>Refreshes the funnel highlight of headers for columns with an active filter.</summary>
+    internal void SyncFilterIndicators()
+    {
+        if (HeadersPresenter is null)
+        {
+            return;
+        }
+
+        foreach (var column in VisibleColumns)
+        {
+            if (HeadersPresenter.GetHeader(column) is { } header)
+            {
+                header.IsFilterApplied = FilterDescriptions.Any(f =>
+                    string.Equals(f.FieldName, column.FieldName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+    }
+
+    /// <summary>Opens the value-list filter menu anchored to the column's header.</summary>
+    internal void OpenColumnFilterMenu(GridColumnBase column)
+    {
+        if (!column.CanUserFilter)
+        {
+            return;
+        }
+
+        _openFilterMenu?.Close();
+        var menu = new Primitives.GridColumnFilterMenu(this, column);
+        menu.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_openFilterMenu, menu))
+            {
+                _openFilterMenu = null;
+            }
+        };
+        _openFilterMenu = menu;
+        menu.Open();
     }
 }

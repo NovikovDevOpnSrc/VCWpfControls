@@ -35,6 +35,14 @@ public class GridColumnHeader : Control
     public static readonly DependencyProperty IsDropTargetProperty = DependencyProperty.Register(
         nameof(IsDropTarget), typeof(bool), typeof(GridColumnHeader), new PropertyMetadata(false));
 
+    /// <summary>Identifies the <see cref="IsFilterApplied"/> dependency property.</summary>
+    public static readonly DependencyProperty IsFilterAppliedProperty = DependencyProperty.Register(
+        nameof(IsFilterApplied), typeof(bool), typeof(GridColumnHeader), new PropertyMetadata(false));
+
+    /// <summary>Identifies the <see cref="ShowFilterButton"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowFilterButtonProperty = DependencyProperty.Register(
+        nameof(ShowFilterButton), typeof(bool), typeof(GridColumnHeader), new PropertyMetadata(false));
+
     private const double DragThreshold = 4d;
 
     private Thumb? _resizeThumb;
@@ -83,6 +91,20 @@ public class GridColumnHeader : Control
         internal set => SetValue(IsDropTargetProperty, value);
     }
 
+    /// <summary>Whether a filter is currently applied to the column (highlights the funnel).</summary>
+    public bool IsFilterApplied
+    {
+        get => (bool)GetValue(IsFilterAppliedProperty);
+        internal set => SetValue(IsFilterAppliedProperty, value);
+    }
+
+    /// <summary>Whether the filter (funnel) button is shown in this header.</summary>
+    public bool ShowFilterButton
+    {
+        get => (bool)GetValue(ShowFilterButtonProperty);
+        internal set => SetValue(ShowFilterButtonProperty, value);
+    }
+
     /// <inheritdoc />
     public override void OnApplyTemplate()
     {
@@ -101,6 +123,20 @@ public class GridColumnHeader : Control
             _resizeThumb.DragDelta += OnResizeDelta;
             _resizeThumb.DragStarted += OnResizeStarted;
             _resizeThumb.DragCompleted += OnResizeCompleted;
+        }
+
+        if (GetTemplateChild("PART_FilterButton") is ToggleButton filterButton)
+        {
+            filterButton.Click += OnFilterButtonClick;
+        }
+    }
+
+    private void OnFilterButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is ToggleButton { IsChecked: true } button)
+        {
+            Owner?.OpenColumnFilterMenu(Column!);
+            button.IsChecked = false; // momentary action, not a persistent toggle state
         }
     }
 
@@ -147,8 +183,8 @@ public class GridColumnHeader : Control
 
         if (_isDragging)
         {
-            var pointInHeaders = e.GetPosition(Owner.HeadersPresenter);
-            Owner.NotifyColumnDragOver(Column, pointInHeaders);
+            var pointInGrid = e.GetPosition(Owner);
+            Owner.NotifyColumnDragOver(Column, pointInGrid);
         }
     }
 
@@ -164,10 +200,10 @@ public class GridColumnHeader : Control
 
         if (_isDragging)
         {
-            var pointInHeaders = e.GetPosition(Owner?.HeadersPresenter);
+            var pointInGrid = Owner is null ? default : e.GetPosition(Owner);
             _isDragging = false;
             Cursor = Cursors.Arrow;
-            Owner?.NotifyColumnDragCompleted(Column, pointInHeaders);
+            Owner?.NotifyColumnDragCompleted(Column, pointInGrid);
         }
         else if (_mouseDownWithoutDrag)
         {

@@ -35,6 +35,7 @@ public sealed class GridColumnHeadersPresenter : Panel
             }
 
             header.SortDirection = column.SortDirection;
+            header.ShowFilterButton = column.CanUserFilter;
             Children.Add(header);
         }
 

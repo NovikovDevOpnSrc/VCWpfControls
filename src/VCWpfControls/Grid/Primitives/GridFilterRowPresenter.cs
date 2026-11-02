@@ -12,10 +12,48 @@ namespace VCWpfControls.Grid.Primitives;
 public sealed class GridFilterRowPresenter : Panel
 {
     private readonly Dictionary<GridColumnBase, TextBox> _editorsByColumn = new();
+    private readonly System.Windows.Threading.DispatcherTimer _debounce;
     private bool _updating;
+
+    private GridColumnBase? _pendingColumn;
+    private string _pendingText = string.Empty;
 
     /// <summary>The owning grid, attached when the control template is applied.</summary>
     internal GridControl? Owner { get; set; }
+
+    /// <summary>How long typing pauses before the filter is applied (avoids refreshing per keystroke).</summary>
+    public static readonly DependencyProperty DebounceIntervalProperty = DependencyProperty.Register(
+        nameof(DebounceInterval), typeof(TimeSpan), typeof(GridFilterRowPresenter),
+        new PropertyMetadata(TimeSpan.FromMilliseconds(300)));
+
+    /// <summary>Filter apply debounce; <see cref="TimeSpan.Zero"/> applies on every keystroke.</summary>
+    public TimeSpan DebounceInterval
+    {
+        get => (TimeSpan)GetValue(DebounceIntervalProperty);
+        set => SetValue(DebounceIntervalProperty, value);
+    }
+
+    /// <summary>Creates the presenter and its debounce timer.</summary>
+    public GridFilterRowPresenter()
+    {
+        _debounce = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(300),
+        };
+        _debounce.Tick += OnDebounceTick;
+    }
+
+    private void OnDebounceTick(object? sender, EventArgs e)
+    {
+        _debounce.Stop();
+        if (_pendingColumn is not null && Owner is not null)
+        {
+            var column = _pendingColumn;
+            var text = _pendingText;
+            _pendingColumn = null;
+            Owner.ApplyFilterText(column, text);
+        }
+    }
 
     /// <summary>Builds or reuses one text box per visible column.</summary>
     internal void EnsureEditors()
@@ -100,7 +138,17 @@ public sealed class GridFilterRowPresenter : Panel
             return;
         }
 
-        Owner.ApplyFilterText(column, editor.Text);
+        _pendingColumn = column;
+        _pendingText = editor.Text;
+        if (DebounceInterval <= TimeSpan.Zero)
+        {
+            OnDebounceTick(this, EventArgs.Empty);
+            return;
+        }
+
+        _debounce.Interval = DebounceInterval;
+        _debounce.Stop();
+        _debounce.Start();
     }
 
     /// <summary>Clears all filter editors without raising filter changes.</summary>

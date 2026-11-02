@@ -1,27 +1,34 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Globalization;
 
 namespace VCWpfControls.Grid.Data;
 
 /// <summary>
 /// The UI-free data engine of <c>GridControl</c>: takes the source collection and applies
-/// filtering, sorting and grouping, producing a flattened list of <see cref="GridRowInfo"/> rows
-/// (data rows interleaved with group rows). Fully unit-testable without WPF.
+/// filtering, sorting and grouping, producing a flattened observable collection of
+/// <see cref="GridRowInfo"/> rows (data rows interleaved with group rows). Fully unit-testable
+/// without WPF.
 /// </summary>
+/// <remarks>
+/// The pipeline can run synchronously (<see cref="Refresh"/>), incrementally (single-item
+/// collection changes without active grouping) or asynchronously (<see cref="RefreshAsync"/>,
+/// computing on a background thread and applying the result on the caller's context).
+/// A version counter drops results that were computed against a stale state.
+/// </remarks>
 public sealed class GridDataManager
 {
     private readonly ConcurrentDictionary<KeyValuePair<Type, string>, PropertyAccessor> _accessorCache = new();
-    private readonly Dictionary<GridGroupKeyPath, bool> _expandState = new();
+    private readonly ConcurrentDictionary<string, bool> _expandState = new();
+    private readonly GridRowCollection _view = new();
 
     private IEnumerable? _source;
     private INotifyCollectionChanged? _notifier;
-    private List<GridRowInfo> _view = new();
     private List<GridDataRow> _dataRows = new();
+    private long _version;
 
-    /// <summary>Raised after the view has been rebuilt; the control re-synchronizes its items.</summary>
+    /// <summary>Raised after the view has been rebuilt from scratch; the control re-synchronizes its items.</summary>
     public event EventHandler? ViewReset;
 
     /// <summary>The bound source collection, or <see langword="null"/>.</summary>
@@ -45,11 +52,14 @@ public sealed class GridDataManager
     /// <summary>The inferred (or explicit) common item type, or <see langword="null"/>.</summary>
     public Type? ResolvedItemType { get; private set; }
 
-    /// <summary>The flattened view: data rows and group rows in display order.</summary>
-    public IReadOnlyList<GridRowInfo> View => _view;
+    /// <summary>The flattened observable view: data rows and group rows in display order.</summary>
+    public GridRowCollection View => _view;
 
     /// <summary>Data rows of the view in display order (without group rows).</summary>
     public IReadOnlyList<GridDataRow> DataRows => _dataRows;
+
+    /// <summary>Monotonic version of the engine state; bumped on every (re)build or incremental change.</summary>
+    public long Version => _version;
 
     /// <summary>Connects a new source collection and rebuilds the view.</summary>
     public void SetSource(IEnumerable? value)
@@ -74,22 +84,25 @@ public sealed class GridDataManager
         Refresh();
     }
 
-    /// <summary>Rebuilds the whole pipeline (filter → sort → group → flatten).</summary>
+    /// <summary>Rebuilds the whole pipeline (filter → sort → group → flatten) synchronously.</summary>
     public void Refresh()
     {
-        var all = MaterializeSource();
+        var snapshot = TakeSnapshot();
+        var result = ComputePipeline(snapshot);
+        ApplyPipelineResult(result);
+    }
 
-        ResolvedItemType = ItemType ?? InferItemType(all);
-
-        var filtered = ApplyFilters(all, ResolvedItemType);
-        var sorted = ApplySort(filtered);
-        var view = ApplyGrouping(sorted, ResolvedItemType);
-
-        AssignFlatIndices(view);
-
-        _view = view;
-        _dataRows = view.OfType<GridDataRow>().ToList();
-        ViewReset?.Invoke(this, EventArgs.Empty);
+    /// <summary>
+    /// Rebuilds the pipeline asynchronously: the snapshot is taken (and the result applied) on the
+    /// caller's context, while filtering/sorting/grouping run on the thread pool. Results computed
+    /// against a stale state are dropped; returns <see langword="false"/> in that case (the caller
+    /// may retry).
+    /// </summary>
+    public async Task<bool> RefreshAsync()
+    {
+        var snapshot = TakeSnapshot();
+        var result = await Task.Run(() => ComputePipeline(snapshot)).ConfigureAwait(true);
+        return ApplyPipelineResult(result);
     }
 
     /// <summary>Reads a cell value for the given item using a cached accessor.</summary>
@@ -104,6 +117,105 @@ public sealed class GridDataManager
         => _accessorCache.GetOrAdd(
             new KeyValuePair<Type, string>(itemType, path),
             key => PropertyAccessor.GetOrCreate(key.Key, key.Value));
+
+    /// <summary>
+    /// Returns the distinct values of a field across the source (first-seen order), capped at
+    /// <paramref name="maxValues"/>. Used by the column filter menu.
+    /// </summary>
+    public List<object?> GetDistinctValues(string fieldName, int maxValues = 500)
+    {
+        if (string.IsNullOrWhiteSpace(fieldName))
+        {
+            throw new ArgumentException("Field name must not be empty.", nameof(fieldName));
+        }
+
+
+        var result = new List<object?>();
+        if (_source is null || maxValues <= 0)
+        {
+            return result;
+        }
+
+        var seen = new HashSet<object?>();
+        foreach (var item in _source)
+        {
+            if (item is null)
+            {
+                continue;
+            }
+
+            var value = GetAccessor(item.GetType(), fieldName).GetValue(item);
+            if (seen.Add(value))
+            {
+                result.Add(value);
+                if (result.Count >= maxValues)
+                {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private PipelineSnapshot TakeSnapshot()
+    {
+        // Called on the caller's thread: reading the source here avoids touching a (possibly
+        // non-thread-safe) collection from the background thread.
+        Interlocked.Increment(ref _version);
+        return new PipelineSnapshot(
+            MaterializeSource(),
+            Sorts.ToArray(),
+            Filters.Where(f => f.Operator != GridFilterOperator.None).ToArray(),
+            Groups.Where(g => !string.IsNullOrEmpty(g.FieldName)).ToArray(),
+            ItemType,
+            Culture,
+            Volatile.Read(ref _version));
+    }
+
+    private GridPipelineResult ComputePipeline(PipelineSnapshot snapshot)
+    {
+        var itemType = snapshot.ItemType ?? InferItemType(snapshot.Items);
+        var filtered = ApplyFilters(snapshot, snapshot.Items, itemType);
+        var sorted = ApplySort(snapshot, filtered, itemType);
+        var view = ApplyGrouping(snapshot, sorted, itemType);
+        AssignFlatIndices(view);
+
+        return new GridPipelineResult(
+            view,
+            view.OfType<GridDataRow>().ToList(),
+            itemType,
+            snapshot.Version);
+    }
+
+    private bool ApplyPipelineResult(GridPipelineResult result)
+    {
+        if (result.Version != Volatile.Read(ref _version))
+        {
+            return false;
+        }
+
+        ResolvedItemType = result.ResolvedItemType;
+        _dataRows = result.DataRows;
+        _view.ReplaceAll(result.View);
+        ViewReset?.Invoke(this, EventArgs.Empty);
+        return true;
+    }
+
+    private sealed record PipelineSnapshot(
+        List<object> Items,
+        GridSortDescription[] Sorts,
+        GridFilterDescription[] Filters,
+        GridGroupDescription[] Groups,
+        Type? ItemType,
+        CultureInfo Culture,
+        long Version);
+
+    private sealed record GridPipelineResult(
+        List<GridRowInfo> View,
+        List<GridDataRow> DataRows,
+        Type? ResolvedItemType,
+        long Version);
 
     private List<object> MaterializeSource()
     {
@@ -127,9 +239,9 @@ public sealed class GridDataManager
     private static Type? InferItemType(List<object> items)
         => items.Count > 0 ? items[0].GetType() : null;
 
-    private List<object> ApplyFilters(List<object> items, Type? itemType)
+    private List<object> ApplyFilters(PipelineSnapshot snapshot, List<object> items, Type? itemType)
     {
-        var active = Filters.Where(f => f.Operator != GridFilterOperator.None).ToArray();
+        var active = snapshot.Filters;
         if (active.Length == 0 || itemType is null)
         {
             return items;
@@ -153,15 +265,16 @@ public sealed class GridDataManager
         }).ToList();
     }
 
-    private List<object> ApplySort(List<object> items)
+    private List<object> ApplySort(PipelineSnapshot snapshot, List<object> items, Type? itemType)
     {
-        var active = Sorts.Where(s => s.Direction != GridSortDirection.None && !string.IsNullOrEmpty(s.FieldName)).ToArray();
+        var active = snapshot.Sorts
+            .Where(s => s.Direction != GridSortDirection.None && !string.IsNullOrEmpty(s.FieldName))
+            .ToArray();
         if (active.Length == 0)
         {
             return items;
         }
 
-        var itemType = ResolvedItemType;
         var accessors = active.Select(s => itemType is null ? null : GetAccessor(itemType, s.FieldName)).ToArray();
 
         IOrderedEnumerable<object> ordered = items
@@ -182,9 +295,9 @@ public sealed class GridDataManager
         }
     }
 
-    private List<GridRowInfo> ApplyGrouping(List<object> sortedItems, Type? itemType)
+    private List<GridRowInfo> ApplyGrouping(PipelineSnapshot snapshot, List<object> sortedItems, Type? itemType)
     {
-        var descriptions = Groups.Where(g => !string.IsNullOrEmpty(g.FieldName)).ToArray();
+        var descriptions = snapshot.Groups;
         if (descriptions.Length == 0)
         {
             return sortedItems.Select(item => new GridDataRow(item)).ToList<GridRowInfo>();
@@ -257,21 +370,23 @@ public sealed class GridDataManager
 
     private void RestoreExpandState(GridGroup group)
     {
-        if (_expandState.TryGetValue(GridGroupKeyPath.Of(group), out var expanded))
+        var path = GridGroupKeyPath.Of(group).Path;
+        if (_expandState.TryGetValue(path, out var expanded))
         {
             group.IsExpanded = expanded;
         }
         else
         {
-            _expandState[GridGroupKeyPath.Of(group)] = group.IsExpanded;
+            _expandState[path] = group.IsExpanded;
         }
     }
 
     /// <summary>Stores the user expand/collapse choice so it survives refreshes.</summary>
     public void SetGroupExpanded(GridGroup group, bool expanded)
     {
+        ArgumentNullException.ThrowIfNull(group);
         group.IsExpanded = expanded;
-        _expandState[GridGroupKeyPath.Of(group)] = expanded;
+        _expandState[GridGroupKeyPath.Of(group).Path] = expanded;
         Refresh();
     }
 
@@ -291,7 +406,7 @@ public sealed class GridDataManager
         return null;
     }
 
-    private static void AssignFlatIndices(List<GridRowInfo> view)
+    private static void AssignFlatIndices(IReadOnlyList<GridRowInfo> view)
     {
         for (var i = 0; i < view.Count; i++)
         {
@@ -299,10 +414,143 @@ public sealed class GridDataManager
         }
     }
 
+    // ============ Incremental source updates ============
+
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        // Stage 1 rebuilds the whole pipeline on any change; incremental updates arrive with async work (stage 1.2).
-        Refresh();
+        // Grouped views rebuild: inserting a row may require new group headers and totals.
+        if (HasActiveGrouping || ResolvedItemType is null)
+        {
+            Refresh();
+            return;
+        }
+
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add when e.NewItems is { Count: 1 }:
+                OnItemAdded(e.NewItems[0]!);
+                break;
+
+            case NotifyCollectionChangedAction.Remove when e.OldItems is { Count: 1 }:
+                OnItemRemoved(e.OldItems[0]!);
+                break;
+
+            case NotifyCollectionChangedAction.Replace when e.NewItems is { Count: 1 } && e.OldItems is { Count: 1 }:
+                OnItemRemoved(e.OldItems[0]!);
+                OnItemAdded(e.NewItems[0]!);
+                break;
+
+            default:
+                Refresh();
+                break;
+        }
+    }
+
+    private bool HasActiveGrouping => Groups.Any(g => !string.IsNullOrEmpty(g.FieldName));
+
+    private void OnItemAdded(object item)
+    {
+        var itemType = ResolvedItemType ?? item.GetType();
+        if (ResolvedItemType is null)
+        {
+            ResolvedItemType = itemType;
+        }
+
+        // Respect active filters: rows that do not match are simply absent from the view.
+        var activeFilters = Filters.Where(f => f.Operator != GridFilterOperator.None).ToArray();
+        foreach (var filter in activeFilters)
+        {
+            var accessor = GetAccessor(item.GetType(), filter.FieldName);
+            if (!filter.Matches(item, accessor))
+            {
+                return;
+            }
+        }
+
+        Interlocked.Increment(ref _version);
+        var row = new GridDataRow(item);
+        var index = FindInsertIndex(item, itemType);
+        _view.Insert(index, row);
+        _dataRows.Insert(Math.Min(index, _dataRows.Count), row);
+        AssignFlatIndices(_view);
+    }
+
+    private void OnItemRemoved(object item)
+    {
+        GridDataRow? row = null;
+        foreach (var candidate in _dataRows)
+        {
+            if (ReferenceEquals(candidate.Item, item))
+            {
+                row = candidate;
+                break;
+            }
+        }
+
+        if (row is null)
+        {
+            // The item was filtered out of the view; nothing to do.
+            return;
+        }
+
+        Interlocked.Increment(ref _version);
+        _view.Remove(row);
+        _dataRows.Remove(row);
+        AssignFlatIndices(_view);
+    }
+
+    /// <summary>Binary-searches the stable insertion index for an item under the active sorts.</summary>
+    private int FindInsertIndex(object item, Type itemType)
+    {
+        var active = Sorts
+            .Where(s => s.Direction != GridSortDirection.None && !string.IsNullOrEmpty(s.FieldName))
+            .ToArray();
+        if (active.Length == 0)
+        {
+            return _view.Count;
+        }
+
+        var accessors = active.Select(s => GetAccessor(itemType, s.FieldName)).ToArray();
+        int CompareToRow(GridRowInfo row)
+        {
+            if (row is not GridDataRow data)
+            {
+                return -1;
+            }
+
+            for (var level = 0; level < active.Length; level++)
+            {
+                var newX = accessors[level].GetValue(item);
+                var newY = accessors[level].GetValue(data.Item);
+                var result = active[level].Comparer is { } custom
+                    ? custom.Compare(newX, newY)
+                    : GridValueCompare.Compare(newX, newY, active[level].Culture);
+                if (result != 0)
+                {
+                    return active[level].Direction == GridSortDirection.Descending ? -result : result;
+                }
+            }
+
+            // Equal keys: insert after existing rows to keep a stable order.
+            return 1;
+        }
+
+        var low = 0;
+        var high = _view.Count;
+        while (low < high)
+        {
+            var mid = low + (high - low) / 2;
+            if (CompareToRow(_view[mid]) < 0)
+            {
+                high = mid;
+            }
+            else
+            {
+                low = mid + 1;
+            }
+        }
+
+        return low;
     }
 
     private readonly struct GridGroupKeyPath
@@ -310,6 +558,8 @@ public sealed class GridDataManager
         private readonly string _path;
 
         private GridGroupKeyPath(string path) => _path = path;
+
+        public string Path => _path;
 
         public static GridGroupKeyPath Of(GridGroup group)
         {

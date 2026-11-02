@@ -109,14 +109,38 @@ public partial class GridControl
 
     internal void NotifyColumnDragStarted(GridColumnBase column) => _dragColumn = column;
 
-    internal void NotifyColumnDragOver(GridColumnBase column, Point pointInHeaders)
+    internal void NotifyColumnDragOver(GridColumnBase column, Point pointInGrid)
     {
         if (_dragColumn is null)
         {
             return;
         }
 
-        var target = HitTestHeader(pointInHeaders);
+        // The group panel wins over header reorder when the header is dragged above them.
+        if (IsPointOverGroupPanel(pointInGrid))
+        {
+            foreach (var visible in VisibleColumns)
+            {
+                if (HeadersPresenter?.GetHeader(visible) is { } header)
+                {
+                    header.IsDropTarget = false;
+                }
+            }
+
+            if (GroupPanel is not null)
+            {
+                GroupPanel.IsDropTarget = true;
+            }
+
+            return;
+        }
+
+        if (GroupPanel is not null)
+        {
+            GroupPanel.IsDropTarget = false;
+        }
+
+        var target = HitTestHeader(pointInGrid);
         foreach (var visible in VisibleColumns)
         {
             if (HeadersPresenter?.GetHeader(visible) is { } header)
@@ -126,7 +150,7 @@ public partial class GridControl
         }
     }
 
-    internal void NotifyColumnDragCompleted(GridColumnBase column, Point pointInHeaders)
+    internal void NotifyColumnDragCompleted(GridColumnBase column, Point pointInGrid)
     {
         _dragColumn = null;
         foreach (var visible in VisibleColumns)
@@ -137,7 +161,18 @@ public partial class GridControl
             }
         }
 
-        var target = HitTestHeader(pointInHeaders);
+        if (GroupPanel is not null)
+        {
+            GroupPanel.IsDropTarget = false;
+        }
+
+        if (IsPointOverGroupPanel(pointInGrid))
+        {
+            GroupByColumn(column);
+            return;
+        }
+
+        var target = HitTestHeader(pointInGrid);
         if (target is null || ReferenceEquals(target, column))
         {
             return;
@@ -152,16 +187,16 @@ public partial class GridControl
         // Dropping onto the right half of the target inserts after it.
         var slot = Layout.GetSlot(target);
         var targetCenter = (slot?.X ?? 0) + (slot?.Width ?? 0) / 2;
-        var insertAfter = pointInHeaders.X + HorizontalOffset > targetCenter;
+        var insertAfter = pointInGrid.X + HorizontalOffset > targetCenter;
 
         Columns.RemoveAt(oldIndex);
         var newIndex = Math.Clamp(Columns.IndexOf(target) + (insertAfter ? 1 : 0), 0, Columns.Count);
         Columns.Insert(newIndex, column);
     }
 
-    private GridColumnBase? HitTestHeader(Point pointInHeaders)
+    private GridColumnBase? HitTestHeader(Point pointInGrid)
     {
-        var contentX = pointInHeaders.X + HorizontalOffset;
+        var contentX = pointInGrid.X + HorizontalOffset;
         return Layout.FindSlotAt(contentX)?.Column;
     }
 

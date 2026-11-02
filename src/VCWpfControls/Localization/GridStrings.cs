@@ -34,6 +34,18 @@ public static class GridStrings
     /// <summary>Context menu: columns section header.</summary>
     public static string ColumnsHeader => Get("ColumnsHeader");
 
+    /// <summary>Hint shown in the empty group panel.</summary>
+    public static string GroupPanelHint => Get("GroupPanelHint");
+
+    /// <summary>Filter menu: select all values entry.</summary>
+    public static string FilterMenuSelectAll => Get("FilterMenuSelectAll");
+
+    /// <summary>Filter menu: clear button.</summary>
+    public static string FilterMenuClear => Get("FilterMenuClear");
+
+    /// <summary>Filter menu: apply button.</summary>
+    public static string FilterMenuOk => Get("FilterMenuOk");
+
     /// <summary>Context menu: export completed message.</summary>
     public static string ExportCompleted => Get("ExportCompleted");
 

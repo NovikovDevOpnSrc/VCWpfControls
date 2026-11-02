@@ -122,7 +122,34 @@ public class GridDataManagerTests
     }
 
     [Fact]
-    public void ObservableCollection_Change_TriggersViewReset()
+    public void ObservableCollection_Add_IsIncremental_WithoutViewReset()
+    {
+        var data = new ObservableCollection<Employee>(Sample());
+        var manager = Create(data.ToList());
+        manager.SetSource(data);
+
+        var resets = 0;
+        var collectionAdds = 0;
+        manager.ViewReset += (_, _) => resets++;
+        ((INotifyCollectionChanged)manager.View).CollectionChanged += (_, e) =>
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                collectionAdds++;
+            }
+        };
+
+        data.Add(new Employee { Name = "Eve", Age = 20 });
+
+        Assert.Equal(0, resets);            // incremental: no full rebuild
+        Assert.Equal(1, collectionAdds);    // one granular Add notification
+        Assert.Equal(5, manager.View.Count);
+        Assert.Equal(5, manager.DataRows.Count);
+        Assert.Equal(4, manager.View[^1].FlatIndex);
+    }
+
+    [Fact]
+    public void ObservableCollection_Remove_IsIncremental()
     {
         var data = new ObservableCollection<Employee>(Sample());
         var manager = Create(data.ToList());
@@ -130,10 +157,110 @@ public class GridDataManagerTests
 
         var resets = 0;
         manager.ViewReset += (_, _) => resets++;
-        data.Add(new Employee { Name = "Eve", Age = 20 });
+        var victim = data[2];
+        data.Remove(victim);
 
-        Assert.Equal(1, resets);
-        Assert.Equal(5, manager.View.Count);
+        Assert.Equal(0, resets);
+        Assert.Equal(3, manager.View.Count);
+        Assert.DoesNotContain(manager.DataRows, r => ReferenceEquals(r.Item, victim));
+    }
+
+    [Fact]
+    public void ObservableCollection_Add_WithActiveSort_InsertsAtSortedPosition()
+    {
+        var data = new ObservableCollection<Employee>(Sample());
+        var manager = Create(data.ToList());
+        manager.SetSource(data);
+        manager.Sorts = new[] { new GridSortDescription("Age") };
+        manager.Refresh();
+
+        data.Add(new Employee { Name = "Eve", Age = 28 });
+
+        var ages = manager.DataRows.Select(r => ((Employee)r.Item).Age).ToList();
+        Assert.Equal(ages.OrderBy(a => a), ages); // still sorted after incremental insert
+        Assert.Contains(ages, a => a == 28);
+    }
+
+    [Fact]
+    public void ObservableCollection_Add_WithActiveFilter_SkipsNonMatchingItem()
+    {
+        var data = new ObservableCollection<Employee>(Sample());
+        var manager = Create(data.ToList());
+        manager.SetSource(data);
+        manager.Filters = new[] { new GridFilterDescription("Department", GridFilterOperator.Equals, Department.It) };
+        manager.Refresh();
+
+        var viewCountBefore = manager.View.Count;
+        data.Add(new Employee { Name = "Eve", Age = 20, Department = Department.Sales });
+
+        Assert.Equal(viewCountBefore, manager.View.Count); // filtered out, no view change rows
+        data.Add(new Employee { Name = "Frank", Age = 21, Department = Department.It });
+        Assert.Equal(viewCountBefore + 1, manager.View.Count);
+    }
+
+    [Fact]
+    public void ObservableCollection_Add_WithGrouping_FallsBackToFullRefresh()
+    {
+        var data = new ObservableCollection<Employee>(Sample());
+        var manager = Create(data.ToList());
+        manager.SetSource(data);
+        manager.Sorts = new[] { new GridSortDescription("Department") };
+        manager.Groups = new[] { new GridGroupDescription("Department") };
+        manager.Refresh();
+
+        data.Add(new Employee { Name = "Eve", Age = 20, Department = Department.It });
+
+        Assert.Equal(8, manager.View.Count); // 3 group rows + 5 data rows after rebuild
+        Assert.Equal(3, manager.View.OfType<GridGroupRow>().Count());
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ProducesSameViewAsSync()
+    {
+        var manager = Create(Sample());
+        manager.Sorts = new[] { new GridSortDescription("Name") };
+        manager.Refresh();
+        var syncNames = manager.DataRows.Select(r => ((Employee)r.Item).Name).ToList();
+
+        manager.Sorts = new[] { new GridSortDescription("Age") };
+        var applied = await manager.RefreshAsync();
+
+        Assert.True(applied);
+        Assert.NotEqual(syncNames, manager.DataRows.Select(r => ((Employee)r.Item).Name).ToList());
+        Assert.Equal(manager.DataRows.Select(r => ((Employee)r.Item).Age).OrderBy(a => a),
+            manager.DataRows.Select(r => ((Employee)r.Item).Age));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_DropsStaleResults()
+    {
+        var manager = Create(Sample());
+
+        var first = manager.RefreshAsync(); // starts with version V1
+        manager.Refresh();                  // bumps to V2 synchronously in between
+        var firstApplied = await first;
+
+        Assert.False(firstApplied);         // computed against V1, dropped
+        Assert.Equal(4, manager.View.Count);
+    }
+
+    [Fact]
+    public void GetDistinctValues_ReturnsFirstSeenOrder_Capped()
+    {
+        var data = new List<Employee>
+        {
+            new() { Name = "A", Department = Department.It },
+            new() { Name = "B", Department = Department.Hr },
+            new() { Name = "C", Department = Department.It },
+            new() { Name = "D", Department = Department.Sales },
+        };
+        var manager = Create(data);
+
+        var distinct = manager.GetDistinctValues("Department");
+        Assert.Equal(new List<object?> { Department.It, Department.Hr, Department.Sales }, distinct);
+
+        var capped = manager.GetDistinctValues("Name", 2);
+        Assert.Equal(2, capped.Count);
     }
 
     [Fact]

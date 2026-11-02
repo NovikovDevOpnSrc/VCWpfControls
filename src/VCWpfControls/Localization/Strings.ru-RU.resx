@@ -17,4 +17,8 @@
   <data name="SummaryAvg" xml:space="preserve"><value>Среднее «{0}»: {1}</value></data>
   <data name="SummaryCount" xml:space="preserve"><value>Количество: {0}</value></data>
   <data name="ExportCompleted" xml:space="preserve"><value>Экспорт завершён</value></data>
+  <data name="GroupPanelHint" xml:space="preserve"><value>Перетащите заголовок столбца сюда, чтобы сгруппировать по нему</value></data>
+  <data name="FilterMenuSelectAll" xml:space="preserve"><value>(Выделить все)</value></data>
+  <data name="FilterMenuClear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="FilterMenuOk" xml:space="preserve"><value>ОК</value></data>
 </root>

@@ -17,4 +17,8 @@
   <data name="SummaryAvg" xml:space="preserve"><value>Avg of {0}: {1}</value></data>
   <data name="SummaryCount" xml:space="preserve"><value>Count: {0}</value></data>
   <data name="ExportCompleted" xml:space="preserve"><value>Export completed</value></data>
+  <data name="GroupPanelHint" xml:space="preserve"><value>Drag a column header here to group by that column</value></data>
+  <data name="FilterMenuSelectAll" xml:space="preserve"><value>(Select all)</value></data>
+  <data name="FilterMenuClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="FilterMenuOk" xml:space="preserve"><value>OK</value></data>
 </root>
