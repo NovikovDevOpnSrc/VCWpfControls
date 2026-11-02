@@ -5,6 +5,7 @@
     xmlns:primitives="clr-namespace:VCWpfControls.Grid.Primitives"
     xmlns:localization="clr-namespace:VCWpfControls.Localization"
     xmlns:propertyGrid="clr-namespace:VCWpfControls.PropertyGrid"
+    xmlns:editors="clr-namespace:VCWpfControls.Editors"
     xmlns:propertyGridPrimitives="clr-namespace:VCWpfControls.PropertyGrid.Primitives">
 
     <!-- ============ Theme palette (override these keys to re-theme the grid) ============ -->
@@ -419,6 +420,83 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- ============ NumericUpDown ============ -->
+    <Style TargetType="{x:Type editors:NumericUpDown}">
+        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type editors:NumericUpDown}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Name="PART_TextBox"
+                                Grid.Column="0"
+                                Margin="6,0,4,0"
+                                VerticalContentAlignment="Center"
+                                BorderThickness="0"
+                                Background="Transparent"
+                                TextAlignment="Right"
+                                IsReadOnly="{TemplateBinding IsReadOnly}" />
+                            <StackPanel Grid.Column="1" Margin="0,2,2,2">
+                                <RepeatButton x:Name="PART_UpButton" Content="▴" Width="22" Height="12" Focusable="False" Padding="0">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border x:Name="Bd" Background="#FFF3F4F6" CornerRadius="2,2,0,0">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                                <RepeatButton x:Name="PART_DownButton" Content="▾" Width="22" Height="12" Focusable="False" Padding="0" Margin="0,1,0,0">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border x:Name="Bd" Background="#FFF3F4F6" CornerRadius="0,0,2,2">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============ MaskedTextBox ============ -->
+    <Style TargetType="{x:Type editors:MaskedTextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="6,3" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
 </ResourceDictionary>

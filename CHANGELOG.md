@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
-### Added (stage 2 start)
+### Added (stage 3 start)
+
+- **Editors** (`VCWpfControls.Editors`): `MaskedTextBox` (mask engine with required/optional
+  digit/letter/any slots, literals, prompt char, paste validation, value with or without
+  literals) and `NumericUpDown` (bounded decimal value, repeat buttons, arrows/PageUp/PageDown,
+  mouse wheel, culture-aware parsing, format string/decimal places, ValueChanged event).
+
+### Added (stage 2)
 
 - **TreeListView** (`VCWpfControls.TreeList`): hierarchy with columns on top of GridControl
   (columns, virtualization, selection, editing, row details, themes); roots from `ItemsSource`,

@@ -86,6 +86,16 @@ public partial class AnalyticsSampleViewModel : SampleViewModelBase
     public ObservableCollection<Employee> Employees { get; } = new(SampleData.CreateEmployees());
 }
 
+/// <summary>Masked input and numeric spinners.</summary>
+public partial class EditorsSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Editors";
+
+    /// <inheritdoc />
+    public override string Description => "MaskedTextBox (phone, serial, date masks) and NumericUpDown spinners.";
+}
+
 /// <summary>TreeListView with an organization chart.</summary>
 public partial class TreeListSampleViewModel : SampleViewModelBase
 {
