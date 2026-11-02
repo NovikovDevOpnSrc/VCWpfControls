@@ -40,10 +40,9 @@ internal static class DataEngineScenarios
 /// not data generation.
 /// </summary>
 [MemoryDiagnoser]
-[SimpleJob(BenchmarkDotNet.Jobs.RuntimeMoniker.Net80)]
 [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Benchmark names follow the underscore size-suffix convention.")]
 [SuppressMessage("Usage", "CA1515:Consider making types internal", Justification = "BenchmarkDotNet discovers benchmark classes via the public API surface.")]
-public sealed class DataEngineBenchmarks
+public class DataEngineBenchmarks
 {
     private const int RowCount = 100_000;
     private const int PropertyAccessReads = 1_000_000;
@@ -181,9 +180,8 @@ public sealed class DataEngineBenchmarks
 /// to see how pipeline cost grows with the source size.
 /// </summary>
 [MemoryDiagnoser]
-[SimpleJob(BenchmarkDotNet.Jobs.RuntimeMoniker.Net80)]
 [SuppressMessage("Usage", "CA1515:Consider making types internal", Justification = "BenchmarkDotNet discovers benchmark classes via the public API surface.")]
-public sealed class DataEngineScalingBenchmarks
+public class DataEngineScalingBenchmarks
 {
     [Params(1_000, 10_000, 100_000)]
     public int RowCount { get; set; }
