@@ -158,8 +158,13 @@
                         BorderBrush="{Binding GridLinesBrush, RelativeSource={RelativeSource AncestorType={x:Type grid:GridControl}}}"
                         BorderThickness="0,0,0,1">
                         <Grid>
-                            <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
-                            <Border x:Name="PART_GroupHost" Visibility="Collapsed" VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                                <Border x:Name="PART_GroupHost" Visibility="Collapsed" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <ToggleButton x:Name="PART_GroupToggle" Width="16" Height="16" Focusable="False">
                                         <ToggleButton.Template>
@@ -187,6 +192,13 @@
                                     <TextBlock x:Name="PART_GroupText" Margin="6,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
+                            </Grid>
+                            <ContentPresenter
+                                x:Name="PART_RowDetails"
+                                Grid.Row="1"
+                                Margin="8,2,8,6"
+                                Visibility="Collapsed"
+                                ContentTemplate="{Binding RowDetailsTemplate, RelativeSource={RelativeSource AncestorType={x:Type grid:GridControl}}}" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>

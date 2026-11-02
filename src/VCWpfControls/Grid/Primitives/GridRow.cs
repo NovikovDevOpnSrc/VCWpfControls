@@ -78,6 +78,7 @@ public class GridRow : Control
     private ToggleButton? _groupToggle;
     private TextBlock? _groupText;
     private Border? _groupHost;
+    private ContentPresenter? _rowDetails;
 
     /// <summary>The owning grid.</summary>
     internal GridControl? Owner { get; private set; }
@@ -110,6 +111,7 @@ public class GridRow : Control
 
         IsSelected = DataItem is not null && owner.IsItemSelected(DataItem);
         IsCurrent = DataItem is not null && ReferenceEquals(DataItem, owner.CurrentItem);
+        UpdateRowDetails();
     }
 
     private void PrepareGroupRow(GridGroupRow groupRow, GridControl owner)
@@ -167,6 +169,7 @@ public class GridRow : Control
         _groupHost = GetTemplateChild("PART_GroupHost") as Border;
         _groupToggle = GetTemplateChild("PART_GroupToggle") as ToggleButton;
         _groupText = GetTemplateChild("PART_GroupText") as TextBlock;
+        _rowDetails = GetTemplateChild("PART_RowDetails") as ContentPresenter;
 
         if (CellsPanel is not null && Owner is not null && !IsGroupRow)
         {
@@ -174,6 +177,8 @@ public class GridRow : Control
             CellsPanel.EnsureCells();
             CellsPanel.PrepareCells();
         }
+
+        UpdateRowDetails();
 
         if (IsGroupRow && _groupRow is not null && Owner is not null)
         {
@@ -197,6 +202,11 @@ public class GridRow : Control
         IsGroupRow = false;
         _groupRow = null;
         RowInfo = null;
+        if (_rowDetails is not null)
+        {
+            _rowDetails.Visibility = Visibility.Collapsed;
+            _rowDetails.Content = null;
+        }
     }
 
     /// <inheritdoc />
@@ -223,8 +233,38 @@ public class GridRow : Control
         Owner?.HandleRowDoubleClick(this, e);
     }
 
+    /// <summary>Refreshes the row details presenter content and visibility.</summary>
+    internal void UpdateRowDetails()
+    {
+        if (_rowDetails is null || Owner is null)
+        {
+            return;
+        }
+
+        var showDetails = DataItem is not null
+            && Owner.RowDetailsTemplate is not null
+            && Owner.RowDetailsVisibilityMode switch
+            {
+                GridRowDetailsVisibilityMode.Visible => true,
+                GridRowDetailsVisibilityMode.VisibleWhenSelected => IsSelected,
+                _ => false,
+            };
+
+        _rowDetails.Visibility = showDetails ? Visibility.Visible : Visibility.Collapsed;
+        _rowDetails.Content = showDetails ? DataItem : null;
+        if (showDetails)
+        {
+            _rowDetails.ContentTemplate = Owner.RowDetailsTemplate;
+        }
+
+        InvalidateMeasure();
+    }
+
     private static void OnIsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        // Visual state is driven by template triggers; nothing to do here.
+        if (d is GridRow row)
+        {
+            row.UpdateRowDetails();
+        }
     }
 }

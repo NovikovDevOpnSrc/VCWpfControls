@@ -33,6 +33,19 @@ public enum GridClipboardCopyMode
     IncludeHeaders = 1,
 }
 
+/// <summary>When row details (see <c>GridControl.RowDetailsTemplate</c>) are displayed.</summary>
+public enum GridRowDetailsVisibilityMode
+{
+    /// <summary>Details are never shown.</summary>
+    Collapsed = 0,
+
+    /// <summary>Details are shown only for selected rows.</summary>
+    VisibleWhenSelected = 1,
+
+    /// <summary>Details are shown for every data row.</summary>
+    Visible = 2,
+}
+
 /// <summary>
 /// A fast, virtualized, MVVM-friendly data grid. Bind <see cref="ItemsSource"/> to any
 /// <see cref="IEnumerable"/> (live updates supported through <see cref="ObservableCollection{T}"/>),
@@ -135,6 +148,16 @@ public partial class GridControl : ItemsControl
     public static readonly DependencyProperty CanUserGroupColumnsProperty = DependencyProperty.Register(
         nameof(CanUserGroupColumns), typeof(bool), typeof(GridControl),
         new PropertyMetadata(GridColumnBase.Boxed.BoolTrue));
+
+    /// <summary>Identifies the <see cref="RowDetailsTemplate"/> dependency property.</summary>
+    public static readonly DependencyProperty RowDetailsTemplateProperty = DependencyProperty.Register(
+        nameof(RowDetailsTemplate), typeof(DataTemplate), typeof(GridControl),
+        new PropertyMetadata(null, OnRowDetailsChanged));
+
+    /// <summary>Identifies the <see cref="RowDetailsVisibilityMode"/> dependency property.</summary>
+    public static readonly DependencyProperty RowDetailsVisibilityModeProperty = DependencyProperty.Register(
+        nameof(RowDetailsVisibilityMode), typeof(GridRowDetailsVisibilityMode), typeof(GridControl),
+        new PropertyMetadata(GridRowDetailsVisibilityMode.Collapsed, OnRowDetailsChanged));
 
     /// <summary>Identifies the <see cref="SelectionMode"/> dependency property.</summary>
     public static readonly DependencyProperty SelectionModeProperty = DependencyProperty.Register(
@@ -435,6 +458,20 @@ public partial class GridControl : ItemsControl
     {
         get => (bool)GetValue(CanUserGroupColumnsProperty);
         set => SetValue(CanUserGroupColumnsProperty, value);
+    }
+
+    /// <summary>Template rendered under each data row's cells; data context is the row's item.</summary>
+    public DataTemplate? RowDetailsTemplate
+    {
+        get => (DataTemplate?)GetValue(RowDetailsTemplateProperty);
+        set => SetValue(RowDetailsTemplateProperty, value);
+    }
+
+    /// <summary>When the row details are displayed.</summary>
+    public GridRowDetailsVisibilityMode RowDetailsVisibilityMode
+    {
+        get => (GridRowDetailsVisibilityMode)GetValue(RowDetailsVisibilityModeProperty);
+        set => SetValue(RowDetailsVisibilityModeProperty, value);
     }
 
     /// <summary>Single or extended (multi) selection.</summary>
@@ -1006,6 +1043,15 @@ public partial class GridControl : ItemsControl
     {
         var grid = (GridControl)d;
         grid.InvalidateLayout();
+    }
+
+    private static void OnRowDetailsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        foreach (var row in grid._rowRegistry)
+        {
+            row.UpdateRowDetails();
+        }
     }
 
     private static void OnRowMetricsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
