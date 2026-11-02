@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — 0.1.0 (stage 1)
+## [Unreleased] — 0.1.0
+
+### Added (stage 2 start)
+
+- **PropertyGrid** control (`VCWpfControls.PropertyGrid`): typed editors (text, multi-line
+  text, check box, enum combo, numeric, date, read-only), attribute-driven metadata
+  (`[Display]`/`[Category]`/`[DisplayName]`/`[ReadOnly]`/`[Browsable]`), category expanders,
+  search box, expandable nested objects, live refresh via `INotifyPropertyChanged`,
+  `PropertyValueChanged` event; localized (EN/RU/ZH).
+- **GridControl row details**: `RowDetailsTemplate` + `RowDetailsVisibilityMode`
+  (`Collapsed`/`VisibleWhenSelected`/`Visible`) — stage 1 complete.
+
+## [Stage 1] — 0.1.0
 
 ### Added
 
@@ -65,4 +77,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filter row input is debounced (300 ms, configurable per presenter).
 
 ### Known limitations (next releases)
-- Row details templates are planned.
+- TreeListView (stage 2) is not started yet.

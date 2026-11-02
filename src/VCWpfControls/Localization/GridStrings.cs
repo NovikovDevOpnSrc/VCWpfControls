@@ -46,6 +46,12 @@ public static class GridStrings
     /// <summary>Filter menu: apply button.</summary>
     public static string FilterMenuOk => Get("FilterMenuOk");
 
+    /// <summary>Fallback category name for uncategorized properties.</summary>
+    public static string CategoryMisc => Get("CategoryMisc");
+
+    /// <summary>Property grid search box hint.</summary>
+    public static string PropertyGridSearchHint => Get("PropertyGridSearchHint");
+
     /// <summary>Context menu: export completed message.</summary>
     public static string ExportCompleted => Get("ExportCompleted");
 

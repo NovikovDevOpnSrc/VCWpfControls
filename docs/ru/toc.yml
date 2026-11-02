@@ -14,3 +14,5 @@
   href: theming.md
 - name: Рецепты
   href: cookbook.md
+- name: Редактор свойств
+  href: property-grid.md

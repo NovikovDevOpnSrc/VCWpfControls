@@ -14,3 +14,5 @@
   href: theming.md
 - name: 实用示例
   href: cookbook.md
+- name: 属性网格
+  href: property-grid.md

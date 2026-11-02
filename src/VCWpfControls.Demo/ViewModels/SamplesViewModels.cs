@@ -86,6 +86,19 @@ public partial class AnalyticsSampleViewModel : SampleViewModelBase
     public ObservableCollection<Employee> Employees { get; } = new(SampleData.CreateEmployees());
 }
 
+/// <summary>Property grid over the selected employee.</summary>
+public partial class PropertyGridSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Property grid";
+
+    /// <inheritdoc />
+    public override string Description => "Select a row: its properties are edited through the PropertyGrid (categories, typed editors, search).";
+
+    /// <summary>Sample rows.</summary>
+    public ObservableCollection<Employee> Employees { get; } = new(SampleData.CreateEmployees());
+}
+
 /// <summary>Virtualization with a large data set.</summary>
 public partial class VirtualizationSampleViewModel : SampleViewModelBase
 {

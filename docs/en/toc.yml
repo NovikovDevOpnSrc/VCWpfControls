@@ -12,5 +12,7 @@
   href: selection.md
 - name: Theming
   href: theming.md
+- name: Property grid
+  href: property-grid.md
 - name: Cookbook
   href: cookbook.md

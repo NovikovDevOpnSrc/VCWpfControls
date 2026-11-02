@@ -27,8 +27,8 @@
 - Row details, context menus
 
 ## Stage 2 (candidates)
-- TreeListView
-- PropertyGrid
+- TreeListView (pending)
+- PropertyGrid (done: typed editors, categories, search, expandable objects, INPC refresh)
 
 ## Stage 3 (candidates)
 - Additional controls: editors (masked input, spin buttons), spinner, docking panels

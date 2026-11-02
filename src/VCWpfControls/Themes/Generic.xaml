@@ -3,7 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:grid="clr-namespace:VCWpfControls.Grid"
     xmlns:primitives="clr-namespace:VCWpfControls.Grid.Primitives"
-    xmlns:localization="clr-namespace:VCWpfControls.Localization">
+    xmlns:localization="clr-namespace:VCWpfControls.Localization"
+    xmlns:propertyGrid="clr-namespace:VCWpfControls.PropertyGrid"
+    xmlns:propertyGridPrimitives="clr-namespace:VCWpfControls.PropertyGrid.Primitives">
 
     <!-- ============ Theme palette (override these keys to re-theme the grid) ============ -->
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FFFFFFFF" />
@@ -337,6 +339,55 @@
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============ PropertyGrid ============ -->
+    <Style TargetType="{x:Type propertyGrid:PropertyGrid}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Foreground" Value="#FF1F2937" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type propertyGrid:PropertyGrid}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Padding="{TemplateBinding Padding}"
+                        SnapsToDevicePixels="True">
+                        <DockPanel>
+                            <TextBox
+                                x:Name="PART_SearchBox"
+                                DockPanel.Dock="Top"
+                                Margin="0,0,0,8"
+                                VerticalContentAlignment="Center"
+                                Tag="{x:Static localization:GridStrings.PropertyGridSearchHint}" />
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel x:Name="PART_ItemsHost" />
+                            </ScrollViewer>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ShowSearchBox" Value="False">
+                            <Setter TargetName="PART_SearchBox" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type propertyGridPrimitives:PropertyItemEditor}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type propertyGridPrimitives:PropertyItemEditor}">
+                    <ContentPresenter />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

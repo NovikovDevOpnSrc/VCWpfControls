@@ -21,4 +21,6 @@
   <data name="FilterMenuSelectAll" xml:space="preserve"><value>（全选）</value></data>
   <data name="FilterMenuClear" xml:space="preserve"><value>清除</value></data>
   <data name="FilterMenuOk" xml:space="preserve"><value>确定</value></data>
+  <data name="CategoryMisc" xml:space="preserve"><value>其他</value></data>
+  <data name="PropertyGridSearchHint" xml:space="preserve"><value>搜索属性...</value></data>
 </root>
