@@ -1,0 +1,112 @@
+using System.Xml.Linq;
+
+namespace VCWpfControls.Docking;
+
+/// <summary>The docking side of a pane.</summary>
+public enum DockZone
+{
+    /// <summary>Left edge, full height, resizable splitter to the center.</summary>
+    Left = 0,
+
+    /// <summary>Top edge, full width, resizable splitter to the center.</summary>
+    Top = 1,
+
+    /// <summary>Right edge, full height, resizable splitter to the center.</summary>
+    Right = 2,
+
+    /// <summary>Bottom edge, full width, resizable splitter to the center.</summary>
+    Bottom = 3,
+
+    /// <summary>Center area, tabbed with the other center panes.</summary>
+    Center = 4,
+}
+
+/// <summary>UI-free layout snapshot of one pane (for persistence).</summary>
+public sealed class DockPaneLayout
+{
+    /// <summary>Pane identity: its name, falling back to the header text.</summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>The docked zone.</summary>
+    public DockZone Zone { get; set; } = DockZone.Center;
+
+    /// <summary>Zone width in pixels (left/right zones).</summary>
+    public double Width { get; set; }
+
+    /// <summary>Zone height in pixels (top/bottom zones).</summary>
+    public double Height { get; set; }
+
+    /// <summary>Whether the pane is closed/hidden.</summary>
+    public bool IsHidden { get; set; }
+}
+
+/// <summary>UI-free layout snapshot of a whole docking layout.</summary>
+public sealed class DockLayoutModel
+{
+    /// <summary>All pane snapshots.</summary>
+    public List<DockPaneLayout> Panes { get; } = new();
+}
+
+/// <summary>
+/// Serializes <see cref="DockLayoutModel"/> to a compact XML string and back. UI-free and
+/// directly unit-testable.
+/// </summary>
+public static class DockLayoutSerializer
+{
+    /// <summary>Produces the XML representation of the layout.</summary>
+    public static string ToXml(DockLayoutModel model)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+        var root = new XElement("DockLayout");
+        foreach (var pane in model.Panes)
+        {
+            root.Add(new XElement(
+                "Pane",
+                new XAttribute("name", pane.Name ?? string.Empty),
+                new XAttribute("zone", pane.Zone.ToString()),
+                new XAttribute("width", pane.Width.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                new XAttribute("height", pane.Height.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                new XAttribute("hidden", pane.IsHidden ? "1" : "0")));
+        }
+
+        return root.ToString(SaveOptions.DisableFormatting);
+    }
+
+    /// <summary>Parses an XML layout; invalid entries are skipped.</summary>
+    public static DockLayoutModel FromXml(string xml)
+    {
+        if (string.IsNullOrWhiteSpace(xml))
+        {
+            throw new ArgumentException("Layout XML must not be empty.", nameof(xml));
+        }
+
+        var root = XElement.Parse(xml);
+        var model = new DockLayoutModel();
+
+        foreach (var element in root.Elements("Pane"))
+        {
+            var name = (string?)element.Attribute("name") ?? string.Empty;
+            if (!Enum.TryParse((string?)element.Attribute("zone"), out DockZone zone))
+            {
+                zone = DockZone.Center;
+            }
+
+            model.Panes.Add(new DockPaneLayout
+            {
+                Name = name,
+                Zone = zone,
+                Width = ParseDouble(element.Attribute("width")),
+                Height = ParseDouble(element.Attribute("height")),
+                IsHidden = (string?)element.Attribute("hidden") == "1",
+            });
+        }
+
+        return model;
+    }
+
+    private static double ParseDouble(XAttribute? attribute)
+        => attribute is not null
+            && double.TryParse(attribute.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : 0;
+}

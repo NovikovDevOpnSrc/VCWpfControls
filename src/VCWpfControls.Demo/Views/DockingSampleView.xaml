@@ -1,0 +1,32 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.DockingSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:docking="clr-namespace:VCWpfControls.Docking;assembly=VCWpfControls">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button x:Name="SaveLayout" Margin="0,0,8,0" Padding="12,4" Click="OnSaveLayout">Save layout</Button>
+            <Button x:Name="RestoreLayout" Margin="0,0,8,0" Padding="12,4" Click="OnRestoreLayout">Restore layout</Button>
+            <Button x:Name="HideProperties" Padding="12,4" Click="OnHideProperties">Hide properties</Button>
+        </StackPanel>
+        <docking:DockingManager x:Name="Dock">
+            <docking:DockPane Header="Welcome" Zone="Center" Name="welcomePane">
+                <StackPanel Margin="16">
+                    <TextBlock FontSize="16" FontWeight="SemiBold" Text="Docking layout" />
+                    <TextBlock Margin="0,6,0,0" Opacity="0.7" Text="Drag splitters, close panes (x), use the buttons above to hide/show and persist the layout." TextWrapping="Wrap" />
+                </StackPanel>
+            </docking:DockPane>
+            <docking:DockPane Header="Notes" Zone="Center" Name="notesPane">
+                <TextBox Margin="8" AcceptsReturn="True" Text="Second center pane: tabs." TextWrapping="Wrap" />
+            </docking:DockPane>
+            <docking:DockPane Header="Properties" Zone="Right" Name="propertiesPane" DockWidth="300">
+                <TextBlock Margin="10" Opacity="0.7" Text="Right-docked pane (hosted content could be a PropertyGrid)." TextWrapping="Wrap" />
+            </docking:DockPane>
+            <docking:DockPane Header="Output" Zone="Bottom" Name="outputPane" DockHeight="140">
+                <TextBlock Margin="10" Opacity="0.7" Text="Bottom-docked pane with a resizable splitter." />
+            </docking:DockPane>
+            <docking:DockPane Header="Pinned" Zone="Left" Name="pinnedPane" IsClosable="False" DockWidth="200">
+                <TextBlock Margin="10" Opacity="0.7" Text="Left pane without a close button." TextWrapping="Wrap" />
+            </docking:DockPane>
+        </docking:DockingManager>
+    </DockPanel>
+</UserControl>

@@ -31,4 +31,5 @@
 - PropertyGrid (done: typed editors, categories, search, expandable objects, INPC refresh)
 
 ## Stage 3 (candidates)
-- Editors: masked input and spin buttons (done); docking panels (pending)
+- Editors: masked input and spin buttons (done)
+- Docking panels: zones + splitters + layout persistence (done; floating windows and drag-to-redock pending)

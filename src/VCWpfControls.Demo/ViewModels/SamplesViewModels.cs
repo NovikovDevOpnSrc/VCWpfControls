@@ -86,6 +86,16 @@ public partial class AnalyticsSampleViewModel : SampleViewModelBase
     public ObservableCollection<Employee> Employees { get; } = new(SampleData.CreateEmployees());
 }
 
+/// <summary>Docking manager with zones, splitters and layout persistence.</summary>
+public partial class DockingSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Docking";
+
+    /// <inheritdoc />
+    public override string Description => "Dock panes left/top/right/bottom/center with splitters, close/show and XML layout persistence.";
+}
+
 /// <summary>Masked input and numeric spinners.</summary>
 public partial class EditorsSampleViewModel : SampleViewModelBase
 {

@@ -1,0 +1,116 @@
+using System.Windows;
+using System.Windows.Controls;
+
+namespace VCWpfControls.Docking;
+
+/// <summary>
+/// One dockable panel of a <see cref="DockingManager"/>: a header, closable content and a
+/// docking zone (left/top/right/bottom/center). Center panes are tabbed.
+/// </summary>
+public class DockPane : HeaderedContentControl
+{
+    /// <summary>Identifies the <see cref="Zone"/> dependency property.</summary>
+    public static readonly DependencyProperty ZoneProperty = DependencyProperty.Register(
+        nameof(Zone), typeof(DockZone), typeof(DockPane),
+        new PropertyMetadata(DockZone.Center, OnZoneChanged));
+
+    /// <summary>Identifies the <see cref="IsClosable"/> dependency property.</summary>
+    public static readonly DependencyProperty IsClosableProperty = DependencyProperty.Register(
+        nameof(IsClosable), typeof(bool), typeof(DockPane), new PropertyMetadata(true));
+
+    /// <summary>Identifies the <see cref="IsHidden"/> dependency property.</summary>
+    public static readonly DependencyProperty IsHiddenProperty = DependencyProperty.Register(
+        nameof(IsHidden), typeof(bool), typeof(DockPane),
+        new PropertyMetadata(false, OnHiddenChanged));
+
+    /// <summary>Identifies the <see cref="DockWidth"/> dependency property.</summary>
+    public static readonly DependencyProperty DockWidthProperty = DependencyProperty.Register(
+        nameof(DockWidth), typeof(GridLength), typeof(DockPane), new PropertyMetadata(new GridLength(250)));
+
+    /// <summary>Identifies the <see cref="DockHeight"/> dependency property.</summary>
+    public static readonly DependencyProperty DockHeightProperty = DependencyProperty.Register(
+        nameof(DockHeight), typeof(GridLength), typeof(DockPane), new PropertyMetadata(new GridLength(220)));
+
+    /// <summary>Identifies the <see cref="Closed"/> routed event.</summary>
+    public static readonly RoutedEvent ClosedEvent = EventManager.RegisterRoutedEvent(
+        nameof(Closed), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(DockPane));
+
+    static DockPane()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(DockPane),
+            new FrameworkPropertyMetadata(typeof(DockPane)));
+        FocusableProperty.OverrideMetadata(typeof(DockPane), new FrameworkPropertyMetadata(false));
+    }
+
+    /// <summary>Occurs after the pane was closed by the user (now hidden).</summary>
+    public event RoutedEventHandler Closed
+    {
+        add => AddHandler(ClosedEvent, value);
+        remove => RemoveHandler(ClosedEvent, value);
+    }
+
+    /// <summary>The docking zone of the pane.</summary>
+    public DockZone Zone
+    {
+        get => (DockZone)GetValue(ZoneProperty);
+        set => SetValue(ZoneProperty, value);
+    }
+
+    /// <summary>Whether the pane shows a close button.</summary>
+    public bool IsClosable
+    {
+        get => (bool)GetValue(IsClosableProperty);
+        set => SetValue(IsClosableProperty, value);
+    }
+
+    /// <summary>Whether the pane is currently hidden (closed but kept in the layout).</summary>
+    public bool IsHidden
+    {
+        get => (bool)GetValue(IsHiddenProperty);
+        set => SetValue(IsHiddenProperty, value);
+    }
+
+    /// <summary>Preferred width of left/right zones hosting this pane.</summary>
+    public GridLength DockWidth
+    {
+        get => (GridLength)GetValue(DockWidthProperty);
+        set => SetValue(DockWidthProperty, value);
+    }
+
+    /// <summary>Preferred height of top/bottom zones hosting this pane.</summary>
+    public GridLength DockHeight
+    {
+        get => (GridLength)GetValue(DockHeightProperty);
+        set => SetValue(DockHeightProperty, value);
+    }
+
+    /// <summary>The owning manager, set when the pane is added to <see cref="DockingManager.Panes"/>.</summary>
+    internal DockingManager? Manager { get; set; }
+
+    /// <summary>Closes (hides) the pane when <see cref="IsClosable"/> allows it.</summary>
+    public void Close()
+    {
+        if (!IsClosable || IsHidden)
+        {
+            return;
+        }
+
+        var args = new RoutedEventArgs(ClosedEvent) { Source = this };
+        RaiseEvent(args);
+        IsHidden = true;
+        // The pane detaches from the tree while hiding; re-raise at the manager so
+        // handlers attached there still receive the bubbled event.
+        Manager?.RaiseEvent(args);
+    }
+
+    /// <summary>Pane identity for layout persistence: name, falling back to the header.</summary>
+    internal string LayoutKey => !string.IsNullOrEmpty(Name)
+        ? Name
+        : Convert.ToString(Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+
+    private static void OnZoneChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((DockPane)d).Manager?.SyncPane((DockPane)d);
+
+    private static void OnHiddenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((DockPane)d).Manager?.SyncPane((DockPane)d);
+}

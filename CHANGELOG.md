@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
-### Added (stage 3 start)
+### Added (stage 3)
 
+- **Docking** (`VCWpfControls.Docking`): `DockingManager` with five zones (left/top/right/
+  bottom with live splitters, tabbed center), `DockPane` (zone switching, closable/hidable,
+  `DockWidth`/`DockHeight`, bubbling `Closed`), `ActivePane` two-way, and XML layout
+  persistence (`SaveLayout`/`LoadLayout` via the UI-free `DockLayoutSerializer`).
 - **Editors** (`VCWpfControls.Editors`): `MaskedTextBox` (mask engine with required/optional
   digit/letter/any slots, literals, prompt char, paste validation, value with or without
   literals) and `NumericUpDown` (bounded decimal value, repeat buttons, arrows/PageUp/PageDown,

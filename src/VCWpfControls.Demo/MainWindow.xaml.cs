@@ -24,6 +24,7 @@ public partial class MainWindow : Window
             new PropertyGridSampleViewModel(),
             new TreeListSampleViewModel(),
             new EditorsSampleViewModel(),
+            new DockingSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
         NavList.SelectionChanged += (_, _) => ((MainViewModel)DataContext).SelectedSample =
