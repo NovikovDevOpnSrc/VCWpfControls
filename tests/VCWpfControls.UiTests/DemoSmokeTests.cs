@@ -69,6 +69,32 @@ public sealed class DemoSmokeTests : IDisposable
 
         var grid = _window.FindFirstDescendant(cf => cf.ByAutomationId("BasicGrid"));
         Assert.NotNull(grid);
+        AssertPageHasContent(grid, "Name");
+    }
+
+    [Fact]
+    public void EditingGrid_ShowsHeadersAndValues()
+    {
+        var navList = _window.FindFirstDescendant(cf => cf.ByAutomationId("NavList"))!.AsListBox();
+        var editing = navList.Items.FirstOrDefault(i => i.Text.Contains("Editing"));
+        Assert.NotNull(editing);
+        editing!.Select();
+        _app.WaitWhileBusy(TimeSpan.FromSeconds(10));
+
+        var grid = _window.FindFirstDescendant(cf => cf.ByAutomationId("EditingGrid"));
+        Assert.NotNull(grid);
+        // Regression for the stale-build screenshot report: headers and data values must render.
+        AssertPageHasContent(grid, "Name");
+        AssertPageHasContent(grid, "@example.com");
+    }
+
+    private static void AssertPageHasContent(FlaUI.Core.AutomationElements.AutomationElement element, string substring)
+    {
+        var texts = element
+            .FindAllDescendants()
+            .Select(d => d.Properties.Name.ValueOrDefault ?? string.Empty)
+            .ToList();
+        Assert.Contains(texts, t => t.Contains(substring, StringComparison.Ordinal));
     }
 
     private static string FindDemoExecutable()

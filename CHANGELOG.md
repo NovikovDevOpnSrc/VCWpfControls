@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
+### Fixed (follow-up iteration 7)
+
+- Reported blank headers/... cells on the Editing demo page were a stale executable:
+  verified structurally (STA model replica) and end-to-end (FlaUI dump of the Release build
+  shows headers and values); added permanent content regressions to the FlaUI smoke
+  (Basic + Editing pages must render header names and data values).
+- Demo now pins the UI culture to en-US so library strings match the English demo texts
+  (remove one line in App.xaml.cs to let the library follow the OS language).
+
 ### Added (follow-up iteration 6)
 
 - **UX pass (Fluent-inspired)**: fixed the Dark theme showing dark text on dark surface —
