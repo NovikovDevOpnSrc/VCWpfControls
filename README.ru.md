@@ -57,9 +57,10 @@ dotnet add package VCWpfControls
 
 ## Документация
 
-- [Начало работы (RU)](docs/ru/index.md)
-- [Getting started (EN)](docs/en/index.md)
-- [入门指南 (ZH)](docs/zh/index.md)
+- [Сайт документации (EN/RU/ZH)](https://novikovdevopnsrc.github.io/VCWpfControls/)
+- [Начало работы (RU)](https://novikovdevopnsrc.github.io/VCWpfControls/ru/getting-started.html)
+- [Getting started (EN)](https://novikovdevopnsrc.github.io/VCWpfControls/en/getting-started.html)
+- [入门指南 (ZH)](https://novikovdevopnsrc.github.io/VCWpfControls/zh/index.html)
 
 Приложение `src/VCWpfControls.Demo` содержит живой пример на каждую функцию.
 

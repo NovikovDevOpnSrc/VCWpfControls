@@ -57,9 +57,10 @@ Manual columns:
 
 ## Documentation
 
-- [Getting started (EN)](docs/en/index.md)
-- [Начало работы (RU)](docs/ru/index.md)
-- [入门指南 (ZH)](docs/zh/index.md)
+- [Documentation site (EN/RU/ZH)](https://novikovdevopnsrc.github.io/VCWpfControls/)
+- [Getting started (EN)](https://novikovdevopnsrc.github.io/VCWpfControls/en/getting-started.html)
+- [Начало работы (RU)](https://novikovdevopnsrc.github.io/VCWpfControls/ru/index.html)
+- [入门指南 (ZH)](https://novikovdevopnsrc.github.io/VCWpfControls/zh/index.html)
 
 The `src/VCWpfControls.Demo` application contains a live example for every feature.
 

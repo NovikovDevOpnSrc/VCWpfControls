@@ -57,9 +57,10 @@ dotnet add package VCWpfControls
 
 ## 文档
 
-- [入门指南 (ZH)](docs/zh/index.md)
-- [Getting started (EN)](docs/en/index.md)
-- [Начало работы (RU)](docs/ru/index.md)
+- [文档网站 (EN/RU/ZH)](https://novikovdevopnsrc.github.io/VCWpfControls/)
+- [入门指南 (ZH)](https://novikovdevopnsrc.github.io/VCWpfControls/zh/getting-started.html)
+- [Getting started (EN)](https://novikovdevopnsrc.github.io/VCWpfControls/en/getting-started.html)
+- [Начало работы (RU)](https://novikovdevopnsrc.github.io/VCWpfControls/ru/index.html)
 
 示例应用 `src/VCWpfControls.Demo` 为每个功能提供可运行的实例。
 
