@@ -46,6 +46,18 @@ public static class GridStrings
     /// <summary>Filter menu: apply button.</summary>
     public static string FilterMenuOk => Get("FilterMenuOk");
 
+    /// <summary>Header menu: fit this column to its content.</summary>
+    public static string BestFit => Get("BestFit");
+
+    /// <summary>Header menu: fit all columns.</summary>
+    public static string BestFitAll => Get("BestFitAll");
+
+    /// <summary>Header menu: freeze columns up to this one.</summary>
+    public static string FreezeColumn => Get("FreezeColumn");
+
+    /// <summary>Header menu: group by this column.</summary>
+    public static string GroupByColumn => Get("GroupByColumn");
+
     /// <summary>Fallback category name for uncategorized properties.</summary>
     public static string CategoryMisc => Get("CategoryMisc");
 

@@ -23,4 +23,8 @@
   <data name="FilterMenuOk" xml:space="preserve"><value>OK</value></data>
   <data name="CategoryMisc" xml:space="preserve"><value>Misc</value></data>
   <data name="PropertyGridSearchHint" xml:space="preserve"><value>Search properties...</value></data>
+  <data name="BestFit" xml:space="preserve"><value>Fit column (content)</value></data>
+  <data name="BestFitAll" xml:space="preserve"><value>Fit all columns</value></data>
+  <data name="FreezeColumn" xml:space="preserve"><value>Freeze up to this column</value></data>
+  <data name="GroupByColumn" xml:space="preserve"><value>Group by this column</value></data>
 </root>

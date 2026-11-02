@@ -190,3 +190,18 @@ grid.BestFitAllColumns();          // every visible column
 ```
 
 Double-clicking a column's resize splitter best-fits that column (Excel-style).
+
+## Header context menu
+
+Right-click any column header for the built-in (localized EN/RU/ZH) menu:
+
+- **Sort Ascending / Sort Descending** — with a check mark on the active sort;
+- **Clear Sorting** — enabled while any sort is active;
+- **Fit column (content) / Fit all columns** — one-shot best fit;
+- **Group by this column** — toggle, adds/removes a grouping level;
+- **Freeze up to this column** — toggles `FrozenColumnCount`;
+- **Hide column** — disabled for the last visible column;
+- **Columns** — check-list submenu toggling each column's visibility.
+
+The menu is built by `BuildColumnHeaderMenu` and can be replaced by handling
+`ContextMenuOpening` on the grid and assigning your own `ContextMenu`.

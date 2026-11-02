@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
+### Added (follow-up iteration 5)
+
+- **Header context menu** (right-click, localized EN/RU/ZH): sort ascending/descending with
+  state marks, clear sorting, fit column / fit all columns, group-by toggle, freeze-up-to-column
+  toggle, hide column (guarded for the last visible column) and a column-visibility check-list
+  submenu; replaceable via `ContextMenuOpening`.
+
 ### Added (follow-up iteration 4)
 
 - **Column content fit**: auto-generated columns now default to `Width="Auto"` (content-based;

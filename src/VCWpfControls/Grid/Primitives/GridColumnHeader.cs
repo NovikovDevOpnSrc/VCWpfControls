@@ -150,6 +150,17 @@ public class GridColumnHeader : Control
     }
 
     /// <inheritdoc />
+    protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseRightButtonUp(e);
+        if (Column is not null && Owner is not null)
+        {
+            Owner.OpenColumnHeaderMenu(Column, this);
+            e.Handled = true;
+        }
+    }
+
+    /// <inheritdoc />
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
         base.OnMouseLeftButtonDown(e);
