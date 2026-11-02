@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (stage 2 start)
 
+- **TreeListView** (`VCWpfControls.TreeList`): hierarchy with columns on top of GridControl
+  (columns, virtualization, selection, editing, row details, themes); roots from `ItemsSource`,
+  children from `ChildMemberPath`; expand/collapse (toggle, `ToggleNode`/`ExpandAll`/`CollapseAll`,
+  state survives rebuilds), per-level sibling sorting, live updates via ObservableCollections.
 - **PropertyGrid** control (`VCWpfControls.PropertyGrid`): typed editors (text, multi-line
   text, check box, enum combo, numeric, date, read-only), attribute-driven metadata
   (`[Display]`/`[Category]`/`[DisplayName]`/`[ReadOnly]`/`[Browsable]`), category expanders,
@@ -77,4 +81,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filter row input is debounced (300 ms, configurable per presenter).
 
 ### Known limitations (next releases)
-- TreeListView (stage 2) is not started yet.
+- TreeListView: tree-node filtering and load-on-demand children are planned.

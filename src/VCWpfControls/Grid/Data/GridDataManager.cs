@@ -158,6 +158,21 @@ public sealed class GridDataManager
         return result;
     }
 
+    /// <summary>
+    /// Replaces the view with externally computed rows (used by <c>TreeListView</c>, which owns
+    /// its own flattening): bumps the version, updates <see cref="DataRows"/> and raises
+    /// <see cref="ViewReset"/>.
+    /// </summary>
+    public void ApplyExternalView(IReadOnlyList<GridRowInfo> rows, Type? itemType)
+    {
+        ArgumentNullException.ThrowIfNull(rows);
+        Interlocked.Increment(ref _version);
+        ResolvedItemType = itemType;
+        _dataRows = rows.OfType<GridDataRow>().ToList();
+        _view.ReplaceAll(rows);
+        ViewReset?.Invoke(this, EventArgs.Empty);
+    }
+
     private PipelineSnapshot TakeSnapshot()
     {
         // Called on the caller's thread: reading the source here avoids touching a (possibly

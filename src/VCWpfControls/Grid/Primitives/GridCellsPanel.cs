@@ -264,6 +264,12 @@ public sealed class GridCellsPanel : Panel
             }
 
             var x = slot.IsFrozen ? slot.X : slot.X - offset;
+            if (i == 0 && _row is { } indentRow && indentRow.TreeLevel > 0)
+            {
+                // TreeListView: indent the content of the first column by the nesting level.
+                x += Math.Min(indentRow.TreeLevel * 16, Math.Max(0, slot.Width - 8));
+            }
+
             child.Arrange(new Rect(x, 0, slot.Width, finalSize.Height));
         }
 

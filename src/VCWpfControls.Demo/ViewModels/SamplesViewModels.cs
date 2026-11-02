@@ -86,6 +86,38 @@ public partial class AnalyticsSampleViewModel : SampleViewModelBase
     public ObservableCollection<Employee> Employees { get; } = new(SampleData.CreateEmployees());
 }
 
+/// <summary>TreeListView with an organization chart.</summary>
+public partial class TreeListSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Tree list";
+
+    /// <inheritdoc />
+    public override string Description => "Hierarchy with columns: expand/collapse nodes, sort children within each level.";
+
+    /// <summary>The org units (roots).</summary>
+    public ObservableCollection<OrgUnit> Units { get; } = new(BuildOrg());
+
+    private static List<OrgUnit> BuildOrg()
+    {
+        var platform = new OrgUnit("Platform", 20, "Dana");
+        var mobile = new OrgUnit("Mobile", 10, "Evan");
+        var desktop = new OrgUnit("Desktop", 20, "Grace");
+        var apps = new OrgUnit("Apps", 30, "Bob");
+        apps.Children.Add(mobile);
+        apps.Children.Add(desktop);
+        var engineering = new OrgUnit("Engineering", 50, "Alice");
+        engineering.Children.Add(platform);
+        engineering.Children.Add(apps);
+        var emea = new OrgUnit("EMEA", 6, "Ivan");
+        var apac = new OrgUnit("APAC", 4, "Linda");
+        var sales = new OrgUnit("Sales", 10, "Carol");
+        sales.Children.Add(emea);
+        sales.Children.Add(apac);
+        return new List<OrgUnit> { engineering, sales };
+    }
+}
+
 /// <summary>Property grid over the selected employee.</summary>
 public partial class PropertyGridSampleViewModel : SampleViewModelBase
 {

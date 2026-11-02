@@ -16,3 +16,5 @@
   href: cookbook.md
 - name: Редактор свойств
   href: property-grid.md
+- name: Дерево с колонками
+  href: tree-list.md

@@ -65,6 +65,31 @@ public class GridRow : Control
         private set => SetValue(IsGroupRowProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="TreeHasChildren"/> dependency property.</summary>
+    public static readonly DependencyProperty TreeHasChildrenProperty = DependencyProperty.Register(
+        nameof(TreeHasChildren), typeof(bool), typeof(GridRow), new PropertyMetadata(false));
+
+    /// <summary>Identifies the <see cref="TreeIsExpanded"/> dependency property.</summary>
+    public static readonly DependencyProperty TreeIsExpandedProperty = DependencyProperty.Register(
+        nameof(TreeIsExpanded), typeof(bool), typeof(GridRow), new PropertyMetadata(false));
+
+    /// <summary>Whether the row is a tree node with expandable children (TreeListView).</summary>
+    public bool TreeHasChildren
+    {
+        get => (bool)GetValue(TreeHasChildrenProperty);
+        internal set => SetValue(TreeHasChildrenProperty, value);
+    }
+
+    /// <summary>Whether the tree node is expanded (TreeListView).</summary>
+    public bool TreeIsExpanded
+    {
+        get => (bool)GetValue(TreeIsExpandedProperty);
+        internal set => SetValue(TreeIsExpandedProperty, value);
+    }
+
+    /// <summary>Tree nesting level of the row (0 for roots); 0 for non-tree grids.</summary>
+    internal int TreeLevel { get; set; }
+
     /// <summary>The row info this container presents.</summary>
     internal GridRowInfo? RowInfo { get; private set; }
 
@@ -79,6 +104,8 @@ public class GridRow : Control
     private TextBlock? _groupText;
     private Border? _groupHost;
     private ContentPresenter? _rowDetails;
+    private ToggleButton? _treeToggle;
+    private bool _syncingTreeToggle;
 
     /// <summary>The owning grid.</summary>
     internal GridControl? Owner { get; private set; }
@@ -151,6 +178,39 @@ public class GridRow : Control
         }
     }
 
+    /// <summary>Syncs the tree expander toggle with the row's tree state (no events raised).</summary>
+    internal void UpdateTreeToggle()
+    {
+        if (_treeToggle is null)
+        {
+            return;
+        }
+
+        _syncingTreeToggle = true;
+        try
+        {
+            _treeToggle.Margin = new Thickness(TreeLevel * 16, 0, 0, 0);
+            _treeToggle.IsChecked = TreeIsExpanded;
+        }
+        finally
+        {
+            _syncingTreeToggle = false;
+        }
+    }
+
+    private void OnTreeToggleChanged(object sender, RoutedEventArgs e)
+    {
+        if (_syncingTreeToggle)
+        {
+            return;
+        }
+
+        if (_treeToggle is not null && Owner is TreeList.TreeListView treeView)
+        {
+            treeView.ToggleNode(DataItem, _treeToggle.IsChecked == true);
+        }
+    }
+
     private void OnGroupToggleChanged(object sender, RoutedEventArgs e)
     {
         if (_groupRow is not null
@@ -170,6 +230,16 @@ public class GridRow : Control
         _groupToggle = GetTemplateChild("PART_GroupToggle") as ToggleButton;
         _groupText = GetTemplateChild("PART_GroupText") as TextBlock;
         _rowDetails = GetTemplateChild("PART_RowDetails") as ContentPresenter;
+        _treeToggle = GetTemplateChild("PART_TreeToggle") as ToggleButton;
+        if (_treeToggle is not null)
+        {
+            _treeToggle.Checked -= OnTreeToggleChanged;
+            _treeToggle.Unchecked -= OnTreeToggleChanged;
+            _treeToggle.Checked += OnTreeToggleChanged;
+            _treeToggle.Unchecked += OnTreeToggleChanged;
+        }
+
+        UpdateTreeToggle();
 
         if (CellsPanel is not null && Owner is not null && !IsGroupRow)
         {

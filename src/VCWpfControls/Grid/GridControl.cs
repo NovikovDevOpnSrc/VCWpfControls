@@ -851,16 +851,19 @@ public partial class GridControl : ItemsControl
     }
 
     /// <summary>Applies the current sort/filter/group settings and rebuilds the view synchronously.</summary>
-    public void Refresh()
+    public virtual void Refresh()
     {
         PushEngineSettings();
         DataEngine.Refresh();
     }
 
-    /// <summary>Applies the settings and rebuilds the view, honoring <see cref="UseAsyncRefresh"/>.</summary>
-    private void RefreshView()
+    /// <summary>
+    /// Rebuilds the data view, honoring <see cref="UseAsyncRefresh"/>. Derived controls that own
+    /// their own view building (e.g. <c>TreeListView</c>) override this instead of the engine
+    /// pipeline.
+    /// </summary>
+    protected virtual void RebuildDataView()
     {
-        PushEngineSettings();
         if (UseAsyncRefresh)
         {
             _ = RefreshViewAsyncCore();
@@ -869,6 +872,13 @@ public partial class GridControl : ItemsControl
         {
             DataEngine.Refresh();
         }
+    }
+
+    /// <summary>Applies the settings and rebuilds the view (sync or async per <see cref="UseAsyncRefresh"/>).</summary>
+    private void RefreshView()
+    {
+        PushEngineSettings();
+        RebuildDataView();
     }
 
     private async Task RefreshViewAsyncCore()

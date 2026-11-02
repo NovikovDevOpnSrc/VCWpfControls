@@ -166,6 +166,31 @@
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0">
                                 <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                                <ToggleButton
+                                    x:Name="PART_TreeToggle"
+                                    Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    Focusable="False"
+                                    Visibility="Collapsed">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="Transparent">
+                                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                    <Path x:Name="TreeArrowRight" Data="M 0 0 L 5 4 L 0 8 Z" Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}" />
+                                                    <Path x:Name="TreeArrowDown" Data="M 0 0 L 8 0 L 4 5 Z" Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}" Visibility="Collapsed" />
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="TreeArrowRight" Property="Visibility" Value="Collapsed" />
+                                                    <Setter TargetName="TreeArrowDown" Property="Visibility" Value="Visible" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
                                 <Border x:Name="PART_GroupHost" Visibility="Collapsed" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <ToggleButton x:Name="PART_GroupToggle" Width="16" Height="16" Focusable="False">
@@ -208,6 +233,9 @@
                             <Setter TargetName="PART_GroupHost" Property="Visibility" Value="Visible" />
                             <Setter TargetName="PART_Cells" Property="Visibility" Value="Collapsed" />
                             <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                        </Trigger>
+                        <Trigger Property="TreeHasChildren" Value="True">
+                            <Setter TargetName="PART_TreeToggle" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />

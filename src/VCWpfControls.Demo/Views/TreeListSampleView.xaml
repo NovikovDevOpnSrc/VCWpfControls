@@ -1,0 +1,24 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.TreeListSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:treeList="clr-namespace:VCWpfControls.TreeList;assembly=VCWpfControls"
+             xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button x:Name="ExpandAll" Margin="0,0,8,0" Padding="12,4" Click="OnExpandAll">Expand all</Button>
+            <Button x:Name="CollapseAll" Padding="12,4" Click="OnCollapseAll">Collapse all</Button>
+            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="Click a unit name header to sort children within each level" />
+        </StackPanel>
+        <treeList:TreeListView x:Name="Tree"
+                               ItemsSource="{Binding Units}"
+                               ChildMemberPath="Children"
+                               RowHeight="28"
+                               FrozenColumnCount="1">
+            <treeList:TreeListView.Columns>
+                <columns:GridTextColumn FieldName="Name" Header="Unit" Width="2*" />
+                <columns:GridTextColumn FieldName="Lead" Header="Lead" Width="*" />
+                <columns:GridNumericColumn FieldName="Headcount" Header="Headcount" Width="110" />
+            </treeList:TreeListView.Columns>
+        </treeList:TreeListView>
+    </DockPanel>
+</UserControl>
