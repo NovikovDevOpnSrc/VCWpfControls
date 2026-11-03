@@ -14,7 +14,9 @@ A free, open-source library of WPF controls. **Stage 1** delivers **GridControl*
 - Column types: Text, Numeric, CheckBox, ComboBox, Date, Template
 - Column resizing, reordering (drag & drop), hiding, freezing (`FrozenColumnCount`)
 - UI virtualization with container recycling — smooth scrolling with 1,000,000+ rows
-- Sorting: single- and multi-column, sort indicators, custom comparers
+- Sorting: single- and multi-column, indicators, custom comparers
+- Content fit: Auto widths by default, `BestFitColumn`/`BestFitAllColumns`, double-click a splitter to fit
+- Header context menu (localized): sort, fit, group, freeze, hide, column chooser
 - Selection: single/extended, keyboard (Ctrl/Shift), row check-box selection, current cell
 - Editing: F2/Enter/Esc, per-column read-only, validation via `IDataErrorInfo` / `INotifyDataErrorInfo`
 - Filtering, grouping, aggregate summaries (stage 1.2)

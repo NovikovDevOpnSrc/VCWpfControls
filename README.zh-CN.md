@@ -15,6 +15,8 @@
 - 列宽调整、拖拽排序、隐藏、冻结列（`FrozenColumnCount`）
 - UI 虚拟化 + 容器回收 —— 100 万行以上仍可流畅滚动
 - 排序：单列与多列排序、排序指示器、自定义比较器
+- 按内容适配：默认 Auto 列宽、`BestFitColumn`/`BestFitAllColumns`、双击分隔条适配
+- 表头右键菜单（本地化）：排序、适配、分组、固定、隐藏、列选择器
 - 选择：单选/扩展选择、键盘操作（Ctrl/Shift）、复选框选择、当前单元格
 - 编辑：F2/Enter/Esc、列级只读、通过 `IDataErrorInfo` / `INotifyDataErrorInfo` 校验
 - 筛选、分组、聚合汇总（阶段 1.2）

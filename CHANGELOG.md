@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — 0.1.0
+## [Unreleased]
 
-### Changed (follow-up iteration 8) — sort performance
+## [0.2.0] — 2026-11-03
+
+Post-v0.1.0 iterations: bug fixes, column content fit, header context menu, UX pass, sort performance.
+
+### Changed — sort performance
 
 - **Sort allocations −80%** (Sort_100k: 70.5 MB → 14.0 MB, mean 148 → 128 ms): the dominant
   allocator was `StringComparer.Create(culture)` built per string comparison in
@@ -17,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `OrderBy`/`ThenBy` chain. Behavior is unchanged (multi-column order, stability on ties,
   nulls, culture) — covered by new 50k-row stress tests. FullPipeline_100k: 5.5 MB → 3.3 MB.
 
-### Fixed (follow-up iteration 7)
+### Fixed
 
 - Reported blank headers/... cells on the Editing demo page were a stale executable:
   verified structurally (STA model replica) and end-to-end (FlaUI dump of the Release build
@@ -26,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Demo now pins the UI culture to en-US so library strings match the English demo texts
   (remove one line in App.xaml.cs to let the library follow the OS language).
 
-### Added (follow-up iteration 6)
+### Added — UX pass (Fluent)
 
 - **UX pass (Fluent-inspired)**: fixed the Dark theme showing dark text on dark surface —
   new `GridResources.TextBrushKey` carries the data foreground and switches with the theme
@@ -35,14 +39,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when the view has no rows; `docs/ux-checklist.md` records the library UX standard.
   Note: RDP sessions return black frames on screen capture — verified structurally instead.
 
-### Added (follow-up iteration 5)
+### Added — header context menu
 
 - **Header context menu** (right-click, localized EN/RU/ZH): sort ascending/descending with
   state marks, clear sorting, fit column / fit all columns, group-by toggle, freeze-up-to-column
   toggle, hide column (guarded for the last visible column) and a column-visibility check-list
   submenu; replaceable via `ContextMenuOpening`.
 
-### Added (follow-up iteration 4)
+### Added — column content fit
 
 - **Column content fit**: auto-generated columns now default to `Width="Auto"` (content-based;
   horizontal scrollbar when content exceeds the viewport) instead of equal star shares;
@@ -50,18 +54,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   included); double-clicking a column splitter best-fits the column; the horizontal scrollbar
   now refreshes on every layout pass.
 
-### Added (follow-up iteration 3)
+### Added — docking drag-to-redock
 
 - **Docking drag-to-redock**: dragging a pane tab highlights the drop zone (quarter edges +
   center) via a theme-aware adorner; dropping moves the pane into that zone.
 
-### Added (follow-up iteration 2)
+### Added — TreeListView lazy loading
 
 - **TreeListView lazy loading**: `ChildrenProvider` (lazy children source taking precedence over
   `ChildMemberPath`), `HasChildrenPredicate` (expander visibility without loading), children
   cached across rebuilds, live provider collections invalidate the cache.
 
-### Added (follow-up iteration)
+### Added — tree filtering and docking floating windows
 
 - **TreeListView filtering**: `FilterPredicate` — a node is visible when it or any descendant
   matches; ancestors of matches are temporarily expanded, manual expansion state restored on clear.
@@ -94,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **GridControl row details**: `RowDetailsTemplate` + `RowDetailsVisibilityMode`
   (`Collapsed`/`VisibleWhenSelected`/`Visible`) — stage 1 complete.
 
-## [Stage 1] — 0.1.0
+## [0.1.0] — 2026-11-02 (stage 1–3)
 
 ### Added
 
