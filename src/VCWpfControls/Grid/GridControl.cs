@@ -874,12 +874,17 @@ public partial class GridControl : ItemsControl
     {
         if (UseAsyncRefresh)
         {
-            _ = RefreshViewAsyncCore();
+            if (_asyncRefreshTask is not null && !_asyncRefreshTask.IsCompleted)
+            {
+                _asyncRefreshQueued = true; // coalesce into the running pipeline
+                return;
+            }
+
+            _asyncRefreshTask = RefreshViewAsyncCore();
+            return;
         }
-        else
-        {
-            DataEngine.Refresh();
-        }
+
+        DataEngine.Refresh();
     }
 
     /// <summary>Applies the settings and rebuilds the view (sync or async per <see cref="UseAsyncRefresh"/>).</summary>
@@ -889,18 +894,44 @@ public partial class GridControl : ItemsControl
         RebuildDataView();
     }
 
+    private Task? _asyncRefreshTask;
+    private bool _asyncRefreshQueued;
+
     private async Task RefreshViewAsyncCore()
     {
-        // A dropped result means the state changed while computing; recompute.
-        for (var attempt = 0; attempt < 3; attempt++)
+        try
         {
-            if (await DataEngine.RefreshAsync())
+            // Single in-flight pipeline: concurrent applies (e.g. SortBy fires Clear+Add)
+            // interleave view Resets with container recycling and crash the virtualizing
+            // panel with stale indexes. A queued flag re-runs the pipeline with the newest
+            // state after the current apply; a stale result is retried with a fresh snapshot.
+            var attempt = 0;
+            while (true)
             {
-                return;
-            }
-        }
+                _asyncRefreshQueued = false;
+                if (await DataEngine.RefreshAsync())
+                {
+                    if (!_asyncRefreshQueued)
+                    {
+                        return;
+                    }
 
-        DataEngine.Refresh();
+                    attempt = 0; // state changed while applying — recompute once more
+                    continue;
+                }
+
+                if (++attempt >= 3)
+                {
+                    break;
+                }
+            }
+
+            DataEngine.Refresh();
+        }
+        finally
+        {
+            _asyncRefreshTask = null;
+        }
     }
 
     private void PushEngineSettings()

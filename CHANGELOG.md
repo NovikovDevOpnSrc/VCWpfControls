@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — CI flake / async pipeline race (found in round-3 review)
+
+-  rebuilds are now serialized into a single in-flight pipeline with
+  trailing-edge coalescing: rapid settings changes (e.g.  raising Clear+Add) no
+  longer run concurrent  loops whose interleaved view Resets crashed the
+  virtualizing panel with stale indexes ( in
+  , seen once on a CI runner; the final view could
+  also end up built from a stale snapshot depending on completion order).
+
 Issues round 3 (#9–#10): current-cell border cleanup, header text extraction
 shared across UI surfaces.
 
