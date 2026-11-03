@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Issues round 3 (#9–#10): current-cell border cleanup, header text extraction
+shared across UI surfaces.
+
+### Fixed — issues round 3
+
+- **#9 (bug)**: the current-cell focus border stayed visible on the old row when
+  the current cell moved to another row (borders accumulated across rows).
+  `GridRow.IsCurrent` now invalidates its cells panel arrange, so the border is
+  refreshed for both the old and the new row on any path that changes the flag.
+- **#10 (bug)**: the column chooser of the header context menu labeled columns
+  with element headers (e.g. `TextBlock`) as `System.Windows.Controls.TextBlock`.
+  Header text extraction (string as-is; `TextBlock`/`AccessText`/`ContentControl`
+  unwrap to their text) is now a shared `GridColumnBase.HeaderText` helper used
+  by the header automation peer, the chooser menu, the cell peer's help text and
+  clipboard header export.
+
 ## [0.2.2] — 2026-11-03
 
 Issues round 2 (#6–#8) + review polish.

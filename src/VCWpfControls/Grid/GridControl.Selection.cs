@@ -435,7 +435,7 @@ public partial class GridControl
 
         if (ClipboardCopyMode == GridClipboardCopyMode.IncludeHeaders)
         {
-            lines.Add(string.Join("\t", columns.Select(c => Convert.ToString(c.Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty)));
+            lines.Add(string.Join("\t", columns.Select(c => GridColumnBase.HeaderText(c.Header) ?? string.Empty)));
         }
 
         foreach (var item in items)

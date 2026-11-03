@@ -227,6 +227,31 @@ public abstract class GridColumnBase : DependencyObject
     /// <summary>Path used for sorting: <see cref="SortMemberPath"/> or <see cref="FieldName"/>.</summary>
     internal string EffectiveSortPath => string.IsNullOrEmpty(SortMemberPath) ? FieldName : SortMemberPath!;
 
+    /// <summary>
+    /// Readable text of arbitrary header content: strings as-is; <see cref="TextBlock"/>,
+    /// <see cref="AccessText"/> and <see cref="ContentControl"/> unwrap to their text;
+    /// anything else falls back to <see cref="Convert.ToString(object, IFormatProvider)"/>.
+    /// Shared by the header automation peer, the header context menu and clipboard export.
+    /// </summary>
+    internal static string? HeaderText(object? header)
+    {
+        switch (header)
+        {
+            case null:
+                return null;
+            case string s:
+                return s;
+            case TextBlock textBlock:
+                return textBlock.Text;
+            case AccessText accessText:
+                return accessText.Text;
+            case ContentControl contentControl:
+                return HeaderText(contentControl.Content);
+            default:
+                return Convert.ToString(header, System.Globalization.CultureInfo.CurrentCulture);
+        }
+    }
+
     /// <summary>Final width computed by the layout controller; valid after a layout pass.</summary>
     internal double ActualWidth { get; set; }
 

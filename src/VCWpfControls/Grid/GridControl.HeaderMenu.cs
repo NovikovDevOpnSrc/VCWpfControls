@@ -120,7 +120,7 @@ public partial class GridControl
             var toggleColumn = candidate;
             var item = new MenuItem
             {
-                Header = Convert.ToString(candidate.Header, System.Globalization.CultureInfo.CurrentCulture) ?? candidate.FieldName,
+                Header = GridColumnBase.HeaderText(candidate.Header) ?? candidate.FieldName,
                 IsCheckable = true,
                 IsChecked = candidate.Visible,
             };

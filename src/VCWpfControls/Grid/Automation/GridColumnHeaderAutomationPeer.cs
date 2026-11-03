@@ -1,6 +1,5 @@
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
-using System.Windows.Controls;
 using VCWpfControls.Grid.Columns;
 using VCWpfControls.Grid.Primitives;
 
@@ -32,7 +31,7 @@ public sealed class GridColumnHeaderAutomationPeer : FrameworkElementAutomationP
     {
         if (_owner.Column is { } column)
         {
-            var text = TextOf(column.Header);
+            var text = GridColumnBase.HeaderText(column.Header);
             if (!string.IsNullOrEmpty(text))
             {
                 return text;
@@ -42,26 +41,6 @@ public sealed class GridColumnHeaderAutomationPeer : FrameworkElementAutomationP
         }
 
         return base.GetNameCore() ?? string.Empty;
-    }
-
-    /// <summary>Readable text of arbitrary header content: strings and TextBlocks unwrap to their text.</summary>
-    private static string? TextOf(object? content)
-    {
-        switch (content)
-        {
-            case null:
-                return null;
-            case string s:
-                return s;
-            case TextBlock textBlock:
-                return textBlock.Text;
-            case AccessText accessText:
-                return accessText.Text;
-            case ContentControl contentControl:
-                return TextOf(contentControl.Content);
-            default:
-                return Convert.ToString(content, System.Globalization.CultureInfo.CurrentCulture);
-        }
     }
 
     /// <inheritdoc />

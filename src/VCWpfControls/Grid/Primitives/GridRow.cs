@@ -20,7 +20,7 @@ public class GridRow : Control
 
     /// <summary>Identifies the <see cref="IsCurrent"/> dependency property.</summary>
     public static readonly DependencyProperty IsCurrentProperty = DependencyProperty.Register(
-        nameof(IsCurrent), typeof(bool), typeof(GridRow), new PropertyMetadata(false));
+        nameof(IsCurrent), typeof(bool), typeof(GridRow), new PropertyMetadata(false, OnIsCurrentChanged));
 
     /// <summary>Identifies the <see cref="IsEditing"/> dependency property.</summary>
     public static readonly DependencyProperty IsEditingProperty = DependencyProperty.Register(
@@ -430,6 +430,17 @@ public class GridRow : Control
         if (d is GridRow row)
         {
             row.UpdateRowDetails();
+        }
+    }
+
+    private static void OnIsCurrentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        // The current-cell focus border lives in the cells panel and is refreshed from
+        // ArrangeOverride — without this the border stays visible on the old row when the
+        // current cell moves to another row.
+        if (d is GridRow row)
+        {
+            row.CellsPanel?.InvalidateArrange();
         }
     }
 }

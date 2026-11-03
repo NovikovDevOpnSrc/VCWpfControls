@@ -289,6 +289,81 @@ public class IssueRegressionsTests
         }
     }
 
+    [StaFact]
+    public void Issue9_FocusVisual_ClearedFromOldRow_WhenCurrentItemMoves()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        var items = new[]
+        {
+            new Instrument { Code = "a" },
+            new Instrument { Code = "b" },
+            new Instrument { Code = "c" },
+        };
+        grid.Columns.Add(new GridTextColumn { FieldName = "Code", Header = "Code" });
+        grid.ItemsSource = items;
+        TestWindowHost.Pump();
+
+        try
+        {
+            var rowA = (GridRow)grid.ItemContainerGenerator.ContainerFromIndex(0);
+            var rowB = (GridRow)grid.ItemContainerGenerator.ContainerFromIndex(1);
+            var rowC = (GridRow)grid.ItemContainerGenerator.ContainerFromIndex(2);
+
+            grid.CurrentItem = items[0];
+            TestWindowHost.Pump();
+            Assert.Equal(Visibility.Visible, rowA.CellsPanel!.FocusVisual.Visibility);
+            Assert.Equal(Visibility.Collapsed, rowB.CellsPanel!.FocusVisual.Visibility);
+
+            // Move across rows: the border must leave the old row (previously it stayed).
+            grid.CurrentItem = items[1];
+            TestWindowHost.Pump();
+            Assert.Equal(Visibility.Collapsed, rowA.CellsPanel!.FocusVisual.Visibility);
+            Assert.Equal(Visibility.Visible, rowB.CellsPanel!.FocusVisual.Visibility);
+
+            grid.CurrentItem = items[2];
+            TestWindowHost.Pump();
+            Assert.Equal(Visibility.Collapsed, rowA.CellsPanel!.FocusVisual.Visibility);
+            Assert.Equal(Visibility.Collapsed, rowB.CellsPanel!.FocusVisual.Visibility);
+            Assert.Equal(Visibility.Visible, rowC.CellsPanel!.FocusVisual.Visibility);
+
+            // Clearing the current item hides the border everywhere.
+            grid.CurrentItem = null;
+            TestWindowHost.Pump();
+            Assert.Equal(Visibility.Collapsed, rowA.CellsPanel!.FocusVisual.Visibility);
+            Assert.Equal(Visibility.Collapsed, rowB.CellsPanel!.FocusVisual.Visibility);
+            Assert.Equal(Visibility.Collapsed, rowC.CellsPanel!.FocusVisual.Visibility);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void Issue10_ColumnChooser_UnwrapsTextBlockHeader()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        grid.Columns.Add(new GridTextColumn { FieldName = "Code", Header = "Name" });
+        var styled = new GridTextColumn { FieldName = "Strike", Header = new TextBlock { Text = "Last price" } };
+        grid.Columns.Add(styled);
+        grid.ItemsSource = new[] { new Instrument { Code = "a" } };
+        TestWindowHost.Pump();
+
+        try
+        {
+            var menu = grid.BuildColumnHeaderMenu(grid.Columns[0]);
+            var chooser = menu.Items.OfType<MenuItem>().First(m => m.Items.Count > 0);
+            var labels = chooser.Items.OfType<MenuItem>().Select(m => m.Header as string).ToList();
+            Assert.Equal(new[] { "Name", "Last price" }, labels);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static TextBlock? FindTextByName(Visual parent, string name)
     {
         var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);

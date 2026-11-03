@@ -133,6 +133,9 @@ public sealed class GridCellsPanel : Panel
     internal FrameworkElement? GetCellElement(GridColumnBase column)
         => _elementsByColumn.TryGetValue(column, out var element) ? element : null;
 
+    /// <summary>The current-cell focus border (the last child of the panel).</summary>
+    internal Border FocusVisual => _focusVisual;
+
     /// <summary>Replaces the display element of a column with its editing element.</summary>
     internal void BeginCellEdit(GridColumnBase column)
     {

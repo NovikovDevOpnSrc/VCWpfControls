@@ -117,7 +117,7 @@ public sealed class GridCellAutomationPeer : AutomationPeer
 
     /// <inheritdoc />
     protected override string GetHelpTextCore()
-        => Convert.ToString(_column.Header, System.Globalization.CultureInfo.CurrentCulture) ?? _column.FieldName;
+        => GridColumnBase.HeaderText(_column.Header) is { Length: > 0 } header ? header : _column.FieldName;
 
     /// <inheritdoc />
     protected override string GetItemStatusCore() => string.Empty;
