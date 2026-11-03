@@ -39,8 +39,12 @@ public static class GridValueCompare
 
         if (ta == typeof(string) && tb == typeof(string))
         {
-            return StringComparer.Create(culture ?? CultureInfo.CurrentCulture, ignoreCase: false)
-                .Compare((string)a, (string)b);
+            // Culture-aware comparison is intentional (grid sorts follow the user's locale);
+            // string.Compare with a culture does not allocate, unlike StringComparer.Create
+            // per call which dominated sort memory (see benchmarks/RESULTS.md).
+#pragma warning disable CA1309 // culture-aware comparison is the grid's contract
+            return string.Compare((string)a, (string)b, culture ?? CultureInfo.CurrentCulture, CompareOptions.None);
+#pragma warning restore CA1309
         }
 
         if (ta == tb && a is IComparable sameType)

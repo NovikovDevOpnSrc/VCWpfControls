@@ -290,24 +290,55 @@ public sealed class GridDataManager
             return items;
         }
 
+        // Decorate-sort-undecorate: materialize every key once (one boxing pass per level),
+        // sort indices with an index tie-breaker (stability without LINQ's per-level buffers),
+        // then emit the items in order. Replaced an OrderBy/ThenBy chain that allocated tens
+        // of MB on large views (see benchmarks/RESULTS.md).
+        var count = items.Count;
         var accessors = active.Select(s => itemType is null ? null : GetAccessor(itemType, s.FieldName)).ToArray();
 
-        IOrderedEnumerable<object> ordered = items
-            .OrderBy(item => SortKey(item, 0), new LevelComparer(active[0]));
-
-        for (var level = 1; level < active.Length; level++)
+        var keys = new object?[active.Length][];
+        for (var level = 0; level < active.Length; level++)
         {
-            var captured = level;
-            ordered = ordered.ThenBy(item => SortKey(item, captured), new LevelComparer(active[captured]));
-        }
-
-        return ordered.ToList();
-
-        object? SortKey(object item, int level)
-        {
+            var levelKeys = new object?[count];
             var accessor = accessors[level];
-            return accessor is null ? null : accessor.GetValue(item);
+            for (var i = 0; i < count; i++)
+            {
+                levelKeys[i] = accessor?.GetValue(items[i]);
+            }
+
+            keys[level] = levelKeys;
         }
+
+        var indices = new int[count];
+        for (var i = 0; i < count; i++)
+        {
+            indices[i] = i;
+        }
+
+        var comparers = active.Select(s => new LevelComparer(s)).ToArray();
+        Array.Sort(indices, Comparer<int>.Create((a, b) =>
+        {
+            for (var level = 0; level < comparers.Length; level++)
+            {
+                var result = comparers[level].Compare(keys[level][a], keys[level][b]);
+                if (result != 0)
+                {
+                    return result;
+                }
+            }
+
+            // Equal keys keep the original order (stable sort).
+            return a.CompareTo(b);
+        }));
+
+        var sorted = new List<object>(count);
+        foreach (var index in indices)
+        {
+            sorted.Add(items[index]);
+        }
+
+        return sorted;
     }
 
     private List<GridRowInfo> ApplyGrouping(PipelineSnapshot snapshot, List<object> sortedItems, Type? itemType)

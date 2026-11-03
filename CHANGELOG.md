@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — 0.1.0
 
+### Changed (follow-up iteration 8) — sort performance
+
+- **Sort allocations −80%** (Sort_100k: 70.5 MB → 14.0 MB, mean 148 → 128 ms): the dominant
+  allocator was `StringComparer.Create(culture)` built per string comparison in
+  `GridValueCompare` (replaced with the allocation-free `string.Compare` overload;
+  culture-aware ordering preserved); the sort itself is now an index-based stable sort
+  (keys materialized once per level, index tie-breaker) instead of an LINQ
+  `OrderBy`/`ThenBy` chain. Behavior is unchanged (multi-column order, stability on ties,
+  nulls, culture) — covered by new 50k-row stress tests. FullPipeline_100k: 5.5 MB → 3.3 MB.
+
 ### Fixed (follow-up iteration 7)
 
 - Reported blank headers/... cells on the Editing demo page were a stale executable:
