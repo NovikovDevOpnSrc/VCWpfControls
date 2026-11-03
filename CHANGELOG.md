@@ -9,17 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed — CI flake / async pipeline race (found in round-3 review)
 
--  rebuilds are now serialized into a single in-flight pipeline with
-  trailing-edge coalescing: rapid settings changes (e.g.  raising Clear+Add) no
-  longer run concurrent  loops whose interleaved view Resets crashed the
-  virtualizing panel with stale indexes ( in
-  , seen once on a CI runner; the final view could
-  also end up built from a stale snapshot depending on completion order).
+- `UseAsyncRefresh` rebuilds are now serialized into a single in-flight pipeline with
+  trailing-edge coalescing: rapid settings changes (e.g. `SortBy` raising Clear+Add) no
+  longer run concurrent `RefreshAsync` loops whose interleaved view Resets crashed the
+  virtualizing panel with stale indexes (`ArgumentOutOfRangeException` in
+  `VirtualizingStackPanel.MeasureOverride`, seen once on a CI runner); the final view could
+  also end up built from a stale snapshot depending on completion order.
 
-Issues round 3 (#9–#10): current-cell border cleanup, header text extraction
-shared across UI surfaces.
+### Fixed — issues round 3 (#9–#10)
 
-### Fixed — issues round 3
+Issues round 3: current-cell border cleanup, header text extraction shared across UI surfaces.
 
 - **#9 (bug)**: the current-cell focus border stayed visible on the old row when
   the current cell moved to another row (borders accumulated across rows).
