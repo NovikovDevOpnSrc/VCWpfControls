@@ -37,7 +37,7 @@ xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls"
 | `SortMemberPath` | `null` | Сортировать по пути, отличному от `FieldName` |
 | `StringFormat` | `null` | Формат отображения, например `"C"` или `"{}{0:N2}"` |
 | `HorizontalContentAlignment` | `Left` | Выравнивание содержимого ячейки |
-| `ElementStyle` | `null` | Стиль генерируемых элементов ячейки |
+| `ElementStyle` | `null` | Стиль генерируемых элементов ячейки (только режим отображения; на редакторы не влияет) |
 | `HeaderStyle` | `null` | Стиль заголовка колонки |
 | `CellTemplate` / `CellEditingTemplate` | `null` | Подмена отображения/редактора своим `DataTemplate` |
 

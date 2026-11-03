@@ -37,7 +37,7 @@ xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls"
 | `SortMemberPath` | `null` | Sort by a different path than `FieldName` |
 | `StringFormat` | `null` | Display format, e.g. `"C"` or `"{}{0:N2}"` |
 | `HorizontalContentAlignment` | `Left` | Alignment of cell content |
-| `ElementStyle` | `null` | Style applied to generated cell elements |
+| `ElementStyle` | `null` | Style applied to generated cell elements (display mode only; editing elements are not affected) |
 | `HeaderStyle` | `null` | Style applied to the column header |
 | `CellTemplate` / `CellEditingTemplate` | `null` | Override display/edit elements with your own `DataTemplate` |
 

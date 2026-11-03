@@ -70,7 +70,6 @@ public sealed class GridCellAutomationPeer : AutomationPeer
 
     /// <inheritdoc />
     protected override string GetAcceleratorKeyCore() => string.Empty;
-
     /// <inheritdoc />
     protected override string GetAccessKeyCore() => string.Empty;
 
@@ -78,12 +77,43 @@ public sealed class GridCellAutomationPeer : AutomationPeer
     protected override string GetAutomationIdCore()
         => $"Cell_{_rowPeer.RowOwner.RowInfo?.FlatIndex ?? 0}_{_column.FieldName}";
 
-    /// <inheritdoc />
-    protected override List<AutomationPeer>? GetChildrenCore() => null;
+    /// <summary>
+    /// Template cells expose their template content (buttons, check boxes, links) as children,
+    /// so interactive <see cref="GridColumnBase.CellTemplate"/> content stays reachable for
+    /// UIA clients and assistive technologies.
+    /// </summary>
+    protected override List<AutomationPeer>? GetChildrenCore()
+    {
+        if (_column.CellTemplate is null)
+        {
+            return null;
+        }
+
+        if (_rowPeer.RowOwner.CellsPanel?.GetCellElement(_column) is not { } element)
+        {
+            return null;
+        }
+
+        var peers = new List<AutomationPeer>();
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(element);
+        for (var i = 0; i < count; i++)
+        {
+            if (System.Windows.Media.VisualTreeHelper.GetChild(element, i) is System.Windows.UIElement child
+                && FrameworkElementAutomationPeer.CreatePeerForElement(child) is { } peer)
+            {
+                peers.Add(peer);
+            }
+        }
+
+        return peers.Count > 0 ? peers : null;
+    }
 
     /// <inheritdoc />
     protected override System.Windows.Point GetClickablePointCore()
-        => new(_rowPeer.GetClickablePoint().X, _rowPeer.GetClickablePoint().Y);
+    {
+        var point = _rowPeer.GetClickablePoint();
+        return new System.Windows.Point(point.X, point.Y);
+    }
 
     /// <inheritdoc />
     protected override string GetHelpTextCore()

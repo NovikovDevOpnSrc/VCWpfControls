@@ -69,7 +69,8 @@ public abstract class GridColumnBase : DependencyObject
 
     /// <summary>Identifies the <see cref="ElementStyle"/> dependency property.</summary>
     public static readonly DependencyProperty ElementStyleProperty = DependencyProperty.Register(
-        nameof(ElementStyle), typeof(Style), typeof(GridColumnBase), new PropertyMetadata(null));
+        nameof(ElementStyle), typeof(Style), typeof(GridColumnBase),
+        new PropertyMetadata(null, OnElementStyleChanged));
 
     /// <summary>Identifies the <see cref="CellTemplate"/> dependency property.</summary>
     public static readonly DependencyProperty CellTemplateProperty = DependencyProperty.Register(
@@ -171,7 +172,10 @@ public abstract class GridColumnBase : DependencyObject
         set => SetValue(HorizontalContentAlignmentProperty, value);
     }
 
-    /// <summary>Optional style applied to generated cell elements.</summary>
+    /// <summary>
+    /// Optional style applied to generated cell elements. Applies to display elements only —
+    /// editing elements are not affected (a separate editing style is a future addition).
+    /// </summary>
     public Style? ElementStyle
     {
         get => (Style?)GetValue(ElementStyleProperty);
@@ -250,9 +254,17 @@ public abstract class GridColumnBase : DependencyObject
 
     /// <summary>Creates the (unbound) display element for a cell.</summary>
     public FrameworkElement GenerateElement()
-        => CellTemplate is { } template
+    {
+        var element = CellTemplate is { } template
             ? new ContentPresenter { ContentTemplate = template }
             : GenerateElementCore();
+        if (ElementStyle is { } style)
+        {
+            element.Style = style;
+        }
+
+        return element;
+    }
 
     /// <summary>Creates the (unbound) editing element for a cell; <see langword="null"/> when not editable.</summary>
     public virtual FrameworkElement? GenerateEditingElement()
@@ -325,6 +337,15 @@ public abstract class GridColumnBase : DependencyObject
     {
         var column = (GridColumnBase)d;
         column.Owner?.NotifyColumnChanged(column);
+    }
+
+    /// <summary>Re-styles already generated cell elements when <see cref="ElementStyle"/> changes.</summary>
+    /// <remarks>Setting the style invalidates the element's measure, which propagates to the row
+    /// panel and the grid's layout pass on its own — no explicit layout invalidation is needed.</remarks>
+    private static void OnElementStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var column = (GridColumnBase)d;
+        column.Owner?.ApplyElementStyleToCells(column);
     }
 
     internal static class Boxed

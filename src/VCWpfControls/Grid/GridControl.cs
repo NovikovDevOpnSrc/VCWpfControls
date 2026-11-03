@@ -1169,6 +1169,15 @@ public partial class GridControl : ItemsControl
         }
     }
 
+    /// <summary>Re-applies a column's <see cref="GridColumnBase.ElementStyle"/> to already generated cell elements.</summary>
+    internal void ApplyElementStyleToCells(GridColumnBase column)
+    {
+        foreach (var row in _rowRegistry)
+        {
+            row.CellsPanel?.ApplyElementStyle(column);
+        }
+    }
+
     private void OnSortDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         SyncSortStateToColumns();

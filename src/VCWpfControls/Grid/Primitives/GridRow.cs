@@ -150,6 +150,7 @@ public class GridRow : Control
         }
 
         IsGroupRow = false;
+        System.Windows.Automation.AutomationProperties.SetName(this, string.Empty);
         if (CellsPanel is not null)
         {
             CellsPanel.Visibility = Visibility.Visible;
@@ -188,10 +189,14 @@ public class GridRow : Control
         _groupHost.Visibility = Visibility.Visible;
         _groupHost.Margin = new Thickness(8 + groupRow.Level * 16, 0, 0, 0);
 
+        var caption = ResolveGroupCaption(owner, groupRow);
         if (_groupText is not null)
         {
-            _groupText.Text = ResolveGroupCaption(owner, groupRow);
+            _groupText.Text = caption;
         }
+
+        // Expose the group caption as the row's UIA name (screen readers, UIA clients).
+        System.Windows.Automation.AutomationProperties.SetName(this, caption);
 
         if (_groupToggle is not null)
         {
@@ -359,6 +364,7 @@ public class GridRow : Control
         IsCurrent = false;
         IsEditing = false;
         IsGroupRow = false;
+        System.Windows.Automation.AutomationProperties.SetName(this, string.Empty);
         _groupRow = null;
         RowInfo = null;
         if (_rowDetails is not null)

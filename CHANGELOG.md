@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Issues round 2 (#6–#8): ElementStyle now actually applies, UIA names fixed,
+template column content is reachable again.
+
+### Fixed — issues round 2
+
+- **#8 (bug)**: `GridColumnBase.ElementStyle` is now applied to generated cell
+  elements (previously the DP was declared but never assigned, so e.g. a check
+  box column could not be styled from the column). Changing `ElementStyle` at
+  runtime re-styles already generated (cached) cells; setting it to null
+  reverts to the default style.
+- **#7 (accessibility)**: UIA names — group rows now expose the group caption
+  (key + item count, respecting `HeaderStringFormat`) as their UIA `Name`
+  instead of an empty string; column headers with `TextBlock`/`ContentControl`
+  content unwrap to their text instead of the type name (`System.Windows.Controls.TextBlock`).
+- **#6 (accessibility)**: `GridTemplateColumn` cells expose their
+  `CellTemplate` content (buttons, links, custom controls) as UIA children of
+  the cell peer, restoring the 0.2.0 behavior where interactive template
+  content was reachable by UIA clients and screen readers (regression from
+  the 0.2.1 cell-level peers). Covered by regression tests (template column
+  with a named button → child peer with Invoke).
+
 ## [0.2.1] — 2026-11-03
 
 Community issues round (#1–#5) + UIA cell-level peers.

@@ -120,6 +120,19 @@ public sealed class GridCellsPanel : Panel
         Children.Add(_focusVisual);
     }
 
+    /// <summary>Applies (or clears, when null) the column's <see cref="GridColumnBase.ElementStyle"/> on its cell element.</summary>
+    internal void ApplyElementStyle(GridColumnBase column)
+    {
+        if (_elementsByColumn.TryGetValue(column, out var element))
+        {
+            element.Style = column.ElementStyle;
+        }
+    }
+
+    /// <summary>The generated cell element of the given column, if it has been created.</summary>
+    internal FrameworkElement? GetCellElement(GridColumnBase column)
+        => _elementsByColumn.TryGetValue(column, out var element) ? element : null;
+
     /// <summary>Replaces the display element of a column with its editing element.</summary>
     internal void BeginCellEdit(GridColumnBase column)
     {

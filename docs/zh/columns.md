@@ -37,7 +37,7 @@ xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls"
 | `SortMemberPath` | `null` | 使用与 `FieldName` 不同的排序路径 |
 | `StringFormat` | `null` | 显示格式，如 `"C"` 或 `"{}{0:N2}"` |
 | `HorizontalContentAlignment` | `Left` | 单元格内容的水平对齐 |
-| `ElementStyle` | `null` | 应用于生成的单元格元素的样式 |
+| `ElementStyle` | `null` | 应用于生成的单元格元素的样式（仅显示模式；不影响编辑元素） |
 | `HeaderStyle` | `null` | 应用于列头的样式 |
 | `CellTemplate` / `CellEditingTemplate` | `null` | 用自定义 `DataTemplate` 替换显示/编辑元素 |
 

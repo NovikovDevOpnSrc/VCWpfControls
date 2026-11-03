@@ -1,8 +1,10 @@
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 using VCWpfControls.Control.Tests.Infrastructure;
 using VCWpfControls.Grid;
+using VCWpfControls.Grid.Automation;
 using VCWpfControls.Grid.Columns;
 using VCWpfControls.Grid.Data;
 using VCWpfControls.Grid.Primitives;
@@ -122,6 +124,132 @@ public class IssueRegressionsTests
             Assert.NotNull(groupText);
             Assert.Contains("FX", groupText!.Text);
             Assert.Contains("1", groupText.Text);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // --- Issues round 2 (#6–#8): ElementStyle, UIA names, template content ---
+
+    [StaFact]
+    public void Issue8_ElementStyle_AppliedToGeneratedCellElements_AndLiveChange()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        var style = new Style(typeof(TextBlock))
+        {
+            Setters = { new Setter(TextBlock.ForegroundProperty, Brushes.Red) },
+        };
+        var column = new GridTextColumn { FieldName = "Code", Header = "Code", ElementStyle = style };
+        grid.Columns.Add(column);
+        grid.ItemsSource = new[] { new Instrument { Code = "SI-3.25" } };
+        TestWindowHost.Pump();
+
+        try
+        {
+            var row = (GridRow)grid.ItemContainerGenerator.ContainerFromIndex(0);
+            var cell = row.CellsPanel!.GetCellElement(column);
+            Assert.NotNull(cell);
+            Assert.Same(style, cell!.Style);
+
+            // Live change re-styles existing (cached) elements; null reverts to the default style.
+            var other = new Style(typeof(TextBlock))
+            {
+                Setters = { new Setter(TextBlock.FontStyleProperty, FontStyles.Italic) },
+            };
+            column.ElementStyle = other;
+            Assert.Same(other, cell.Style);
+            column.ElementStyle = null;
+            Assert.Null(cell.Style);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void Issue7_GroupRow_UiaName_ExposesGroupCaption()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        grid.Columns.Add(new GridTextColumn { FieldName = "Class", Header = "Class" });
+        grid.ItemsSource = new[]
+        {
+            new Instrument { Code = "a" },
+            new Instrument { Code = "b" },
+        };
+        grid.GroupDescriptions.Add(new GridGroupDescription("Class"));
+        TestWindowHost.Pump();
+
+        try
+        {
+            var row = (GridRow)grid.ItemContainerGenerator.ContainerFromIndex(0);
+            Assert.True(row.IsGroupRow);
+            var caption = System.Windows.Automation.AutomationProperties.GetName(row);
+            Assert.Contains("FX", caption);
+            Assert.Contains("2", caption);
+            Assert.Equal(caption, new GridRowAutomationPeer(row).GetName());
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void Issue7_ColumnHeader_UiaName_UnwrapsTextBlockContent()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        grid.Columns.Add(new GridTextColumn { FieldName = "Code", Header = "Name" });
+        var styled = new GridTextColumn { FieldName = "Strike", Header = new TextBlock { Text = "Last price" } };
+        grid.Columns.Add(styled);
+        grid.ItemsSource = new[] { new Instrument { Code = "a" } };
+        TestWindowHost.Pump();
+
+        try
+        {
+            var textHeader = grid.HeadersPresenter!.GetHeader(grid.Columns[0]);
+            Assert.Equal("Name", new GridColumnHeaderAutomationPeer(textHeader!).GetName());
+
+            var blockHeader = grid.HeadersPresenter.GetHeader(styled);
+            Assert.Equal("Last price", new GridColumnHeaderAutomationPeer(blockHeader!).GetName());
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void Issue6_TemplateColumn_CellPeer_ExposesTemplateContentToUia()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        var template = new DataTemplate();
+        var factory = new FrameworkElementFactory(typeof(Button));
+        factory.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, "Favorite");
+        template.VisualTree = factory;
+
+        var column = new GridTemplateColumn { FieldName = "Code", Header = "Fav", CellTemplate = template };
+        grid.Columns.Add(column);
+        grid.ItemsSource = new[] { new Instrument { Code = "SI-3.25" } };
+        TestWindowHost.Pump();
+
+        try
+        {
+            var row = (GridRow)grid.ItemContainerGenerator.ContainerFromIndex(0);
+            var cellPeer = new GridCellAutomationPeer(new GridRowAutomationPeer(row), grid, column);
+            var children = cellPeer.GetChildren();
+            Assert.NotNull(children);
+
+            var buttonPeer = children!.OfType<AutomationPeer>().FirstOrDefault(p => p is ButtonAutomationPeer);
+            Assert.NotNull(buttonPeer);
+            Assert.Equal("Favorite", buttonPeer!.GetName());
+            Assert.NotNull(buttonPeer.GetPattern(PatternInterface.Invoke));
         }
         finally
         {
