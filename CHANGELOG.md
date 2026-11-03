@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed — CI flake / async pipeline race (found in round-3 review)
+## [0.2.3] — 2026-11-04
+
+Issues rounds 2–3 (#6–#10), async-pipeline race fix, review polish.
+
+### Fixed — CI flake / async pipeline race
 
 - `UseAsyncRefresh` rebuilds are now serialized into a single in-flight pipeline with
   trailing-edge coalescing: rapid settings changes (e.g. `SortBy` raising Clear+Add) no
