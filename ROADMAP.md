@@ -32,7 +32,7 @@
 - Cell selection unit (`SelectedCells`).
 
 ### TreeListView
-- Node check boxes with tri-state cascade.
+- Node check boxes with tri-state cascade (done).
 - Built-in group/footer summaries per level.
 
 ### Docking

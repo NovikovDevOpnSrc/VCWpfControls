@@ -42,3 +42,7 @@ description: 带列的层级数据，支持展开/折叠与按级别排序。
 ## 暂不支持（见 ROADMAP）
 
 分组面板/筛选行不适用。
+
+## 节点复选框
+
+`ShowNodeCheckBoxes="True"` 为每个节点显示三态复选框。勾选节点会级联到后代；父节点根据子节点的混合状态显示不确定态。API：`IsNodeChecked(item)`、`SetNodeChecked(item, bool)`、`CheckedItems`（所有已勾选项，含折叠的）、路由事件 `NodeCheckChanged`。懒加载模式（`ChildrenProvider`）下，折叠节点仅记录自身状态，不加载子树。

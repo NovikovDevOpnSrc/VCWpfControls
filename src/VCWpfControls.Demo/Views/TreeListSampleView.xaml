@@ -6,8 +6,12 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
             <Button x:Name="ExpandAll" Margin="0,0,8,0" Padding="12,4" Click="OnExpandAll">Expand all</Button>
-            <Button x:Name="CollapseAll" Padding="12,4" Click="OnCollapseAll">Collapse all</Button>
-            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="Click a unit name header to sort children within each level" />
+            <Button x:Name="CollapseAll" Margin="0,0,8,0" Padding="12,4" Click="OnCollapseAll">Collapse all</Button>
+            <CheckBox x:Name="NodeCheckBoxes" Margin="0,0,12,0" VerticalAlignment="Center"
+                      Checked="OnCheckBoxesToggled" Unchecked="OnCheckBoxesToggled">
+                <TextBlock Text="Node check boxes" />
+            </CheckBox>
+            <TextBlock x:Name="CheckedCount" VerticalAlignment="Center" FontWeight="SemiBold" />
         </StackPanel>
         <treeList:TreeListView x:Name="Tree"
                                ItemsSource="{Binding Units}"

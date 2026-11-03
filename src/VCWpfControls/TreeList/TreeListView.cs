@@ -50,6 +50,17 @@ public class TreeListView : GridControl
     private readonly List<TreeListNode> _roots = new();
     private readonly Dictionary<object, TreeListNode> _nodesByItem = new();
     private readonly Dictionary<object, bool> _expandState = new();
+    private readonly Dictionary<object, bool> _checkState = new();
+
+    /// <summary>Identifies the <see cref="ShowNodeCheckBoxes"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowNodeCheckBoxesProperty = DependencyProperty.Register(
+        nameof(ShowNodeCheckBoxes), typeof(bool), typeof(TreeListView),
+        new PropertyMetadata(false, OnTreeStructureChanged));
+
+    /// <summary>Identifies the <see cref="NodeCheckChanged"/> routed event.</summary>
+    public static readonly RoutedEvent NodeCheckChangedEvent = EventManager.RegisterRoutedEvent(
+        nameof(NodeCheckChanged), RoutingStrategy.Bubble,
+        typeof(EventHandler<NodeCheckChangedEventArgs>), typeof(TreeListView));
     private readonly Dictionary<object, List<TreeListNode>> _loadedChildren = new();
     private IEnumerable? _rootsSource;
     private INotifyCollectionChanged? _rootsNotifier;
@@ -79,6 +90,20 @@ public class TreeListView : GridControl
     {
         get => (bool)GetValue(InitiallyExpandedProperty);
         set => SetValue(InitiallyExpandedProperty, value);
+    }
+
+    /// <summary>Whether every node shows a check box with tri-state cascade.</summary>
+    public bool ShowNodeCheckBoxes
+    {
+        get => (bool)GetValue(ShowNodeCheckBoxesProperty);
+        set => SetValue(ShowNodeCheckBoxesProperty, value);
+    }
+
+    /// <summary>Occurs after a node check state changed (after the cascade).</summary>
+    public event EventHandler<NodeCheckChangedEventArgs> NodeCheckChanged
+    {
+        add => AddHandler(NodeCheckChangedEvent, value);
+        remove => RemoveHandler(NodeCheckChangedEvent, value);
     }
 
     /// <summary>
@@ -193,6 +218,121 @@ public class TreeListView : GridControl
 
     /// <inheritdoc />
     public override void Refresh() => RebuildTree();
+
+    /// <summary>Whether the node's item is checked.</summary>
+    public bool IsNodeChecked(object item)
+        => _checkState.TryGetValue(item, out var checkedValue) && checkedValue;
+
+    /// <summary>Checks/unchecks a node with cascade: the node and all loaded descendants.</summary>
+    public void SetNodeChecked(object? item, bool isChecked)
+    {
+        if (item is null || !_nodesByItem.TryGetValue(item, out var node))
+        {
+            return;
+        }
+
+        ApplyCheck(node, isChecked);
+
+        // Ancestors derive their tri-state from children instead of keeping a stale
+        // stored state from an earlier cascade.
+        for (var ancestor = node.Parent; ancestor is not null; ancestor = ancestor.Parent)
+        {
+            _checkState.Remove(ancestor.Item);
+        }
+
+        RebuildTree();
+
+        RaiseEvent(new NodeCheckChangedEventArgs(item, isChecked)
+        {
+            RoutedEvent = NodeCheckChangedEvent,
+            Source = this,
+        });
+    }
+
+    /// <summary>All checked items of the tree (regardless of expand/collapse state).</summary>
+    public IReadOnlyList<object> CheckedItems
+    {
+        get
+        {
+            var result = new List<object>();
+            foreach (var pair in _checkState)
+            {
+                if (pair.Value && _nodesByItem.ContainsKey(pair.Key))
+                {
+                    result.Add(pair.Key);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    private void ApplyCheck(TreeListNode node, bool isChecked)
+    {
+        _checkState[node.Item] = isChecked;
+        // In path mode resolving is a cheap reflection read, so cascade covers collapsed
+        // subtrees; in provider mode checking a collapsed node records its own state only
+        // (no forced loading of the whole lazy subtree).
+        if (node.Children is null)
+        {
+            if (ChildrenProvider is not null)
+            {
+                return;
+            }
+
+            ResolveChildren(node);
+            if (node.Children is null)
+            {
+                return;
+            }
+        }
+
+        foreach (var child in node.Children)
+        {
+            ApplyCheck(child, isChecked);
+        }
+    }
+
+    /// <summary>Effective check state of a node (indeterminate = mixed descendants).</summary>
+    private bool? ComputeCheckState(TreeListNode node)
+    {
+        if (_checkState.TryGetValue(node.Item, out var own))
+        {
+            return own;
+        }
+
+        // Derived from already-loaded children only — never triggers lazy loading.
+        if (node.Children is not { Count: > 0 })
+        {
+            return false;
+        }
+
+        var anyChecked = false;
+        var anyUnchecked = false;
+        foreach (var child in node.Children)
+        {
+            switch (ComputeCheckState(child))
+            {
+                case true:
+                    anyChecked = true;
+                    break;
+                case false:
+                    anyUnchecked = true;
+                    break;
+                case null:
+                    anyChecked = true;
+                    anyUnchecked = true;
+                    break;
+            }
+
+            if (anyChecked && anyUnchecked)
+            {
+                return null;
+            }
+        }
+
+        return anyChecked ? true : anyUnchecked ? false : false;
+    }
 
     /// <summary>Expands or collapses the node of the given item and rebuilds the view.</summary>
     public void ToggleNode(object? item, bool expanded)
@@ -368,7 +508,7 @@ public class TreeListView : GridControl
                     continue;
                 }
 
-                node.Children.Add(new TreeListNode(child, node.Level + 1)
+                node.Children.Add(new TreeListNode(child, node.Level + 1, node)
                 {
                     IsExpanded = _expandState.TryGetValue(child, out var childState) && childState,
                 });
@@ -443,27 +583,34 @@ public class TreeListView : GridControl
             row.TreeLevel = node.Level;
             row.TreeHasChildren = HasChildrenHint(node);
             row.TreeIsExpanded = node.IsExpanded == true;
+            row.HasNodeCheckBox = ShowNodeCheckBoxes;
+            row.NodeIsChecked = ComputeCheckState(node);
             row.UpdateTreeToggle();
+            row.UpdateNodeCheckBox();
         }
         else
         {
             row.TreeLevel = 0;
             row.TreeHasChildren = false;
+            row.HasNodeCheckBox = false;
         }
     }
 
     /// <summary>One node of the flattened tree.</summary>
     private sealed class TreeListNode
     {
-        public TreeListNode(object item, int level)
+        public TreeListNode(object item, int level, TreeListNode? parent = null)
         {
             Item = item;
             Level = level;
+            Parent = parent;
         }
 
         public object Item { get; }
 
         public int Level { get; }
+
+        public TreeListNode? Parent { get; }
 
         public List<TreeListNode>? Children { get; set; }
 

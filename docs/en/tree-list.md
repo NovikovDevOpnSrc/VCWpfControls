@@ -52,3 +52,7 @@ Set `ChildrenProvider` (a `Func<object, IEnumerable?>`) instead of `ChildMemberP
 ## Not yet (see ROADMAP)
 
 Filtering of tree nodes, load-on-demand children, group panel/filter row do not apply.
+
+## Node check boxes
+
+`ShowNodeCheckBoxes="True"` adds a tri-state check box to every node. Checking a node cascades to its descendants; ancestors derive an indeterminate state from mixed children. API: `IsNodeChecked(item)`, `SetNodeChecked(item, bool)`, `CheckedItems` (all checked items, collapsed included), routed event `NodeCheckChanged`. In lazy mode (`ChildrenProvider`) a collapsed node records its own state without loading the subtree.

@@ -73,6 +73,14 @@ public class GridRow : Control
     public static readonly DependencyProperty TreeIsExpandedProperty = DependencyProperty.Register(
         nameof(TreeIsExpanded), typeof(bool), typeof(GridRow), new PropertyMetadata(false));
 
+    /// <summary>Identifies the <see cref="HasNodeCheckBox"/> dependency property.</summary>
+    public static readonly DependencyProperty HasNodeCheckBoxProperty = DependencyProperty.Register(
+        nameof(HasNodeCheckBox), typeof(bool), typeof(GridRow), new PropertyMetadata(false));
+
+    /// <summary>Identifies the <see cref="NodeIsChecked"/> dependency property (null = indeterminate).</summary>
+    public static readonly DependencyProperty NodeIsCheckedProperty = DependencyProperty.Register(
+        nameof(NodeIsChecked), typeof(bool?), typeof(GridRow), new PropertyMetadata(false));
+
     /// <summary>Whether the row is a tree node with expandable children (TreeListView).</summary>
     public bool TreeHasChildren
     {
@@ -85,6 +93,20 @@ public class GridRow : Control
     {
         get => (bool)GetValue(TreeIsExpandedProperty);
         internal set => SetValue(TreeIsExpandedProperty, value);
+    }
+
+    /// <summary>Whether the row shows a node check box (TreeListView with ShowNodeCheckBoxes).</summary>
+    public bool HasNodeCheckBox
+    {
+        get => (bool)GetValue(HasNodeCheckBoxProperty);
+        internal set => SetValue(HasNodeCheckBoxProperty, value);
+    }
+
+    /// <summary>Node check state: true/false/null (indeterminate).</summary>
+    public bool? NodeIsChecked
+    {
+        get => (bool?)GetValue(NodeIsCheckedProperty);
+        internal set => SetValue(NodeIsCheckedProperty, value);
     }
 
     /// <summary>Tree nesting level of the row (0 for roots); 0 for non-tree grids.</summary>
@@ -106,6 +128,7 @@ public class GridRow : Control
     private ContentPresenter? _rowDetails;
     private ToggleButton? _treeToggle;
     private bool _syncingTreeToggle;
+    private System.Windows.Controls.CheckBox? _nodeCheckBox;
 
     /// <summary>The owning grid.</summary>
     internal GridControl? Owner { get; private set; }
@@ -198,6 +221,26 @@ public class GridRow : Control
         }
     }
 
+    private void OnNodeCheckBoxClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.CheckBox { IsChecked: { } isChecked } && Owner is TreeList.TreeListView tree)
+        {
+            tree.SetNodeChecked(DataItem, isChecked);
+        }
+    }
+
+    /// <summary>Syncs the node check box with the row's tree state (no event feedback).</summary>
+    internal void UpdateNodeCheckBox()
+    {
+        if (_nodeCheckBox is null)
+        {
+            return;
+        }
+
+        _nodeCheckBox.Margin = new Thickness(TreeLevel * 16 + 20, 0, 0, 0);
+        _nodeCheckBox.IsChecked = NodeIsChecked;
+    }
+
     private void OnTreeToggleChanged(object sender, RoutedEventArgs e)
     {
         if (_syncingTreeToggle)
@@ -231,6 +274,16 @@ public class GridRow : Control
         _groupText = GetTemplateChild("PART_GroupText") as TextBlock;
         _rowDetails = GetTemplateChild("PART_RowDetails") as ContentPresenter;
         _treeToggle = GetTemplateChild("PART_TreeToggle") as ToggleButton;
+        if (GetTemplateChild("PART_NodeCheckBox") is System.Windows.Controls.CheckBox nodeCheckBox)
+        {
+            if (_nodeCheckBox is not null)
+            {
+                _nodeCheckBox.Click -= OnNodeCheckBoxClick;
+            }
+
+            _nodeCheckBox = nodeCheckBox;
+            _nodeCheckBox.Click += OnNodeCheckBoxClick;
+        }
         if (_treeToggle is not null)
         {
             _treeToggle.Checked -= OnTreeToggleChanged;
@@ -240,6 +293,7 @@ public class GridRow : Control
         }
 
         UpdateTreeToggle();
+        UpdateNodeCheckBox();
 
         if (CellsPanel is not null && Owner is not null && !IsGroupRow)
         {

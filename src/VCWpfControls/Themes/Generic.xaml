@@ -181,6 +181,15 @@
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0">
                                 <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                                <CheckBox
+                                    x:Name="PART_NodeCheckBox"
+                                    Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    Focusable="False"
+                                    IsThreeState="True"
+                                    Visibility="Collapsed" />
                                 <ToggleButton
                                     x:Name="PART_TreeToggle"
                                     Width="16"
@@ -251,6 +260,9 @@
                         </Trigger>
                         <Trigger Property="TreeHasChildren" Value="True">
                             <Setter TargetName="PART_TreeToggle" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="HasNodeCheckBox" Value="True">
+                            <Setter TargetName="PART_NodeCheckBox" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />

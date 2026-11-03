@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — TreeListView node check boxes
+
+- `ShowNodeCheckBoxes` (tri-state): checking cascades to descendants (path mode loads collapsed
+  subtrees; lazy mode records the node itself without loading), ancestors derive the
+  indeterminate state from mixed children; API `IsNodeChecked`/`SetNodeChecked`/`CheckedItems`
+  (all checked items, collapsed included) + routed `NodeCheckChanged` event.
+
 ## [0.2.0] — 2026-11-03
 
 Post-v0.1.0 iterations: bug fixes, column content fit, header context menu, UX pass, sort performance.
