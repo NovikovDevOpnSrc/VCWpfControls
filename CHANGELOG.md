@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Issues round 2 (#6–#8): ElementStyle now actually applies, UIA names fixed,
-template column content is reachable again.
+## [0.2.2] — 2026-11-03
+
+Issues round 2 (#6–#8) + review polish.
+
+### Added
+
+- `GridColumnBase.EditingElementStyle` — style for generated editing elements (matches the
+  DataGrid naming; `ElementStyle` covers display elements).
+
+### Fixed — issues round 2
 
 ### Fixed — issues round 2
 
@@ -27,6 +35,11 @@ template column content is reachable again.
   content was reachable by UIA clients and screen readers (regression from
   the 0.2.1 cell-level peers). Covered by regression tests (template column
   with a named button → child peer with Invoke).
+
+### Changed — review polish
+
+- `ElementStyle` live change no longer triggers a redundant layout invalidation
+  (direct re-style of cached cells only).
 
 ## [0.2.1] — 2026-11-03
 

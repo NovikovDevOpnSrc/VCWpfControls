@@ -257,6 +257,38 @@ public class IssueRegressionsTests
         }
     }
 
+    [StaFact]
+    public void EditingElementStyle_AppliedToGeneratedEditingElements()
+    {
+        var grid = new GridControl();
+        var window = TestWindowHost.Show(grid);
+        var style = new Style(typeof(TextBox))
+        {
+            Setters = { new Setter(TextBox.BackgroundProperty, Brushes.Yellow) },
+        };
+        grid.Columns.Add(new GridTextColumn
+        {
+            FieldName = "Code",
+            Header = "Code",
+            ElementStyle = new Style(typeof(TextBlock)),
+            EditingElementStyle = style,
+        });
+        grid.ItemsSource = new[] { new Instrument { Code = "SI" } };
+        TestWindowHost.Pump();
+
+        try
+        {
+            var column = grid.Columns[0];
+            Assert.Same(style, column.GenerateEditingElement()!.Style);
+            // Display elements get ElementStyle (the empty TextBlock style), not the editing one.
+            Assert.Same(column.ElementStyle, column.GenerateElement().Style);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static TextBlock? FindTextByName(Visual parent, string name)
     {
         var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);

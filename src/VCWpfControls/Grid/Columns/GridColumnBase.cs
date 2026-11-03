@@ -72,6 +72,10 @@ public abstract class GridColumnBase : DependencyObject
         nameof(ElementStyle), typeof(Style), typeof(GridColumnBase),
         new PropertyMetadata(null, OnElementStyleChanged));
 
+    /// <summary>Identifies the <see cref="EditingElementStyle"/> dependency property.</summary>
+    public static readonly DependencyProperty EditingElementStyleProperty = DependencyProperty.Register(
+        nameof(EditingElementStyle), typeof(Style), typeof(GridColumnBase), new PropertyMetadata(null));
+
     /// <summary>Identifies the <see cref="CellTemplate"/> dependency property.</summary>
     public static readonly DependencyProperty CellTemplateProperty = DependencyProperty.Register(
         nameof(CellTemplate), typeof(DataTemplate), typeof(GridColumnBase), new PropertyMetadata(null));
@@ -182,6 +186,13 @@ public abstract class GridColumnBase : DependencyObject
         set => SetValue(ElementStyleProperty, value);
     }
 
+    /// <summary>Optional style applied to generated editing elements (null = default).</summary>
+    public Style? EditingElementStyle
+    {
+        get => (Style?)GetValue(EditingElementStyleProperty);
+        set => SetValue(EditingElementStyleProperty, value);
+    }
+
     /// <summary>When set, overrides the generated display element with the template's content.</summary>
     public DataTemplate? CellTemplate
     {
@@ -268,9 +279,17 @@ public abstract class GridColumnBase : DependencyObject
 
     /// <summary>Creates the (unbound) editing element for a cell; <see langword="null"/> when not editable.</summary>
     public virtual FrameworkElement? GenerateEditingElement()
-        => CellEditingTemplate is { } template
+    {
+        var element = CellEditingTemplate is { } template
             ? new ContentPresenter { ContentTemplate = template }
             : GenerateEditingElementCore();
+        if (element is not null && EditingElementStyle is { } editingStyle)
+        {
+            element.Style = editingStyle;
+        }
+
+        return element;
+    }
 
     /// <summary>Binds a display element to the row's data item.</summary>
     public virtual void PrepareElement(FrameworkElement element, object dataItem)
