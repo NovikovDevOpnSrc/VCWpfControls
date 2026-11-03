@@ -117,11 +117,11 @@ public partial class GridControl
     private double MeasureHeaderWidth(GridColumnBase column)
         => MeasureTextWidth(Convert.ToString(column.Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty) + BestFitHeaderPadding;
 
-    private static string FormatCellText(GridColumnBase column, object? value)
+    internal static string FormatCellText(GridColumnBase column, object? value)
     {
         if (value is null or DBNull)
         {
-            return string.Empty;
+            return column.NullText ?? string.Empty;
         }
 
         return string.IsNullOrEmpty(column.StringFormat)

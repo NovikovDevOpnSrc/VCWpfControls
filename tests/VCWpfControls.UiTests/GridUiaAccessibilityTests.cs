@@ -33,15 +33,23 @@ public sealed class GridUiaAccessibilityTests : IDisposable
         Assert.True(gridPattern.RowCount > 0, "RowCount must work");
         Assert.True(gridPattern.ColumnCount >= 5, "ColumnCount must work");
 
-        // Issue #1 scenario: GetItem -> DataItem -> SelectionItem.Select().
-        var row = gridPattern.GetItem(0, 1);
-        Assert.NotNull(row);
-        var rowElement = row!.AsGridCell() ?? throw new InvalidOperationException("cell");
-        var dataItem = FindDataItemFor(grid, row);
-        Assert.NotNull(dataItem);
+        // Cell-level peers: GetItem(r, c) returns the CELL DataItem with the column value.
+        var cell = gridPattern.GetItem(0, 1);
+        Assert.NotNull(cell);
+        var cellName = cell!.Properties.Name.ValueOrDefault ?? string.Empty;
+        Assert.False(string.IsNullOrWhiteSpace(cellName), "cell name must expose the column value");
 
-        var name = dataItem!.Properties.Name.ValueOrDefault ?? string.Empty;
-        Assert.False(string.IsNullOrWhiteSpace(name), "row name must expose cell values");
+        var cell0 = gridPattern.GetItem(0, 0);
+        Assert.NotEqual(cell0!.Properties.Name.ValueOrDefault, cellName);
+
+        // The row is the parent DataItem with SelectionItem support.
+        var dataItem = cell.Parent ?? FindFirstSelectableRow(grid);
+        Assert.NotNull(dataItem);
+        Assert.Equal(FlaUI.Core.Definitions.ControlType.DataItem,
+            dataItem!.Properties.ControlType.ValueOrDefault);
+
+        var name = dataItem.Properties.Name.ValueOrDefault ?? string.Empty;
+        Assert.Contains(cellName, name, StringComparison.Ordinal);
 
         var selectionItem = dataItem.Patterns.SelectionItem;
         Assert.True(selectionItem.IsSupported, "rows must support SelectionItem");
@@ -49,6 +57,13 @@ public sealed class GridUiaAccessibilityTests : IDisposable
         selectionItem.Pattern.Select();
         Assert.True(selectionItem.Pattern.IsSelected, "Select() must select the row");
     }
+
+    private static FlaUI.Core.AutomationElements.AutomationElement? FindFirstSelectableRow(
+        FlaUI.Core.AutomationElements.AutomationElement grid)
+        => grid
+            .FindAllDescendants()
+            .FirstOrDefault(d => d.Properties.ControlType.ValueOrDefault == FlaUI.Core.Definitions.ControlType.DataItem
+                && d.Patterns.SelectionItem.IsSupported);
 
     [Fact]
     public void TablePattern_ColumnHeaders_HaveNames_AndSortOnInvoke()

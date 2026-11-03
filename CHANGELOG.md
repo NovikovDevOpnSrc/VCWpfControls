@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — UIA cell-level peers (issue #1 follow-up)
+
+- `GridCellAutomationPeer`: `GridPattern.GetItem(row, column)` now returns the CELL DataItem
+  (name = formatted value with `StringFormat`/`NullText` honored) instead of the row container;
+  cells appear as children of the row DataItem, enabling exact per-column search from UIA
+  clients; covered by FlaUI tests (cell names differ per column, contained in the row name).
+
 ### Fixed — issues round 1
 
 - **#5 (bug)**: incremental Add/Remove/Replace in an `ObservableCollection` with an active

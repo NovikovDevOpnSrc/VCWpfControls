@@ -55,8 +55,14 @@ public sealed class GridControlAutomationPeer : FrameworkElementAutomationPeer, 
         }
 
         var dataRow = _owner.DataEngine.DataRows[row];
-        return TryFindRowContainer(dataRow.Item) is { } container
-            ? ProviderFromPeer(CreatePeerForElement(container))
+        if (TryFindRowContainer(dataRow.Item) is not { } container
+            || CreatePeerForElement(container) is not GridRowAutomationPeer rowPeer)
+        {
+            return null;
+        }
+
+        return rowPeer.GetCellPeer(column) is { } cell
+            ? ProviderFromPeer(cell)
             : null;
     }
 

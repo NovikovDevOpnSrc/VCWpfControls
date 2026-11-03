@@ -12,6 +12,10 @@ namespace VCWpfControls.Grid.Automation;
 public sealed class GridRowAutomationPeer : FrameworkElementAutomationPeer, ISelectionItemProvider
 {
     private readonly GridRow _owner;
+    private List<GridCellAutomationPeer>? _cellPeers;
+
+    /// <summary>The row container this peer represents.</summary>
+    internal GridRow RowOwner => _owner;
 
     /// <summary>Creates the peer.</summary>
     public GridRowAutomationPeer(GridRow owner)
@@ -51,7 +55,7 @@ public sealed class GridRowAutomationPeer : FrameworkElementAutomationPeer, ISel
 
     void ISelectionItemProvider.Select()
     {
-        if (_owner.DataItem is { } item && _owner.Owner is { } grid)
+        if (_owner.DataItem is { } item && RowOwner.Owner is { } grid)
         {
             if (grid.SelectionMode == GridSelectionMode.Extended)
             {
@@ -65,7 +69,7 @@ public sealed class GridRowAutomationPeer : FrameworkElementAutomationPeer, ISel
     void ISelectionItemProvider.AddToSelection()
     {
         if (_owner.DataItem is { } item
-            && _owner.Owner is { } grid
+            && RowOwner.Owner is { } grid
             && grid.SelectionMode == GridSelectionMode.Extended)
         {
             grid.SelectItem(item);
@@ -74,10 +78,57 @@ public sealed class GridRowAutomationPeer : FrameworkElementAutomationPeer, ISel
 
     void ISelectionItemProvider.RemoveFromSelection()
     {
-        if (_owner.DataItem is { } item && _owner.Owner is { } grid)
+        if (_owner.DataItem is { } item && RowOwner.Owner is { } grid)
         {
             grid.UnselectItem(item);
         }
+    }
+
+    /// <summary>
+    /// Children are virtual cell peers (one per visible column) instead of the raw visual
+    /// TextBlocks, so UIA clients see structured DataItems with per-column values.
+    /// </summary>
+    protected override List<AutomationPeer>? GetChildrenCore()
+    {
+        return EnsureCellPeers() is { } peers
+            ? peers.Cast<AutomationPeer>().ToList()
+            : base.GetChildrenCore();
+    }
+
+    /// <summary>The peer of the cell in the given visible column index.</summary>
+    internal GridCellAutomationPeer? GetCellPeer(int columnIndex)
+    {
+        var peers = EnsureCellPeers();
+        if (peers is null || columnIndex < 0 || columnIndex >= peers.Count)
+        {
+            return null;
+        }
+
+        return peers[columnIndex];
+    }
+
+    /// <summary>
+    /// Cached per-column cell peers — stable instances let UIA connect them
+    /// (children enumeration) so GridPattern.GetItem returns live providers.
+    /// </summary>
+    private List<GridCellAutomationPeer>? EnsureCellPeers()
+    {
+        if (_owner.DataItem is null || _owner.Owner is not { } grid)
+        {
+            return null;
+        }
+
+        var columns = grid.VisibleColumns;
+        if (_cellPeers is null || _cellPeers.Count != columns.Count)
+        {
+            _cellPeers = new List<GridCellAutomationPeer>(columns.Count);
+            foreach (var column in columns)
+            {
+                _cellPeers.Add(new GridCellAutomationPeer(this, grid, column));
+            }
+        }
+
+        return _cellPeers;
     }
 
     /// <inheritdoc />
