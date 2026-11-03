@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-11-03
+
+Community issues round (#1–#5) + UIA cell-level peers.
+
 ### Added — UIA cell-level peers (issue #1 follow-up)
 
 - `GridCellAutomationPeer`: `GridPattern.GetItem(row, column)` now returns the CELL DataItem
