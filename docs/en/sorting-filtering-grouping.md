@@ -196,3 +196,14 @@ friends operate on data items, not group rows.
 
 > **Footer summaries** are configured via `grid.SummaryItems.Add(new GridSummaryItem("Salary", GridSummaryFunction.Sum, "C"))`.
 > For group-level totals, compute them from `GridGroup.Items` / `TotalItems`.
+
+### Custom group captions
+
+`GridGroupDescription.HeaderStringFormat` customizes group rows: `{0}` = key, `{1}` = item count, `{2}` = column header. Default is the localized "key: N item(s)".
+
+```csharp
+grid.GroupDescriptions.Add(new GridGroupDescription("Asset")
+{
+    HeaderStringFormat = "{2}: {0} ({1} items)",
+});
+```

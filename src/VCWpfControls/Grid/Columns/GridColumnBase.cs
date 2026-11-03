@@ -79,6 +79,10 @@ public abstract class GridColumnBase : DependencyObject
     public static readonly DependencyProperty CellEditingTemplateProperty = DependencyProperty.Register(
         nameof(CellEditingTemplate), typeof(DataTemplate), typeof(GridColumnBase), new PropertyMetadata(null));
 
+    /// <summary>Identifies the <see cref="NullText"/> dependency property.</summary>
+    public static readonly DependencyProperty NullTextProperty = DependencyProperty.Register(
+        nameof(NullText), typeof(string), typeof(GridColumnBase), new PropertyMetadata(null));
+
     /// <summary>Identifies the <see cref="HeaderStyle"/> dependency property.</summary>
     public static readonly DependencyProperty HeaderStyleProperty = DependencyProperty.Register(
         nameof(HeaderStyle), typeof(Style), typeof(GridColumnBase), new PropertyMetadata(null));
@@ -186,6 +190,13 @@ public abstract class GridColumnBase : DependencyObject
     {
         get => (DataTemplate?)GetValue(CellEditingTemplateProperty);
         set => SetValue(CellEditingTemplateProperty, value);
+    }
+
+    /// <summary>Text shown instead of null values (e.g. "—"); null renders as an empty cell.</summary>
+    public string? NullText
+    {
+        get => (string?)GetValue(NullTextProperty);
+        set => SetValue(NullTextProperty, value);
     }
 
     /// <summary>Optional style applied to the column's header.</summary>
@@ -299,6 +310,11 @@ public abstract class GridColumnBase : DependencyObject
         if (mode == BindingMode.OneWay && !string.IsNullOrEmpty(StringFormat))
         {
             binding.StringFormat = StringFormat;
+        }
+
+        if (!string.IsNullOrEmpty(NullText))
+        {
+            binding.TargetNullValue = NullText;
         }
 
         return binding;

@@ -496,6 +496,14 @@ public sealed class GridDataManager
 
     private void OnItemAdded(object item)
     {
+        // Grouped views must rebuild: an incremental insert cannot create group headers
+        // or update counters (see issue #5).
+        if (HasActiveGrouping)
+        {
+            Refresh();
+            return;
+        }
+
         var itemType = ResolvedItemType ?? item.GetType();
         if (ResolvedItemType is null)
         {
@@ -523,6 +531,13 @@ public sealed class GridDataManager
 
     private void OnItemRemoved(object item)
     {
+        // Group counters and headers cannot be patched incrementally; rebuild (#5).
+        if (HasActiveGrouping)
+        {
+            Refresh();
+            return;
+        }
+
         GridDataRow? row = null;
         foreach (var candidate in _dataRows)
         {

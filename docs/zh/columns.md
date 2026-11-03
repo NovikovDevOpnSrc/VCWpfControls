@@ -200,3 +200,7 @@ grid.BestFitAllColumns();          // 所有可见列
 
 菜单由 `BuildColumnHeaderMenu` 构建；如需自定义，请处理表格的 `ContextMenuOpening`
 事件并指定自己的 `ContextMenu`。
+
+### 空值显示
+
+列上的 `NullText="—"` 在空单元格处显示标记（通过绑定的 `TargetNullValue` 实现；文本列与数值列均适用）。

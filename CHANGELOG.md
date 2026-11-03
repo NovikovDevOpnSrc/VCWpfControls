@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — issues round 1
+
+- **#5 (bug)**: incremental Add/Remove/Replace in an `ObservableCollection` with an active
+  grouping now rebuilds the view (group headers and counters cannot be patched incrementally);
+  previously the view stayed flat until a manual refresh. Without grouping, adds remain
+  incremental.
+- **#1 (bug)**: UI Automation — `GridRow` and `GridColumnHeader` now have automation peers:
+  rows are DataItems with `SelectionItem` support (select from UIA clients without input
+  synthesis) and names built from visible cell values; headers expose their text and Invoke
+  (sort cycling). `GridPattern.GetItem`, `TablePattern.ColumnHeaders` and
+  `SelectionProvider.GetSelection` now return real elements. Covered by FlaUI UIA tests.
+- **#4 (docs)**: fixed a broken callout in the RU sorting/filtering/grouping page.
+
+### Added — issues round 1
+
+- **#2**: `GridColumnBase.NullText` — marker (e.g. "—") shown instead of null values via the
+  binding's `TargetNullValue` (text and numeric columns).
+- **#3**: `GridGroupDescription.HeaderStringFormat` — custom group captions:
+  `{0}` key, `{1}` count, `{2}` column header; localized default preserved.
+
 ### Added — TreeListView node check boxes
 
 - `ShowNodeCheckBoxes` (tri-state): checking cascades to descendants (path mode loads collapsed

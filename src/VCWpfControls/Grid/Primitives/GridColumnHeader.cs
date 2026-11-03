@@ -106,6 +106,10 @@ public class GridColumnHeader : Control
     }
 
     /// <inheritdoc />
+    protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer()
+        => new Automation.GridColumnHeaderAutomationPeer(this);
+
+    /// <inheritdoc />
     public override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -236,7 +240,7 @@ public class GridColumnHeader : Control
         e.Handled = true;
     }
 
-    private GridControl? Owner => Column?.Owner;
+    internal GridControl? Owner => Column?.Owner;
 
     private void OnResizeThumbDoubleClick(object sender, MouseButtonEventArgs e)
     {

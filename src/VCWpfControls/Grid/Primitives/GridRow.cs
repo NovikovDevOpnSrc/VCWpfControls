@@ -133,6 +133,10 @@ public class GridRow : Control
     /// <summary>The owning grid.</summary>
     internal GridControl? Owner { get; private set; }
 
+    /// <inheritdoc />
+    protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer()
+        => new Automation.GridRowAutomationPeer(this);
+
     /// <summary>Binds the container to a row info item of the grid's view.</summary>
     internal void Prepare(GridRowInfo rowInfo, GridControl owner)
     {
@@ -186,9 +190,7 @@ public class GridRow : Control
 
         if (_groupText is not null)
         {
-            _groupText.Text = Localization.GridStrings.GroupRowItemCount(
-                groupRow.Group.Key,
-                groupRow.Group.TotalItems);
+            _groupText.Text = ResolveGroupCaption(owner, groupRow);
         }
 
         if (_groupToggle is not null)
@@ -252,6 +254,39 @@ public class GridRow : Control
         {
             treeView.ToggleNode(DataItem, _treeToggle.IsChecked == true);
         }
+    }
+
+    /// <summary>Group caption: HeaderStringFormat of the description when set, localized default otherwise.</summary>
+    private static string ResolveGroupCaption(GridControl owner, GridGroupRow groupRow)
+    {
+        var group = groupRow.Group;
+        var fieldPath = FieldPathOf(owner, groupRow);
+        var description = owner.GroupDescriptions.FirstOrDefault(d =>
+            string.Equals(d.FieldName, fieldPath, StringComparison.OrdinalIgnoreCase));
+
+        if (description?.HeaderStringFormat is { } format)
+        {
+            var columnHeader = owner.Columns
+                .Where(c => string.Equals(c.EffectiveSortPath, description.FieldName, StringComparison.OrdinalIgnoreCase))
+                .Select(c => Convert.ToString(c.Header, System.Globalization.CultureInfo.CurrentCulture))
+                .FirstOrDefault() ?? description.FieldName;
+            return string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                format,
+                group.Key,
+                group.TotalItems,
+                columnHeader);
+        }
+
+        return Localization.GridStrings.GroupRowItemCount(group.Key, group.TotalItems);
+    }
+
+    /// <summary>The field path of the group row's level (matches the description order).</summary>
+    private static string FieldPathOf(GridControl owner, GridGroupRow groupRow)
+    {
+        var level = groupRow.Level;
+        var descriptions = owner.GroupDescriptions.Where(g => !string.IsNullOrEmpty(g.FieldName)).ToList();
+        return level < descriptions.Count ? descriptions[level].FieldName : string.Empty;
     }
 
     private void OnGroupToggleChanged(object sender, RoutedEventArgs e)

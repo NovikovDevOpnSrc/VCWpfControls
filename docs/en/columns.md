@@ -205,3 +205,7 @@ Right-click any column header for the built-in (localized EN/RU/ZH) menu:
 
 The menu is built by `BuildColumnHeaderMenu` and can be replaced by handling
 `ContextMenuOpening` on the grid and assigning your own `ContextMenu`.
+
+### Null display
+
+`NullText="—"` on a column shows the marker instead of empty null cells (applied via the binding's `TargetNullValue`; works for text and numeric columns).

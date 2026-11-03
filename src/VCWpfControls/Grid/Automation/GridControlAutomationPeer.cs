@@ -42,7 +42,11 @@ public sealed class GridControlAutomationPeer : FrameworkElementAutomationPeer, 
     /// <summary>Visible column count.</summary>
     public int ColumnCount => _owner.VisibleColumns.Count;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns the UIA provider of the row container at (row, column) — the row peer's name
+    /// contains the cell values, and the column index selects which value leads the name
+    /// via cell peers when they exist. Rows are DataItems with SelectionItem support.
+    /// </summary>
     IRawElementProviderSimple? IGridProvider.GetItem(int row, int column)
     {
         if (row < 0 || column < 0 || row >= RowCount || column >= ColumnCount)

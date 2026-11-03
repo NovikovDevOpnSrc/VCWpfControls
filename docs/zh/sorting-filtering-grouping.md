@@ -191,3 +191,14 @@ grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Order.CreatedAt))
 > **状态说明。** 聚合汇总（每个分组及页脚的 Sum/Min/Max/Avg/Count）计划于
 > 阶段 1.2 提供；在此之前请在视图模型中基于 `GridGroup.Items` / `TotalItems`
 > 自行计算。
+
+### 自定义分组标题
+
+`GridGroupDescription.HeaderStringFormat` 自定义分组行文本：`{0}` = 键，`{1}` = 条数，`{2}` = 列标题。默认为本地化的“键： N 项”。
+
+```csharp
+grid.GroupDescriptions.Add(new GridGroupDescription("Asset")
+{
+    HeaderStringFormat = "{2}: {0} ({1} 项)",
+});
+```

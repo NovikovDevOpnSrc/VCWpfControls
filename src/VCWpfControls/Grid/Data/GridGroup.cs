@@ -5,6 +5,8 @@ namespace VCWpfControls.Grid.Data;
 /// <summary>Describes one level of grouping by a property path.</summary>
 public sealed class GridGroupDescription
 {
+    private string? _headerStringFormat;
+
     /// <summary>Creates a group description.</summary>
     public GridGroupDescription(string fieldName)
     {
@@ -13,6 +15,17 @@ public sealed class GridGroupDescription
 
     /// <summary>Property path to group by.</summary>
     public string FieldName { get; set; }
+
+    /// <summary>
+    /// Optional group header format: <c>{0}</c> = key, <c>{1}</c> = item count,
+    /// <c>{2}</c> = column header (or the field name). Defaults to the localized
+    /// "key: N item(s)".
+    /// </summary>
+    public string? HeaderStringFormat
+    {
+        get => _headerStringFormat;
+        set => _headerStringFormat = string.IsNullOrEmpty(value) ? null : value;
+    }
 
     /// <summary>
     /// Optional converter producing the group key from the cell value
