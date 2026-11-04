@@ -136,7 +136,9 @@ public class GridControlStage12Tests
         {
             grid.SortBy("Salary", GridSortDirection.Descending);
 
-            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+            // Generous deadline: the pipeline is deterministic, but CI runners starve the
+            // threadpool while STA test classes run in parallel (happy path: milliseconds).
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
             while (DateTime.UtcNow < deadline && !IsSortedBySalaryDescending(grid))
             {
                 TestWindowHost.Pump();
