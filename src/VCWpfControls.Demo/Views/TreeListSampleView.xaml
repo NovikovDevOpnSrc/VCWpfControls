@@ -2,14 +2,28 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:treeList="clr-namespace:VCWpfControls.TreeList;assembly=VCWpfControls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button x:Name="ExpandAll" Margin="0,0,8,0" Padding="12,4" Click="OnExpandAll">Expand all</Button>
-            <Button x:Name="CollapseAll" Margin="0,0,8,0" Padding="12,4" Click="OnCollapseAll">Collapse all</Button>
+            <Button x:Name="ExpandAll" Margin="0,0,8,0" Padding="10,4" Click="OnExpandAll">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="UnfoldMoreHorizontal" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Expand all" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="CollapseAll" Margin="0,0,8,0" Padding="10,4" Click="OnCollapseAll">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="UnfoldLessHorizontal" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Collapse all" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
             <CheckBox x:Name="NodeCheckBoxes" Margin="0,0,12,0" VerticalAlignment="Center"
                       Checked="OnCheckBoxesToggled" Unchecked="OnCheckBoxesToggled">
-                <TextBlock Text="Node check boxes" />
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="CheckboxMarked" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Node check boxes" Margin="6,0,0,0" />
+                </StackPanel>
             </CheckBox>
             <TextBlock x:Name="CheckedCount" VerticalAlignment="Center" FontWeight="SemiBold" />
         </StackPanel>

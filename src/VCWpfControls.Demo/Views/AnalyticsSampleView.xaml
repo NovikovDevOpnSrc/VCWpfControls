@@ -1,16 +1,52 @@
 <UserControl x:Class="VCWpfControls.Demo.Views.AnalyticsSampleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button x:Name="GroupByDepartment" Margin="0,0,8,0" Padding="12,4" Click="OnGroupByDepartment">Group by Department</Button>
-            <Button x:Name="ClearGroups" Margin="0,0,8,0" Padding="12,4" Click="OnClearGroups">Clear grouping</Button>
-            <Button x:Name="SortByName" Margin="0,0,8,0" Padding="12,4" Click="OnSortByName">Sort by Name</Button>
-            <Button x:Name="ExportCsv" Margin="0,0,8,0" Padding="12,4" Click="OnExportCsv">Export CSV</Button>
-            <Button x:Name="ExportXlsx" Margin="0,0,8,0" Padding="12,4" Click="OnExportXlsx">Export XLSX</Button>
-            <Button x:Name="ExportHtml" Margin="0,0,8,0" Padding="12,4" Click="OnExportHtml">Export HTML</Button>
-            <Button x:Name="ToggleTheme" Padding="12,4" Click="OnToggleTheme">Toggle theme</Button>
+            <Button x:Name="GroupByDepartment" Margin="0,0,8,0" Padding="10,4" Click="OnGroupByDepartment">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Group" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Group by Department" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="ClearGroups" Margin="0,0,8,0" Padding="10,4" Click="OnClearGroups">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Ungroup" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Clear grouping" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="SortByName" Margin="0,0,8,0" Padding="10,4" Click="OnSortByName">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="SortAlphabeticalAscending" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Sort by Name" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="ExportCsv" Margin="0,0,8,0" Padding="10,4" Click="OnExportCsv">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="FileDelimited" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Export CSV" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="ExportXlsx" Margin="0,0,8,0" Padding="10,4" Click="OnExportXlsx">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="FileExcel" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Export XLSX" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="ExportHtml" Margin="0,0,8,0" Padding="10,4" Click="OnExportHtml">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="CodeTags" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Export HTML" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="ToggleTheme" Padding="10,4" Click="OnToggleTheme">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="ThemeLightDark" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Toggle theme" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
             <TextBlock x:Name="RowCountText" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.7" />
         </StackPanel>
         <grid:GridControl x:Name="Grid"

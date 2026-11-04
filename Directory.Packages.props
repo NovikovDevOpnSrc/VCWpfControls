@@ -10,6 +10,7 @@
 
     <!-- Demo application -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageVersion Include="MahApps.Metro.IconPacks.Material" Version="6.2.1" />
 
     <!-- Tests -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />

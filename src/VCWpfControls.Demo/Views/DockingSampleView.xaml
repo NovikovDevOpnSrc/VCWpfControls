@@ -1,13 +1,34 @@
 <UserControl x:Class="VCWpfControls.Demo.Views.DockingSampleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:docking="clr-namespace:VCWpfControls.Docking;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button x:Name="SaveLayout" Margin="0,0,8,0" Padding="12,4" Click="OnSaveLayout">Save layout</Button>
-            <Button x:Name="RestoreLayout" Margin="0,0,8,0" Padding="12,4" Click="OnRestoreLayout">Restore layout</Button>
-            <Button x:Name="HideProperties" Margin="0,0,8,0" Padding="12,4" Click="OnHideProperties">Hide properties</Button>
-            <Button x:Name="FloatProperties" Padding="12,4" Click="OnFloatProperties">Float properties</Button>
+            <Button x:Name="SaveLayout" Margin="0,0,8,0" Padding="10,4" Click="OnSaveLayout">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Save layout" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="RestoreLayout" Margin="0,0,8,0" Padding="10,4" Click="OnRestoreLayout">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="ContentSaveSettingsOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Restore layout" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="HideProperties" Margin="0,0,8,0" Padding="10,4" Click="OnHideProperties">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="EyeOff" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Hide properties" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="FloatProperties" Padding="10,4" Click="OnFloatProperties">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="OpenInNew" Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Float properties" Margin="6,0,0,0" />
+                </StackPanel>
+            </Button>
         </StackPanel>
         <docking:DockingManager x:Name="Dock">
             <docking:DockPane Header="Welcome" Zone="Center" Name="welcomePane">
