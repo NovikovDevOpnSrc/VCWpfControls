@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (off by default); `ColumnSeparatorBrush` overrides the color (defaults to `GridLinesBrush`);
   respects frozen columns and horizontal scrolling; demo toggle on the Basic page.
 
+### Fixed — separator alignment
+
+- Separator lines sat ~8px right of the header column borders: the cells panel template
+  margin (`8,0,8,0`) was not discounted when converting slot boundaries to panel-local
+  coordinates, and the 1px pen was centered on the boundary instead of occupying the same
+  pixel column as the header's inside right border. Lines now compensate the panel inset
+  and center at `boundary − 0.5` — pixel-identical to the header borders, verified by a
+  96-DPI offscreen-render regression test (fails with the old formula, passes with the fix).
+
 ## [0.2.4] — 2026-11-04
 
 Issues round 4 (#11–#14) + deterministic async pipeline.

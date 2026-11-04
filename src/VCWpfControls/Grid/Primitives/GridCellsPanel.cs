@@ -342,6 +342,10 @@ public sealed class GridCellsPanel : Panel
         var pen = new Pen(brush, 1);
         var width = RenderSize.Width;
 
+        // The cells panel is inset within the row (template Margin) — shift the lines back
+        // so they align with the header borders; the 0.5 offset centers the 1px pen in the
+        // same pixel column the header's right border occupies (border is inside the slot).
+        var inset = Margin.Left + Margin.Right > 0 ? Margin.Left : 0;
         for (var i = 0; i < columns.Count; i++)
         {
             var slot = layout.GetSlot(columns[i]);
@@ -350,7 +354,8 @@ public sealed class GridCellsPanel : Panel
                 continue;
             }
 
-            var x = (slot.IsFrozen ? slot.X : slot.X - offset) + slot.Width;
+            var boundary = (slot.IsFrozen ? slot.X : slot.X - offset) + slot.Width;
+            var x = boundary - inset - 0.5;
             // Skip separators outside the viewport; the last column edge is clipped anyway.
             if (x <= 0 || x >= width)
             {
