@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-11-04
+
+Issues round 4 (#11–#14) + deterministic async pipeline.
+
 ### Fixed — issues round 4 (#11–#14)
 
 - **#13 (crash)**: horizontal scrolling crashed the app — `SetCurrentValue` was used on the
