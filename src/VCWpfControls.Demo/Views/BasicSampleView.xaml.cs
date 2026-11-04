@@ -12,14 +12,13 @@ public partial class BasicSampleView : UserControl
     {
         InitializeComponent();
         this.SetValue(System.Windows.Automation.AutomationProperties.AutomationIdProperty, "BasicGrid");
-        ColumnSeparators.IsChecked = false; // set in code: XAML IsChecked=True fires before the grid exists
+        // On by default so the feature is visible; the named grid exists after InitializeComponent.
+        ColumnSeparators.IsChecked = true;
+        Grid.ShowColumnSeparators = true;
     }
 
     private void OnSeparatorsToggled(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (Content is GridControl grid)
-        {
-            grid.ShowColumnSeparators = ColumnSeparators.IsChecked == true;
-        }
+        Grid.ShowColumnSeparators = ColumnSeparators.IsChecked == true;
     }
 }

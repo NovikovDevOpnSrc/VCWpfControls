@@ -9,7 +9,7 @@
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,4" Orientation="Horizontal">
             <TextBlock Text="Vertical separators respect frozen columns and horizontal scrolling." Opacity="0.7" TextWrapping="Wrap" />
         </StackPanel>
-        <grid:GridControl
+        <grid:GridControl x:Name="Grid"
                       ItemsSource="{Binding Employees}"
                       AutoGenerateColumns="True"
                       CanUserSortColumns="True"
