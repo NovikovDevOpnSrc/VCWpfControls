@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pixel column as the header's inside right border. Lines now compensate the panel inset
   and center at `boundary − 0.5` — pixel-identical to the header borders, verified by a
   96-DPI offscreen-render regression test (fails with the old formula, passes with the fix).
+- Separators stayed at the old column boundaries after moving a header (and would lag on
+  resize and horizontal scrolling): reordering goes through `InvalidateLayout`, which only
+  invalidated the row panels' measure — `OnRender` output is cached until `InvalidateVisual`,
+  and the panel's `RenderSize` does not change. `InvalidateLayout` now invalidates the panels'
+  visuals; the scroll path invalidates visuals when separators are on (arrange otherwise).
+  Regression-tested by reordering via the drag-drop code path and asserting every line
+  coincides with a header border.
 
 ## [0.2.4] — 2026-11-04
 

@@ -788,7 +788,10 @@ public partial class GridControl : ItemsControl
         HeadersPresenter?.InvalidateMeasure();
         foreach (var row in _rowRegistry)
         {
-            row.CellsPanel?.InvalidateMeasure();
+            // InvalidateVisual (not just Measure): the panel's RenderSize does not change on
+            // reorder/resize, and OnRender-drawn separators would otherwise stay at the old
+            // column boundaries.
+            row.CellsPanel?.InvalidateVisual();
         }
 
         UpdateHorizontalScrollBar();
@@ -855,7 +858,16 @@ public partial class GridControl : ItemsControl
         grid.HeadersPresenter?.InvalidateArrange();
         foreach (var row in grid._rowRegistry)
         {
-            row.CellsPanel?.InvalidateArrange();
+            // Arrange alone keeps the cached OnRender output: separators drawn by the panel
+            // would lag behind the scrolled columns. Only pay the re-render when they are on.
+            if (grid.ShowColumnSeparators)
+            {
+                row.CellsPanel?.InvalidateVisual();
+            }
+            else
+            {
+                row.CellsPanel?.InvalidateArrange();
+            }
         }
 
         if (grid.HorizontalScrollBar is { } scrollBar && Math.Abs(scrollBar.Value - (double)e.NewValue) > 0.01)
