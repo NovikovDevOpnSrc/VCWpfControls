@@ -883,7 +883,7 @@ public partial class GridControl : ItemsControl
                 return;
             }
 
-            _asyncRefreshTask = RefreshViewAsyncCore(_settingsVersion);
+            _asyncRefreshTask = RunAsyncRefreshObserved(_settingsVersion);
             return;
         }
 
@@ -899,6 +899,25 @@ public partial class GridControl : ItemsControl
 
     private Task? _asyncRefreshTask;
     private int _settingsVersion;
+
+    /// <summary>Last error of the background pipeline (surfaced to tests/diagnostics; otherwise swallowed by fire-and-forget).</summary>
+    public Exception? LastAsyncRefreshError { get; private set; }
+
+    private async Task RunAsyncRefreshObserved(int startVersion)
+    {
+        try
+        {
+            LastAsyncRefreshError = null;
+            await RefreshViewAsyncCore(startVersion).ConfigureAwait(true);
+        }
+        catch (Exception exception)
+        {
+            // Fire-and-forget swallows everything; remember it so tests and diagnostics see the cause.
+            LastAsyncRefreshError = exception;
+            System.Diagnostics.Trace.TraceError($"GridControl async refresh failed: {exception}");
+            throw;
+        }
+    }
 
     private async Task RefreshViewAsyncCore(int startVersion)
     {

@@ -145,7 +145,8 @@ public class GridControlStage12Tests
                 System.Threading.Thread.Sleep(20);
             }
 
-            Assert.True(IsSortedBySalaryDescending(grid));
+            Assert.True(IsSortedBySalaryDescending(grid),
+                $"not sorted after deadline; pipeline error: {grid.LastAsyncRefreshError?.ToString() ?? "none"}");
         }
         finally
         {
