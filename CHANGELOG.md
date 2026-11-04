@@ -29,7 +29,13 @@ Issues round 4 (#11–#14) + deterministic async pipeline.
 
 Issues rounds 2–3 (#6–#10), async-pipeline race fix, review polish.
 
-### Fixed — CI flake / async pipeline race
+### Fixed — async apply marshaled via the grid Dispatcher
+
+- The async pipeline no longer relies on the ambient `SynchronizationContext` (which test
+  hosts may not install as the dispatcher context — the apply then ran on a threadpool
+  thread and WPF CollectionView rejected the cross-thread change). The engine exposes
+  `ComputeAsync`/`ApplyView`, and `GridControl` posts the apply onto its own `Dispatcher`
+  explicitly — deterministic on any host.
 
 - `RefreshAsync` now marshals the view apply back to the SynchronizationContext captured at
   call time (the dispatcher thread in apps): the previous `ConfigureAwait(true)` relied on the

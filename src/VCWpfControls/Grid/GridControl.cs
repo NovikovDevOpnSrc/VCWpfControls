@@ -932,7 +932,16 @@ public partial class GridControl : ItemsControl
             while (true)
             {
                 var snapshotVersion = _settingsVersion;
-                var applied = await DataEngine.RefreshAsync();
+                var result = await DataEngine.ComputeAsync().ConfigureAwait(false);
+
+                // Marshal the apply onto the grid's dispatcher explicitly — never trust the
+                // ambient SynchronizationContext (test hosts / runners may not install the
+                // dispatcher context, and WPF CollectionView rejects cross-thread changes).
+                var applied = await Dispatcher
+                    .InvokeAsync(() => DataEngine.ApplyView(result), System.Windows.Threading.DispatcherPriority.Normal)
+                    .Task
+                    .ConfigureAwait(false);
+
                 if (applied && snapshotVersion == _settingsVersion)
                 {
                     return; // applied the latest requested state
@@ -950,7 +959,10 @@ public partial class GridControl : ItemsControl
                 }
             }
 
-            DataEngine.Refresh(); // sync fallback always reflects the latest state
+            await Dispatcher
+                .InvokeAsync(() => DataEngine.Refresh())
+                .Task
+                .ConfigureAwait(false); // sync fallback always reflects the latest state
         }
         finally
         {

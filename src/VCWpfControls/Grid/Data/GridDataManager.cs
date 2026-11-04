@@ -266,11 +266,25 @@ public sealed class GridDataManager
         CultureInfo Culture,
         long Version);
 
-    private sealed record GridPipelineResult(
+    /// <summary>An opaque result of an async pipeline computation; apply with <see cref="ApplyView"/>.</summary>
+    public sealed record GridPipelineResult(
         List<GridRowInfo> View,
         List<GridDataRow> DataRows,
         Type? ResolvedItemType,
         long Version);
+
+    /// <summary>
+    /// Computes the view on the thread pool WITHOUT applying it — for callers that marshal
+    /// the apply themselves (the grid posts <see cref="ApplyView"/> onto its Dispatcher).
+    /// </summary>
+    public Task<GridPipelineResult> ComputeAsync()
+    {
+        var snapshot = TakeSnapshot();
+        return Task.Run(() => ComputePipeline(snapshot));
+    }
+
+    /// <summary>Applies a computed result; <see langword="false"/> when it is stale (version changed).</summary>
+    public bool ApplyView(GridPipelineResult result) => ApplyPipelineResult(result);
 
     private List<object> MaterializeSource()
     {
