@@ -124,9 +124,32 @@ public partial class GridControl
             return column.NullText ?? string.Empty;
         }
 
-        return string.IsNullOrEmpty(column.StringFormat)
-            ? Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty
-            : string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:" + column.StringFormat + "}", value);
+        if (string.IsNullOrEmpty(column.StringFormat))
+        {
+            return Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+        }
+
+        return string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            NormalizeFormat(column.StringFormat),
+            value);
+    }
+
+    /// <summary>
+    /// Normalizes a StringFormat for composite formatting: strips the XAML escape <c>"{}"</c>,
+    /// accepts already-composite forms (<c>"{0:N2}"</c>) as-is and wraps bare patterns
+    /// (<c>"N2"</c>) into <c>"{0:N2}"</c>.
+    /// </summary>
+    internal static string NormalizeFormat(string format)
+    {
+        // XAML escape form "{}{0:N2}" -> "{0:N2}".
+        if (format.StartsWith("{}", StringComparison.Ordinal))
+        {
+            format = format[2..];
+        }
+
+        // Already composite ("{0:N2}"): use as-is. Bare pattern ("N2"): wrap.
+        return format.Contains('{') ? format : "{0:" + format + "}";
     }
 
     private double MeasureTextWidth(string text)

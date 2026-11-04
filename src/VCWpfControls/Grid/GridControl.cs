@@ -800,6 +800,8 @@ public partial class GridControl : ItemsControl
     }
 
     /// <summary>Scrolls horizontally to the given offset (clamped).</summary>
+    internal void SetHorizontalOffsetForTest(double value) => SetHorizontalOffsetCore(value);
+
     internal void SetHorizontalOffsetCore(double value)
     {
         var max = Math.Max(0, Layout.TotalWidth - ViewportWidth);
@@ -809,7 +811,7 @@ public partial class GridControl : ItemsControl
             return;
         }
 
-        SetCurrentValue(HorizontalOffsetProperty, value);
+        SetValue(HorizontalOffsetPropertyKey, value); // read-only DP: must go through the key
     }
 
     private static void OnHorizontalOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

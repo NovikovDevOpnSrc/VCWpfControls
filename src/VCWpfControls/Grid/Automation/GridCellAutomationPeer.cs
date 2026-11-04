@@ -1,4 +1,5 @@
 using System.Windows.Automation.Peers;
+using System.Windows.Controls;
 using System.Windows.Automation.Provider;
 using VCWpfControls.Grid.Columns;
 
@@ -94,18 +95,115 @@ public sealed class GridCellAutomationPeer : AutomationPeer
             return null;
         }
 
+        // Walk the whole visual subtree with hoisting: peerless nodes (panels) are
+        // skipped and their descendants are lifted to the nearest collected ancestor,
+        // mirroring how the standard WPF automation tree exposes template content.
         var peers = new List<AutomationPeer>();
-        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(element);
-        for (var i = 0; i < count; i++)
+        CollectPeers(element, peers, depth: 0);
+        return peers.Count > 0 ? peers : null;
+    }
+
+    private const int MaxTemplateDepth = 12;
+
+    private static void CollectPeers(System.Windows.Media.Visual visual, List<AutomationPeer> peers, int depth)
+    {
+        if (depth > MaxTemplateDepth)
         {
-            if (System.Windows.Media.VisualTreeHelper.GetChild(element, i) is System.Windows.UIElement child
-                && FrameworkElementAutomationPeer.CreatePeerForElement(child) is { } peer)
-            {
-                peers.Add(peer);
-            }
+            return;
         }
 
-        return peers.Count > 0 ? peers : null;
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(visual);
+        for (var i = 0; i < count; i++)
+        {
+            if (System.Windows.Media.VisualTreeHelper.GetChild(visual, i) is not System.Windows.UIElement child)
+            {
+                continue;
+            }
+
+            if (child is System.Windows.Controls.TextBlock textBlock)
+            {
+                // TextBlocks auto-generate peers only when focused; always expose their text.
+                if (!string.IsNullOrEmpty(textBlock.Text))
+                {
+                    peers.Add(new TextBlockAutomationPeerShim(textBlock));
+                }
+
+                continue;
+            }
+
+            if (FrameworkElementAutomationPeer.CreatePeerForElement(child) is { } peer)
+            {
+                peers.Add(peer);
+                continue; // WPF will descend into this peer's own children itself
+            }
+
+            // Peerless node (panel etc.): hoist its children here.
+            CollectPeers(child, peers, depth + 1);
+        }
+    }
+
+    /// <summary>Minimal peer exposing a TextBlock's text in the UIA tree.</summary>
+    private sealed class TextBlockAutomationPeerShim : AutomationPeer
+    {
+        private readonly TextBlock _owner;
+
+        public TextBlockAutomationPeerShim(TextBlock owner) => _owner = owner;
+
+        protected override void SetFocusCore()
+        {
+            // no-op: template text is not focusable
+        }
+
+        protected override string GetClassNameCore() => "Text";
+
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Text;
+
+        protected override string GetNameCore() => _owner.Text;
+
+        protected override System.Windows.Rect GetBoundingRectangleCore() => default;
+
+        protected override HostedWindowWrapper? GetHostRawElementProviderCore() => null;
+
+        protected override System.Windows.Point GetClickablePointCore() => default;
+
+        public int[] GetTextRuntimeId() => new[] { _owner.GetHashCode() };
+
+        protected override List<AutomationPeer>? GetChildrenCore() => null;
+
+        protected override string GetAcceleratorKeyCore() => string.Empty;
+
+        protected override string GetAccessKeyCore() => string.Empty;
+
+        protected override string GetAutomationIdCore() => _owner.Name ?? string.Empty;
+
+        protected override string GetHelpTextCore() => string.Empty;
+
+        protected override string GetItemStatusCore() => string.Empty;
+
+        protected override string GetItemTypeCore() => string.Empty;
+
+        protected override AutomationPeer? GetLabeledByCore() => null;
+
+        protected override System.Windows.Automation.Peers.AutomationOrientation GetOrientationCore()
+            => System.Windows.Automation.Peers.AutomationOrientation.None;
+
+        protected override bool IsContentElementCore() => true;
+
+        protected override bool IsControlElementCore() => true;
+
+        protected override bool IsKeyboardFocusableCore() => false;
+
+        protected override bool IsOffscreenCore() => false;
+
+        protected override bool IsPasswordCore() => false;
+
+        protected override bool IsRequiredForFormCore() => false;
+
+        protected override bool HasKeyboardFocusCore() => false;
+
+        protected override bool IsEnabledCore() => true;
+
+        public override object? GetPattern(PatternInterface patternInterface) => null;
     }
 
     /// <inheritdoc />

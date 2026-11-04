@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — issues round 4 (#11–#14)
+
+- **#13 (crash)**: horizontal scrolling crashed the app — `SetCurrentValue` was used on the
+  read-only `HorizontalOffset` DP; now set through its `DependencyPropertyKey`.
+- **#12 (crash)**: `StringFormat="{}{0:N0}"` (the documented XAML form) crashed
+  `FormatCellText` (UIA cell names, BestFit, clipboard): the XAML `{}` escape is stripped,
+  already-composite formats pass through, bare patterns get wrapped — all three forms tested.
+- **#14**: after a user resize of star columns the extent updates and the horizontal scrollbar
+  appears; star columns now clamp to their own `MinWidth` (not the internal 10px floor) when
+  the viewport shrinks, overflowing into the scrollbar instead of collapsing.
+- **#11**: template cells expose the whole visual subtree to UIA with hoisting — peerless
+  panels are skipped and their descendants (TextBlocks, ItemsControl items) are lifted,
+  so nested bars/lists in `CellTemplate` are readable by screen readers and UIA tests.
+
 ## [0.2.3] — 2026-11-04
 
 Issues rounds 2–3 (#6–#10), async-pipeline race fix, review polish.
