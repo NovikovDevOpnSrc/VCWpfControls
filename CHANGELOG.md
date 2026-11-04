@@ -31,6 +31,16 @@ Issues rounds 2–3 (#6–#10), async-pipeline race fix, review polish.
 
 ### Fixed — CI flake / async pipeline race
 
+- `RefreshAsync` now marshals the view apply back to the SynchronizationContext captured at
+  call time (the dispatcher thread in apps): the previous `ConfigureAwait(true)` relied on the
+  ambient context, which is not always the dispatcher context under test hosts — the apply
+  then ran on a threadpool thread and WPF CollectionView rejected the cross-thread change
+  (`NotSupportedException`, swallowed by the fire-and-forget, view never updated).
+  The pipeline error is no longer swallowed (`LastAsyncRefreshError` + Trace); the stale-drop
+  engine test is deterministic via a gated synchronization context.
+
+### Fixed — async pipeline race (earlier note, superseded)
+
 - `UseAsyncRefresh` rebuilds are now serialized into a single in-flight pipeline with
   trailing-edge coalescing: rapid settings changes (e.g. `SortBy` raising Clear+Add) no
   longer run concurrent `RefreshAsync` loops whose interleaved view Resets crashed the

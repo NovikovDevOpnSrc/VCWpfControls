@@ -236,12 +236,73 @@ public class GridDataManagerTests
     {
         var manager = Create(Sample());
 
-        var first = manager.RefreshAsync(); // starts with version V1
-        manager.Refresh();                  // bumps to V2 synchronously in between
-        var firstApplied = await first;
+        // Deterministic stale-result check: the gated context BLOCKS the async apply on a
+        // pool thread until released, so the synchronous Refresh always bumps the version
+        // first; the released apply must observe the stale version and be dropped.
+        var gate = new ManualResetEventSlim(false);
+        var context = new GatedSynchronizationContext(gate);
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            var first = manager.RefreshAsync(); // compute on pool; apply blocks on the gate
+            manager.Refresh();                  // bumps the version synchronously
+            gate.Set();                         // apply proceeds, observes stale version
 
-        Assert.False(firstApplied);         // computed against V1, dropped
-        Assert.Equal(4, manager.View.Count);
+            var firstApplied = await first;
+            Assert.False(firstApplied);         // computed against the older version, dropped
+            Assert.Equal(4, manager.View.Count);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+            gate.Dispose();
+        }
+    }
+
+    /// <summary>Defers every Post until the gate is set (deterministic apply ordering in tests).</summary>
+    private sealed class GatedSynchronizationContext : SynchronizationContext
+    {
+        private readonly ManualResetEventSlim _gate;
+
+        public GatedSynchronizationContext(ManualResetEventSlim gate) => _gate = gate;
+
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
+            _gate.Wait();
+            callback(state);
+        }
+    }
+
+    private sealed class QueuedSynchronizationContext : SynchronizationContext
+    {
+        private readonly List<(SendOrPostCallback Callback, object? State)> _queue = new();
+
+        public int PostCount { get; private set; }
+
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
+            PostCount++;
+            lock (_queue)
+            {
+                _queue.Add((callback, state));
+            }
+        }
+
+        public void RunAll()
+        {
+            List<(SendOrPostCallback Callback, object? State)> pending;
+            lock (_queue)
+            {
+                pending = _queue.ToList();
+                _queue.Clear();
+            }
+
+            foreach (var (callback, state) in pending)
+            {
+                callback(state);
+            }
+        }
     }
 
     [Fact]

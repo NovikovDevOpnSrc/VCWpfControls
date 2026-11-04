@@ -93,16 +93,56 @@ public sealed class GridDataManager
     }
 
     /// <summary>
-    /// Rebuilds the pipeline asynchronously: the snapshot is taken (and the result applied) on the
-    /// caller's context, while filtering/sorting/grouping run on the thread pool. Results computed
-    /// against a stale state are dropped; returns <see langword="false"/> in that case (the caller
-    /// may retry).
+    /// Rebuilds the pipeline asynchronously: the snapshot is taken (and the result applied) on
+    /// the caller's context, while filtering/sorting/grouping run on the thread pool. The apply
+    /// is posted back to the SynchronizationContext captured at call time — awaiting alone is
+    /// not enough, because the ambient context on the calling thread is not always the
+    /// dispatcher context (WPF CollectionView requires changes on the dispatcher thread).
+    /// Results computed against a stale state are dropped; returns <see langword="false"/> in
+    /// that case (the caller may retry).
     /// </summary>
-    public async Task<bool> RefreshAsync()
+    public Task<bool> RefreshAsync()
     {
+        var context = SynchronizationContext.Current;
         var snapshot = TakeSnapshot();
-        var result = await Task.Run(() => ComputePipeline(snapshot)).ConfigureAwait(true);
-        return ApplyPipelineResult(result);
+        return Task.Run(() => ComputePipeline(snapshot), CancellationToken.None).ContinueWith(
+            t => ApplyOnContext(context, t.Result),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default).Unwrap();
+    }
+
+    private Task<bool> ApplyOnContext(SynchronizationContext? context, GridPipelineResult result)
+    {
+        if (context is null)
+        {
+            // No ambient context (engine-level usage): apply inline where the continuation runs.
+            try
+            {
+                return Task.FromResult(ApplyPipelineResult(result));
+            }
+            catch (Exception exception)
+            {
+                return Task.FromException<bool>(exception);
+            }
+        }
+
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        context.Post(
+            state =>
+            {
+                var target = (TaskCompletionSource<bool>)state!;
+                try
+                {
+                    target.SetResult(ApplyPipelineResult(result));
+                }
+                catch (Exception exception)
+                {
+                    target.SetException(exception);
+                }
+            },
+            completion);
+        return completion.Task;
     }
 
     /// <summary>Reads a cell value for the given item using a cached accessor.</summary>
