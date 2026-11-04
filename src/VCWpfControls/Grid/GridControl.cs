@@ -876,13 +876,14 @@ public partial class GridControl : ItemsControl
     {
         if (UseAsyncRefresh)
         {
+            _settingsVersion++; // any running pipeline keeps going until it applies
+                                // a snapshot taken at or after this version
             if (_asyncRefreshTask is not null && !_asyncRefreshTask.IsCompleted)
             {
-                _asyncRefreshQueued = true; // coalesce into the running pipeline
                 return;
             }
 
-            _asyncRefreshTask = RefreshViewAsyncCore();
+            _asyncRefreshTask = RefreshViewAsyncCore(_settingsVersion);
             return;
         }
 
@@ -897,28 +898,30 @@ public partial class GridControl : ItemsControl
     }
 
     private Task? _asyncRefreshTask;
-    private bool _asyncRefreshQueued;
+    private int _settingsVersion;
 
-    private async Task RefreshViewAsyncCore()
+    private async Task RefreshViewAsyncCore(int startVersion)
     {
         try
         {
-            // Single in-flight pipeline: concurrent applies (e.g. SortBy fires Clear+Add)
-            // interleave view Resets with container recycling and crash the virtualizing
-            // panel with stale indexes. A queued flag re-runs the pipeline with the newest
-            // state after the current apply; a stale result is retried with a fresh snapshot.
+            // Single in-flight pipeline (concurrent applies interleave view Resets with
+            // container recycling and crash the virtualizing panel). The loop is
+            // deterministic w.r.t. the final state: it keeps refreshing until a snapshot
+            // taken at/after the LATEST requested settings version has been applied —
+            // no reliance on flag timing on loaded machines.
             var attempt = 0;
             while (true)
             {
-                _asyncRefreshQueued = false;
-                if (await DataEngine.RefreshAsync())
+                var snapshotVersion = _settingsVersion;
+                var applied = await DataEngine.RefreshAsync();
+                if (applied && snapshotVersion == _settingsVersion)
                 {
-                    if (!_asyncRefreshQueued)
-                    {
-                        return;
-                    }
+                    return; // applied the latest requested state
+                }
 
-                    attempt = 0; // state changed while applying — recompute once more
+                if (applied)
+                {
+                    attempt = 0; // newer settings arrived while applying — recompute
                     continue;
                 }
 
@@ -928,7 +931,7 @@ public partial class GridControl : ItemsControl
                 }
             }
 
-            DataEngine.Refresh();
+            DataEngine.Refresh(); // sync fallback always reflects the latest state
         }
         finally
         {

@@ -129,7 +129,7 @@ internal sealed class GridLayoutController
         {
             // Stars clamp to the column's own MinWidth (not just the internal floor),
             // so narrowed viewports overflow into the horizontal scrollbar as expected.
-            var finalWidth = isStar ? ClampWidth(column, Math.Max(starWidth, column.MinWidth) * column.Width.Value) : width;
+            var finalWidth = isStar ? ClampWidth(column, starWidth * column.Width.Value) : width;
             var isFrozen = index < frozenCount;
             var slot = new GridLayoutSlot(column, isFrozen)
             {
