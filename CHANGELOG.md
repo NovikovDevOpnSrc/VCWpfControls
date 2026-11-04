@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] — 2026-11-05
+
+Column separators + deterministic async pipeline hardening.
+
 ### Added — column separators
+
+- `GridControl.ShowColumnSeparators` — vertical lines between the columns in every row
+  (off by default); `ColumnSeparatorBrush` overrides the color (defaults to `GridLinesBrush`);
+  respects frozen columns and horizontal scrolling; demo toggle on the Basic page.
+- Demo toolbars now use MahApps.Metro.IconPacks.Material (MIT) instead of text/emoji buttons.
+
+### Fixed
+
+- Async pipeline: the computed view is applied through the grid's `Dispatcher` explicitly
+  (`ComputeAsync` + `ApplyView` split) — no more reliance on an ambient
+  `SynchronizationContext`, which test hosts don't install.
+- Demo: the column-separator checkbox targeted the restructured page panel instead of the
+  grid, so toggling did nothing.
 
 - `GridControl.ShowColumnSeparators` — vertical lines between the columns in every row
   (off by default); `ColumnSeparatorBrush` overrides the color (defaults to `GridLinesBrush`);
