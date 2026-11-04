@@ -209,3 +209,7 @@ The menu is built by `BuildColumnHeaderMenu` and can be replaced by handling
 ### Null display
 
 `NullText="—"` on a column shows the marker instead of empty null cells (applied via the binding's `TargetNullValue`; works for text and numeric columns).
+
+### Column separators
+
+`ShowColumnSeparators="True"` draws vertical lines between the columns inside every row (in addition to the horizontal row separators). `ColumnSeparatorBrush` overrides the color; it defaults to `GridLinesBrush`. Separators respect frozen columns and horizontal scrolling.

@@ -2,7 +2,14 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
-    <grid:GridControl
+    <DockPanel>
+        <CheckBox x:Name="ColumnSeparators" DockPanel.Dock="Top" Margin="0,0,0,8"
+                  Checked="OnSeparatorsToggled" Unchecked="OnSeparatorsToggled"
+                  Content="Show column separators" />
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,4" Orientation="Horizontal">
+            <TextBlock Text="Vertical separators respect frozen columns and horizontal scrolling." Opacity="0.7" TextWrapping="Wrap" />
+        </StackPanel>
+        <grid:GridControl
                       ItemsSource="{Binding Employees}"
                       AutoGenerateColumns="True"
                       CanUserSortColumns="True"
@@ -12,4 +19,5 @@
                       SelectionMode="Extended"
                       RowHeight="28"
                       AlternatingRowBackground="#FFFAFBFC" />
+    </DockPanel>
 </UserControl>

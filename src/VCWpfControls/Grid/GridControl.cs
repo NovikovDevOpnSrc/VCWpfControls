@@ -132,6 +132,16 @@ public partial class GridControl : ItemsControl
         nameof(ShowColumnHeaders), typeof(bool), typeof(GridControl),
         new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnLayoutPropertyChanged));
 
+    /// <summary>Identifies the <see cref="ShowColumnSeparators"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowColumnSeparatorsProperty = DependencyProperty.Register(
+        nameof(ShowColumnSeparators), typeof(bool), typeof(GridControl),
+        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse, OnColumnSeparatorsChanged));
+
+    /// <summary>Identifies the <see cref="ColumnSeparatorBrush"/> dependency property.</summary>
+    public static readonly DependencyProperty ColumnSeparatorBrushProperty = DependencyProperty.Register(
+        nameof(ColumnSeparatorBrush), typeof(Brush), typeof(GridControl),
+        new PropertyMetadata(null, OnColumnSeparatorsChanged));
+
     /// <summary>Identifies the <see cref="ShowFilterRow"/> dependency property.</summary>
     public static readonly DependencyProperty ShowFilterRowProperty = DependencyProperty.Register(
         nameof(ShowFilterRow), typeof(bool), typeof(GridControl),
@@ -429,6 +439,31 @@ public partial class GridControl : ItemsControl
     {
         get => (bool)GetValue(ShowColumnHeadersProperty);
         set => SetValue(ShowColumnHeadersProperty, value);
+    }
+
+    /// <summary>
+    /// Whether vertical lines separating the columns are drawn inside the rows
+    /// (in addition to the horizontal row separators). Default off.
+    /// </summary>
+    public bool ShowColumnSeparators
+    {
+        get => (bool)GetValue(ShowColumnSeparatorsProperty);
+        set => SetValue(ShowColumnSeparatorsProperty, value);
+    }
+
+    /// <summary>Brush of the vertical column separators; defaults to <see cref="GridLinesBrush"/>.</summary>
+    public Brush? ColumnSeparatorBrush
+    {
+        get => (Brush?)GetValue(ColumnSeparatorBrushProperty);
+        set => SetValue(ColumnSeparatorBrushProperty, value);
+    }
+
+    private static void OnColumnSeparatorsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        foreach (var row in ((GridControl)d)._rowRegistry)
+        {
+            row.CellsPanel?.InvalidateVisual();
+        }
     }
 
     /// <summary>Whether the filter row under the headers is visible.</summary>

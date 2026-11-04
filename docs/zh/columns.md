@@ -204,3 +204,7 @@ grid.BestFitAllColumns();          // 所有可见列
 ### 空值显示
 
 列上的 `NullText="—"` 在空单元格处显示标记（通过绑定的 `TargetNullValue` 实现；文本列与数值列均适用）。
+
+### 列分隔线
+
+`ShowColumnSeparators="True"` 在每行内的列之间绘制竖线（在行分隔线之外）。`ColumnSeparatorBrush` 可自定义颜色，默认使用 `GridLinesBrush`。分隔线会正确处理冻结列与水平滚动。

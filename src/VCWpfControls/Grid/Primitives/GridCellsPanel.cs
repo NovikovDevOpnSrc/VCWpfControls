@@ -324,6 +324,43 @@ public sealed class GridCellsPanel : Panel
         _focusVisual.BorderBrush = _owner.CurrentCellBorderBrush;
     }
 
+    /// <summary>Draws the vertical column separators when the grid enables them.</summary>
+    protected override void OnRender(DrawingContext dc)
+    {
+        base.OnRender(dc);
+
+        if (_owner is not { } owner
+            || !owner.ShowColumnSeparators
+            || (owner.ColumnSeparatorBrush ?? owner.GridLinesBrush) is not { } brush)
+        {
+            return;
+        }
+
+        var layout = owner.Layout;
+        var columns = owner.VisibleColumns;
+        var offset = owner.HorizontalOffset;
+        var pen = new Pen(brush, 1);
+        var width = RenderSize.Width;
+
+        for (var i = 0; i < columns.Count; i++)
+        {
+            var slot = layout.GetSlot(columns[i]);
+            if (slot is null)
+            {
+                continue;
+            }
+
+            var x = (slot.IsFrozen ? slot.X : slot.X - offset) + slot.Width;
+            // Skip separators outside the viewport; the last column edge is clipped anyway.
+            if (x <= 0 || x >= width)
+            {
+                continue;
+            }
+
+            dc.DrawLine(pen, new Point(x, 0), new Point(x, RenderSize.Height));
+        }
+    }
+
     private void OnEditingElementLoaded(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement element)

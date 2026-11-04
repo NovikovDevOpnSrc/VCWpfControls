@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — column separators
+
+- `GridControl.ShowColumnSeparators` — vertical lines between the columns in every row
+  (off by default); `ColumnSeparatorBrush` overrides the color (defaults to `GridLinesBrush`);
+  respects frozen columns and horizontal scrolling; demo toggle on the Basic page.
+
 ## [0.2.4] — 2026-11-04
 
 Issues round 4 (#11–#14) + deterministic async pipeline.
