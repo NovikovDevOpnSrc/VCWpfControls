@@ -29,7 +29,9 @@ public abstract class GridColumnBase : DependencyObject
     /// <summary>Identifies the <see cref="MinWidth"/> dependency property.</summary>
     public static readonly DependencyProperty MinWidthProperty = DependencyProperty.Register(
         nameof(MinWidth), typeof(double), typeof(GridColumnBase),
-        new PropertyMetadata(0d, OnColumnPropertyChanged, static (d, baseValue) => Math.Max(0d, (double)baseValue)));
+        // DataGrid convention: a readable floor so star columns cannot collapse to slivers
+        // in a narrow viewport (they keep 20px each and the horizontal scrollbar takes over).
+        new PropertyMetadata(20d, OnColumnPropertyChanged, static (d, baseValue) => Math.Max(0d, (double)baseValue)));
 
     /// <summary>Identifies the <see cref="MaxWidth"/> dependency property.</summary>
     public static readonly DependencyProperty MaxWidthProperty = DependencyProperty.Register(

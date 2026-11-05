@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — narrow viewport
+
+- In a viewport too narrow for the columns, star columns collapsed into ~10px slivers (the
+  internal star floor was the only limit). `GridColumnBase.MinWidth` now defaults to **20**
+  (DataGrid convention): every column keeps a readable minimum and the horizontal scrollbar
+  takes the overflow. Explicit `MinWidth`/`Width` values are unaffected (your own `MinWidth`
+  still wins; an explicit `Width` below 20 is clamped up, exactly like the built-in DataGrid).
+
 ### Fixed — cell columns now truly align with headers (root cause of "values climb into the neighbor column")
 
 - The row template's `PART_Cells` carried `Margin="8,0,8,0"` while the headers presenter has
