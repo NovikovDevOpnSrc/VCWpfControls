@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — cell columns now truly align with headers (root cause of "values climb into the neighbor column")
+
+- The row template's `PART_Cells` carried `Margin="8,0,8,0"` while the headers presenter has
+  no margin: EVERY cell column sat 8px right of its header — with content-sized Auto columns
+  each value ended past the next column's border. The margin is gone; cell padding now comes
+  from the generated display elements (`8,0,6,0`; right-aligned numerics `6,0,8,0`) and the
+  editing text boxes match, so text no longer jumps when editing starts.
+- Every cell (and header) element is hard-clipped to its own slot — no content can render
+  into a neighboring column whatever its template measures (unbounded panels, explicit
+  widths). The TreeListView indent keeps its deliberate overflow.
+- `GridCellAutomationPeer.GetBoundingRectangleCore` mixed physical screen pixels with DIP
+  slot coordinates — cell bounds were wrong at any DPI above 100% (and took the slot width
+  unscaled). Now derived from the realized cell element via `PointToScreen`, with a
+  DPI-scaled fallback.
+- Regression tests: cells-panel/headers-presenter origin equality (fails with the old
+  8px margin), per-cell clip presence, and a pixel check that the separator margin zone
+  stays clean.
+
 ### Fixed — frozen-zone clipping
 
 - With `FrozenColumnCount > 0` and horizontal scrolling, scrollable cells (and headers, and

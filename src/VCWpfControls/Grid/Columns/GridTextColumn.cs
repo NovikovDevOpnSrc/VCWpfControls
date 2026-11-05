@@ -12,6 +12,7 @@ public class GridTextColumn : GridColumnBase
     {
         var textBlock = new TextBlock
         {
+            Margin = new Thickness(8, 0, 6, 0),
             VerticalAlignment = VerticalAlignment.Center,
             TextTrimming = TextTrimming.CharacterEllipsis,
         };
@@ -24,6 +25,7 @@ public class GridTextColumn : GridColumnBase
     {
         var textBox = new TextBox
         {
+            Margin = new Thickness(7, 0, 5, 0),
             VerticalAlignment = VerticalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Center,
         };
@@ -57,6 +59,8 @@ public class GridNumericColumn : GridColumnBase
     {
         var textBlock = new TextBlock
         {
+            // Right-aligned numbers: padding on the right edge of the slot.
+            Margin = new Thickness(6, 0, 8, 0),
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment = TextAlignment.Right,
             TextTrimming = TextTrimming.CharacterEllipsis,
@@ -72,6 +76,7 @@ public class GridNumericColumn : GridColumnBase
     {
         var textBox = new TextBox
         {
+            Margin = new Thickness(5, 0, 7, 0),
             VerticalAlignment = VerticalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Center,
             TextAlignment = TextAlignment.Right,
@@ -154,6 +159,7 @@ public class GridComboBoxColumn : GridColumnBase
     {
         var textBlock = new TextBlock
         {
+            Margin = new Thickness(8, 0, 6, 0),
             VerticalAlignment = VerticalAlignment.Center,
             TextTrimming = TextTrimming.CharacterEllipsis,
         };
@@ -260,6 +266,7 @@ public class GridDateColumn : GridColumnBase
     {
         var textBlock = new TextBlock
         {
+            Margin = new Thickness(8, 0, 6, 0),
             VerticalAlignment = VerticalAlignment.Center,
             TextTrimming = TextTrimming.CharacterEllipsis,
         };

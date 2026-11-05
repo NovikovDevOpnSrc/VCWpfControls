@@ -41,17 +41,38 @@ public sealed class GridCellAutomationPeer : AutomationPeer
         return GridControl.FormatCellText(_column, _column.GetCellValue(item));
     }
 
-    /// <summary>The cell rectangle: row bounds shifted to the column slot.</summary>
+    /// <summary>
+    /// The cell rectangle. Preferred from the REALIZED cell element (screen-accurate at any
+    /// DPI); falls back to the row rectangle shifted by the column slot — converted with the
+    /// grid's DPI scale, because <see cref="AutomationPeer.GetBoundingRectangle"/> returns
+    /// physical screen pixels while slot coordinates are DIPs.
+    /// </summary>
     protected override System.Windows.Rect GetBoundingRectangleCore()
     {
         var rowRect = _rowPeer.GetBoundingRectangle();
-        if (rowRect.IsEmpty || _grid.Layout.GetSlot(_column) is not { } slot)
+        if (rowRect.IsEmpty)
+        {
+            return rowRect;
+        }
+
+        var row = _rowPeer.RowOwner;
+        if (row.CellsPanel?.GetCellElement(_column) is { IsVisible: true } element
+            && element.ActualWidth > 0)
+        {
+            var topLeft = element.PointToScreen(new System.Windows.Point(0, 0));
+            var bottomRight = element.PointToScreen(
+                new System.Windows.Point(element.ActualWidth, element.ActualHeight));
+            return new System.Windows.Rect(topLeft, bottomRight);
+        }
+
+        if (_grid.Layout.GetSlot(_column) is not { } slot)
         {
             return rowRect;
         }
 
         var x = slot.IsFrozen ? slot.X : slot.X - _grid.HorizontalOffset;
-        return new System.Windows.Rect(rowRect.X + x, rowRect.Y, slot.Width, rowRect.Height);
+        var scale = System.Windows.Media.VisualTreeHelper.GetDpi(row).PixelsPerDip;
+        return new System.Windows.Rect(rowRect.X + (x * scale), rowRect.Y, slot.Width * scale, rowRect.Height);
     }
 
     /// <summary>Stable per-cell id (row flat index + column hash) for UIA runtime identity.</summary>

@@ -180,7 +180,9 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0">
-                                <primitives:GridCellsPanel x:Name="PART_Cells" Margin="8,0,8,0" />
+                                <!-- No margin: cell slots must share the header presenter's origin. Cell padding
+                                     comes from the generated elements (Margin 8,0,6,0), matching the header template. -->
+                                <primitives:GridCellsPanel x:Name="PART_Cells" />
                                 <CheckBox
                                     x:Name="PART_NodeCheckBox"
                                     Width="16"

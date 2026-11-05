@@ -135,20 +135,14 @@ public sealed class GridColumnHeadersPresenter : Panel
             var x = slot.IsFrozen ? slot.X : slot.X - offset;
             child.Arrange(new Rect(x, 0, slot.Width, finalSize.Height));
 
-            // Scrollable headers must not slide under the frozen headers, matching the
-            // cells panel clipping (GridCellsPanel.GetScrollClip).
-            if (!slot.IsFrozen && frozenBoundary > 0)
-            {
-                var clipLeft = Math.Max(frozenBoundary - x, 0);
-                var clipWidth = slot.Width - clipLeft;
-                child.Clip = clipWidth <= 0
-                    ? new RectangleGeometry(new Rect(0, 0, 0, 0))
-                    : new RectangleGeometry(new Rect(clipLeft, 0, clipWidth, finalSize.Height));
-            }
-            else
-            {
-                child.Clip = null;
-            }
+            // Every header is hard-clipped to its own slot (like the cells panel): header
+            // content can never render into the neighboring column, and scrollable headers
+            // cannot slide under the frozen ones.
+            var headerClipLeft = Math.Max(slot.IsFrozen ? 0 : frozenBoundary - x, 0);
+            var headerClipWidth = slot.Width - headerClipLeft;
+            child.Clip = headerClipWidth <= 0
+                ? new RectangleGeometry(new Rect(0, 0, 0, 0))
+                : new RectangleGeometry(new Rect(headerClipLeft, 0, headerClipWidth, finalSize.Height));
         }
 
         return finalSize;

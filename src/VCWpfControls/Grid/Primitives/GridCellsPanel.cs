@@ -288,7 +288,22 @@ public sealed class GridCellsPanel : Panel
             }
 
             child.Arrange(new Rect(x, 0, slot.Width, finalSize.Height));
-            child.Clip = GetScrollClip(slot, x, frozenBoundary, finalSize.Height);
+            if (i == 0 && _row is { TreeLevel: > 0 })
+            {
+                // TreeListView: the indented first column deliberately overflows its slot
+                // by the indent — keep the frozen-boundary-only clip for it.
+                child.Clip = GetFrozenBoundaryClip(slot, x, frozenBoundary, finalSize.Height);
+            }
+            else
+            {
+                // Every cell is hard-clipped to its own slot: no cell content can ever
+                // render into the neighboring column, whatever its template measures.
+                var clipLeft = Math.Max(slot.IsFrozen ? 0 : frozenBoundary - x, 0);
+                var clipWidth = slot.Width - clipLeft;
+                child.Clip = clipWidth <= 0
+                    ? new RectangleGeometry(new Rect(0, 0, 0, 0))
+                    : new RectangleGeometry(new Rect(clipLeft, 0, clipWidth, finalSize.Height));
+            }
         }
 
         UpdateFocusVisual();
@@ -316,10 +331,10 @@ public sealed class GridCellsPanel : Panel
     }
 
     /// <summary>
-    /// Clips a scrollable cell to the part of its slot that is right of the frozen boundary
-    /// (and to its own right edge, so text never bleeds into the next column either).
+    /// Clips a scrollable cell to the part of its slot right of the frozen boundary;
+    /// null when the whole slot is visible (nothing frozen to its left).
     /// </summary>
-    private static RectangleGeometry? GetScrollClip(GridLayoutSlot slot, double x, double frozenBoundary, double height)
+    private static RectangleGeometry? GetFrozenBoundaryClip(GridLayoutSlot slot, double x, double frozenBoundary, double height)
     {
         if (slot.IsFrozen)
         {
@@ -365,7 +380,7 @@ public sealed class GridCellsPanel : Panel
         var offset = slot.IsFrozen ? 0 : -_owner.HorizontalOffset;
         _focusVisual.Arrange(new Rect(slot.X + offset, 0, slot.Width, RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height));
         _focusVisual.BorderBrush = _owner.CurrentCellBorderBrush;
-        _focusVisual.Clip = GetScrollClip(slot, slot.X + offset, GetFrozenBoundary(_owner.VisibleColumns, _owner.Layout), RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height);
+        _focusVisual.Clip = GetFrozenBoundaryClip(slot, slot.X + offset, GetFrozenBoundary(_owner.VisibleColumns, _owner.Layout), RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height);
     }
 
     /// <summary>Draws the vertical column separators when the grid enables them.</summary>
