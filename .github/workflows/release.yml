@@ -46,6 +46,19 @@ jobs:
           dotnet pack src/VCWpfControls/VCWpfControls.csproj
           -c Release -o artifacts/package
 
+      # Fail fast if VersionPrefix in Directory.Build.props was not bumped to the tag:
+      # nuget.org would reject the duplicate and --skip-duplicate would hide it.
+      - name: Verify package version matches tag
+        shell: pwsh
+        run: |
+          $tagVersion = $env:GITHUB_REF_NAME.TrimStart('v')
+          $expected = "artifacts/package/VCWpfControls.$tagVersion.nupkg"
+          if (-not (Test-Path $expected)) {
+            $built = (Get-ChildItem artifacts/package -Filter *.nupkg | Select-Object -ExpandProperty Name) -join ', '
+            Write-Error "Expected $expected but built: $built. Bump VersionPrefix in Directory.Build.props to $tagVersion."
+            exit 1
+          }
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
