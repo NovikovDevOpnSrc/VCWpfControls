@@ -67,6 +67,39 @@ public sealed class GridCellEditEventArgs : RoutedEventArgs
     public bool Cancel { get; set; }
 }
 
+/// <summary>Event arguments for the <c>AddingNewItem</c> event of the add-row placeholder.</summary>
+public sealed class GridAddingNewItemEventArgs : RoutedEventArgs
+{
+    internal GridAddingNewItemEventArgs(object? newItem)
+    {
+        NewItem = newItem;
+    }
+
+    /// <summary>
+    /// The item about to be added: the <see cref="GridControl.NewItemFactory"/> result or a
+    /// default instance. Replace it to supply your own; keep the edit going.
+    /// </summary>
+    public object? NewItem { get; set; }
+
+    /// <summary>Set to <see langword="true"/> to cancel adding a new item.</summary>
+    public bool Cancel { get; set; }
+}
+
+/// <summary>Event arguments for the <c>PastingFromClipboard</c> event.</summary>
+public sealed class GridPastingClipboardEventArgs : RoutedEventArgs
+{
+    internal GridPastingClipboardEventArgs(string text)
+    {
+        Text = text;
+    }
+
+    /// <summary>The clipboard text about to be pasted (TSV).</summary>
+    public string Text { get; }
+
+    /// <summary>Set to <see langword="true"/> to cancel the paste.</summary>
+    public bool Cancel { get; set; }
+}
+
 /// <summary>Event arguments for the <c>SelectionChanged</c> event.</summary>
 public sealed class GridSelectionChangedEventArgs : RoutedEventArgs
 {
@@ -104,6 +137,9 @@ public static class GridCommands
     private static readonly RoutedUICommand CopyCommand = new(
         "Copy Selection", "Copy", typeof(GridCommands), new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control) });
 
+    private static readonly RoutedUICommand PasteCommand = new(
+        "Paste", "Paste", typeof(GridCommands), new InputGestureCollection { new KeyGesture(Key.V, ModifierKeys.Control) });
+
     /// <summary>Begins editing the current cell (F2).</summary>
     public static RoutedUICommand BeginEdit => BeginEditCommand;
 
@@ -121,4 +157,7 @@ public static class GridCommands
 
     /// <summary>Copies the selection to the clipboard (Ctrl+C).</summary>
     public static RoutedUICommand Copy => CopyCommand;
+
+    /// <summary>Pastes TSV clipboard text into the grid starting at the current cell (Ctrl+V).</summary>
+    public static RoutedUICommand Paste => PasteCommand;
 }

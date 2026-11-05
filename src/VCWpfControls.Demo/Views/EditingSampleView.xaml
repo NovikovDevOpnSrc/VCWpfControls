@@ -2,8 +2,20 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
-    <grid:GridControl
-                      ItemsSource="{Binding Employees}"
-                      IsReadOnly="False"
-                      RowHeight="30" />
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <CheckBox x:Name="AddRowsToggle" Margin="0,0,16,0" VerticalAlignment="Center"
+                      Checked="OnAddRowsToggled" Unchecked="OnAddRowsToggled"
+                      Content="Can user add rows" />
+            <Button Margin="0,0,8,0" Padding="12,4" Click="OnPasteClick"
+                    Content="Paste (Ctrl+V)" />
+            <TextBlock VerticalAlignment="Center" Opacity="0.7"
+                       Text="TSV text pastes from the current cell; Esc cancels a fresh add-row."
+                       TextWrapping="Wrap" />
+        </StackPanel>
+        <grid:GridControl x:Name="Grid"
+                          ItemsSource="{Binding Employees}"
+                          IsReadOnly="False"
+                          RowHeight="30" />
+    </DockPanel>
 </UserControl>

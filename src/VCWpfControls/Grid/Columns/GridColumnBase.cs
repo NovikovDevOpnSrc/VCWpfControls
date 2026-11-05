@@ -268,6 +268,22 @@ public abstract class GridColumnBase : DependencyObject
     }
 
     /// <summary>
+    /// Writes a clipboard text value into the item's field (culture-aware conversion);
+    /// returns <see langword="false"/> for read-only fields or unconvertible text.
+    /// </summary>
+    public bool TrySetCellText(object item, string? text)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var accessor = PropertyAccessor.GetOrCreate(item.GetType(), FieldName);
+        if (!accessor.IsValid || !GridClipboard.TryConvert(text, accessor.ValueType, out var value))
+        {
+            return false;
+        }
+
+        return accessor.TrySetValue(item, value);
+    }
+
+    /// <summary>
     /// The dependency property of the generated editing element that carries the edited value;
     /// used to commit the binding and to detach it when editing ends. <see langword="null"/> when
     /// the column has no typed editing element (templates handle their own bindings).

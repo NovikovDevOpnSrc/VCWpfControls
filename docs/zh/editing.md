@@ -147,3 +147,34 @@ code-behind 即可集成：
 `ItemsSource` 实现 `IList`（例如 `ObservableCollection<T>`）、`CanUserDeleteRows` 为
 `true` 且表格不处于 `IsReadOnly` 时才有效。删除前会先清除选择；删除操作随后通过
 `INotifyCollectionChanged` 回流到表格。
+
+
+## 添加行（CanUserAddRows）
+
+```xml
+<grid:GridControl ItemsSource="{Binding Employees}"
+                   CanUserAddRows="True"
+                   NewItemFactory="{Binding CreateEmployee}" />
+```
+
+启用 `CanUserAddRows="True"` 后，表格末尾会出现一个空输入行。编辑其单元格时：
+
+1. 触发 `AddingNewItem`（设置 `e.NewItem` 提供元素，或 `e.Cancel` 中止）；
+2. 否则调用 `NewItemFactory`；否则用元素类型的无参构造创建实例（`ItemsSource` 必须是
+   可写的 `IList`）；
+3. 元素加入数据源，编辑在新行中继续。
+
+首次编辑期间按 **Esc** 会再次移除刚添加的元素（与 DataGrid 一致）；提交则保留。
+只读表格不显示输入行。
+
+## 从剪贴板粘贴
+
+`PasteFromClipboard()`（也可用 **Ctrl+V**）读取 TSV 文本（Excel 剪贴板格式），从当前
+单元格开始写入表格：
+
+- 粘贴列与可视列对齐；只读列对应的单元格被丢弃而不偏移；
+- 值按当前区域设置转换为属性类型；无法转换的单元格被跳过；
+- 超出数据的行/列被丢弃；add-row 输入行不会作为粘贴目标；
+- 粘贴前触发 `PastingFromClipboard`（`e.Text` 为文本，`e.Cancel` 取消）。
+
+返回写入的单元格数。

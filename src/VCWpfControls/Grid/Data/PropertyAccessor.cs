@@ -93,6 +93,51 @@ public sealed class PropertyAccessor
         }
     }
 
+    /// <summary>
+    /// Writes the value to the final segment of the path, walking intermediate segments on
+    /// the runtime type. Returns <see langword="false"/> when the path is invalid, a
+    /// segment is null or the property has no public setter.
+    /// </summary>
+    public bool TrySetValue(object? target, object? value)
+    {
+        if (target is null || !IsValid || Segments.Count == 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            object? current = target;
+            for (var i = 0; i < Segments.Count - 1; i++)
+            {
+                if (current is null)
+                {
+                    return false;
+                }
+
+                current = current.GetType().GetProperty(Segments[i])?.GetValue(current);
+            }
+
+            if (current is null)
+            {
+                return false;
+            }
+
+            var property = current.GetType().GetProperty(Segments[^1]);
+            if (property?.SetMethod is null || !property.CanWrite)
+            {
+                return false;
+            }
+
+            property.SetValue(current, value);
+            return true;
+        }
+        catch (TargetInvocationException)
+        {
+            return false;
+        }
+    }
+
     private static Func<object, object?>? BuildGetter(Type ownerType, IReadOnlyList<string> segments)
     {
         // Builds: object item => { object cur = item; if (cur == null) return null;

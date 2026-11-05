@@ -195,7 +195,7 @@ public partial class GridControl : ItemsControl
     /// <summary>Identifies the <see cref="CanUserAddRows"/> dependency property.</summary>
     public static readonly DependencyProperty CanUserAddRowsProperty = DependencyProperty.Register(
         nameof(CanUserAddRows), typeof(bool), typeof(GridControl),
-        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse));
+        new PropertyMetadata(GridColumnBase.Boxed.BoolFalse, OnCanUserAddRowsChanged));
 
     /// <summary>Identifies the <see cref="CanUserDeleteRows"/> dependency property.</summary>
     public static readonly DependencyProperty CanUserDeleteRowsProperty = DependencyProperty.Register(
@@ -214,6 +214,7 @@ public partial class GridControl : ItemsControl
     public static readonly DependencyProperty HorizontalOffsetProperty = HorizontalOffsetPropertyKey.DependencyProperty;
 
     private readonly List<GridRow> _rowRegistry = new();
+    private GridItemsView _itemsView = null!;
     private IReadOnlyList<GridColumnBase> _visibleColumns = Array.Empty<GridColumnBase>();
     private bool _syncingItems;
     private bool _autoColumnsGenerated;
@@ -247,7 +248,8 @@ public partial class GridControl : ItemsControl
 
         DataEngine = new GridDataManager();
         DataEngine.ViewReset += OnEngineViewReset;
-        DataEngine.View.CollectionChanged += OnViewCollectionChanged;
+        _itemsView = new GridItemsView(DataEngine.View);
+        _itemsView.CollectionChanged += OnViewCollectionChanged;
 
         Layout = new GridLayoutController();
         AlternationCount = 2;
@@ -266,6 +268,9 @@ public partial class GridControl : ItemsControl
         CommandBindings.Add(new CommandBinding(GridCommands.Copy,
             (s, e) => { CopyToClipboard(); e.Handled = true; },
             (s, e) => e.CanExecute = ClipboardCopyMode != GridClipboardCopyMode.None));
+        CommandBindings.Add(new CommandBinding(GridCommands.Paste,
+            (s, e) => { PasteFromClipboard(); e.Handled = true; },
+            (s, e) => e.CanExecute = !IsReadOnly));
     }
 
     /// <summary>Identifies the <see cref="AutoGeneratingColumn"/> routed event.</summary>
@@ -840,6 +845,9 @@ public partial class GridControl : ItemsControl
     /// <summary>Scrolls horizontally to the given offset (clamped).</summary>
     internal void SetHorizontalOffsetForTest(double value) => SetHorizontalOffsetCore(value);
 
+    internal void SetCurrentCellForTest(object? item, GridColumnBase? column)
+        => SetCurrentCell(item, column, alignIntoView: false);
+
     internal void SetHorizontalOffsetCore(double value)
     {
         var max = Math.Max(0, Layout.TotalWidth - ViewportWidth);
@@ -1074,8 +1082,9 @@ public partial class GridControl : ItemsControl
         try
         {
             // Swap the whole view into the base ItemsSource: a single Reset instead of
-            // per-item collection changes keeps large refreshes cheap.
-            base.ItemsSource = DataEngine.View;
+            // per-item collection changes keeps large refreshes cheap. The wrapper adds
+            // the add-row placeholder without touching the engine's own index space.
+            base.ItemsSource = _itemsView;
         }
         finally
         {
@@ -1094,6 +1103,7 @@ public partial class GridControl : ItemsControl
         }
 
         SyncEngineView();
+        MaintainNewItemPlaceholder();
         PruneSelectionToSource();
         RestoreCurrentItem();
         InvalidateVisualChildren();
@@ -1106,6 +1116,7 @@ public partial class GridControl : ItemsControl
     {
         if (_emptyState is not null)
         {
+            // The add-row placeholder already invites input: treat the grid as non-empty.
             _emptyState.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
     }

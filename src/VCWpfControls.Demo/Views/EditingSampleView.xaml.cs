@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Controls;
 
 namespace VCWpfControls.Demo.Views;
@@ -10,5 +11,18 @@ public partial class EditingSampleView : UserControl
     {
         InitializeComponent();
         this.SetValue(System.Windows.Automation.AutomationProperties.AutomationIdProperty, "EditingGrid");
+        // On by default so the add-row is immediately visible.
+        AddRowsToggle.IsChecked = true;
+        Grid.CanUserAddRows = true;
+    }
+
+    private void OnAddRowsToggled(object sender, RoutedEventArgs e)
+    {
+        Grid.CanUserAddRows = AddRowsToggle.IsChecked == true;
+    }
+
+    private void OnPasteClick(object sender, RoutedEventArgs e)
+    {
+        Grid.PasteFromClipboard();
     }
 }

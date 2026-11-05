@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — add-row and clipboard paste
+
+- `GridControl.CanUserAddRows` — an empty add-row placeholder at the end of the view
+  (Excel/DataGrid style). Editing a cell in it raises `AddingNewItem` (supply or cancel),
+  falls back to `NewItemFactory` or a parameterless instance of the item type, adds the
+  item to a writable `IList` source and continues the edit in the new row; Esc on that
+  first edit removes the item again. The placeholder lives in a new `GridItemsView`
+  wrapper around the engine view — inside the engine itself it would desynchronize the
+  incremental index bookkeeping (ListCollectionView cross-checks).
+- `GridControl.PasteFromClipboard()` / **Ctrl+V** — pastes TSV clipboard text starting at
+  the current cell: pasted columns align with visual columns (read-only cells dropped, not
+  shifted), culture-aware conversion to property types (UI-free `GridClipboard` parser,
+  unit-tested), extra rows/columns dropped, `PastingFromClipboard` cancelable event.
+- Demo: the Editing page gained an add-row toggle (on by default) and a paste button;
+  docs ×3 updated.
+
 ### Fixed — TreeListView
 
 - The node text of the first column rendered straight under the expander toggle and the node

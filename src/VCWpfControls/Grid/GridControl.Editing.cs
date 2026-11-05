@@ -35,6 +35,20 @@ public partial class GridControl
             return false;
         }
 
+        if (IsNewItemPlaceholder(item))
+        {
+            // The add-row placeholder: create the item, add it to the source and edit THAT
+            // row. Its container realizes a dispatcher pass later, so defer the edit.
+            if (!TryBeginNewRowEdit(column, out var newItem) || newItem is null)
+            {
+                return false;
+            }
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,
+                () => BeginEdit(newItem, column));
+            return true;
+        }
+
         var args = new GridCellEditEventArgs(item, column, null, cancelEdit: false)
         {
             RoutedEvent = CellEditStartingEvent,
@@ -115,6 +129,21 @@ public partial class GridControl
         };
         RaiseEvent(endedArgs);
         Focus();
+
+        // The add-row's first edit: cancel removes the just-added item again (DataGrid
+        // behavior); a successful commit ends its "pending" status.
+        if (ReferenceEquals(_pendingNewItem, item))
+        {
+            if (committed)
+            {
+                _pendingNewItem = null;
+            }
+            else
+            {
+                CancelPendingNewItem();
+            }
+        }
+
         return committed || !commit;
     }
 

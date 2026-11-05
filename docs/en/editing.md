@@ -152,3 +152,38 @@ collection** — this works only when `ItemsSource` implements `IList` (e.g.
 `ObservableCollection<T>`), `CanUserDeleteRows` is `true` and the grid is not `IsReadOnly`.
 The selection is cleared first; removal then flows back to the grid through
 `INotifyCollectionChanged`.
+
+
+## Adding rows (CanUserAddRows)
+
+```xml
+<grid:GridControl ItemsSource="{Binding Employees}"
+                   CanUserAddRows="True"
+                   NewItemFactory="{Binding CreateEmployee}" />
+```
+
+With `CanUserAddRows="True"` an empty add-row appears at the end. Editing a cell in it:
+
+1. raises `AddingNewItem` (set `e.NewItem` to supply the item, `e.Cancel` to abort);
+2. otherwise `NewItemFactory` runs; otherwise a parameterless instance of the item type
+   is created (`ItemsSource` must be a writable `IList`);
+3. the item is added to the source and the edit continues in the new row.
+
+Pressing **Esc** during that first edit removes the just-added item again (DataGrid
+behavior); committing it keeps it. `CanUserAddRows` requires a writable `IList` source and
+switches off automatically for read-only grids.
+
+## Pasting from the clipboard
+
+`PasteFromClipboard()` (also **Ctrl+V**) reads TSV text (the Excel clipboard format) and
+writes it into the grid starting at the current cell:
+
+- pasted columns align with the visual columns; cells destined for read-only columns are
+  dropped, not shifted;
+- values are converted to the property type using the current culture; unconvertible
+  cells are skipped;
+- extra rows/columns beyond the data are dropped; the add-row placeholder is never a
+  paste target;
+- `PastingFromClipboard` fires before pasting (inspect `e.Text`, cancel with `e.Cancel`).
+
+Returns the number of cells written.
