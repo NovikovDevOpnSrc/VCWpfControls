@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] — 2026-11-05
+
+Add-row (`CanUserAddRows`) + clipboard paste, column-frame alignment fixes, narrow-viewport floor, TreeListView indent.
+
 ### Added — add-row and clipboard paste
 
 - `GridControl.CanUserAddRows` — an empty add-row placeholder at the end of the view
