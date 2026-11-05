@@ -281,10 +281,14 @@ public sealed class GridCellsPanel : Panel
             }
 
             var x = slot.IsFrozen ? slot.X : slot.X - offset;
-            if (i == 0 && _row is { } indentRow && indentRow.TreeLevel > 0)
+            if (i == 0 && _row is { } indentRow && _owner is TreeList.TreeListView)
             {
-                // TreeListView: indent the content of the first column by the nesting level.
-                x += Math.Min(indentRow.TreeLevel * 16, Math.Max(0, slot.Width - 8));
+                // TreeListView: indent the first column's content past the expander toggle
+                // (level*16 + 16 + gap) and the node check box (+16 + gap when shown) —
+                // the text used to render straight under the toggle/check box.
+                var reserve = 16 + 4 + (indentRow.HasNodeCheckBox ? 16 + 4 : 0);
+                var indent = (indentRow.TreeLevel * 16) + reserve;
+                x += Math.Min(indent, Math.Max(0, slot.Width - 8));
             }
 
             child.Arrange(new Rect(x, 0, slot.Width, finalSize.Height));

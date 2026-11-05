@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — TreeListView
+
+- The node text of the first column rendered straight under the expander toggle and the node
+  check box (they draw on top of the cells panel, and the indent was `level*16` only — no
+  space reserved for them; level-0 rows got no indent at all). The indent now clears the
+  toggle (`16 + gap`) and the check box (`+16 + gap` when `ShowNodeCheckBoxes`) — the check
+  box no longer climbs onto the node text. Regression-tested per level via element
+  positions (fails with the old indent).
+
 ### Fixed — narrow viewport
 
 - In a viewport too narrow for the columns, star columns collapsed into ~10px slivers (the
