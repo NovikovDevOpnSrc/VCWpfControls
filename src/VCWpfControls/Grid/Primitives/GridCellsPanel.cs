@@ -267,6 +267,7 @@ public sealed class GridCellsPanel : Panel
         var layout = _owner.Layout;
         var columns = _owner.VisibleColumns;
         var offset = _owner.HorizontalOffset;
+        var frozenBoundary = GetFrozenBoundary(columns, layout);
 
         for (var i = 0; i < columns.Count && i < Children.Count; i++)
         {
@@ -287,12 +288,54 @@ public sealed class GridCellsPanel : Panel
             }
 
             child.Arrange(new Rect(x, 0, slot.Width, finalSize.Height));
+            child.Clip = GetScrollClip(slot, x, frozenBoundary, finalSize.Height);
         }
 
         UpdateFocusVisual();
 
         var height = double.IsNaN(_owner.RowHeight) ? finalSize.Height : _owner.RowHeight;
         return new Size(finalSize.Width, height);
+    }
+
+    /// <summary>
+    /// The right edge of the last frozen slot in panel coordinates (0 when nothing is frozen):
+    /// scrollable content must not render left of it or it would slide under the frozen cells.
+    /// </summary>
+    private static double GetFrozenBoundary(IReadOnlyList<GridColumnBase> columns, GridLayoutController layout)
+    {
+        var boundary = 0d;
+        for (var i = 0; i < columns.Count; i++)
+        {
+            if (layout.GetSlot(columns[i]) is { IsFrozen: true } slot)
+            {
+                boundary = Math.Max(boundary, slot.X + slot.Width);
+            }
+        }
+
+        return boundary;
+    }
+
+    /// <summary>
+    /// Clips a scrollable cell to the part of its slot that is right of the frozen boundary
+    /// (and to its own right edge, so text never bleeds into the next column either).
+    /// </summary>
+    private static RectangleGeometry? GetScrollClip(GridLayoutSlot slot, double x, double frozenBoundary, double height)
+    {
+        if (slot.IsFrozen)
+        {
+            return null;
+        }
+
+        var clipLeft = Math.Max(frozenBoundary - x, 0);
+        var clipWidth = slot.Width - clipLeft;
+        if (clipLeft <= 0 && clipWidth >= slot.Width)
+        {
+            return null; // fully visible, nothing frozen to the left
+        }
+
+        return clipWidth <= 0
+            ? new RectangleGeometry(new Rect(0, 0, 0, 0))
+            : new RectangleGeometry(new Rect(clipLeft, 0, clipWidth, height));
     }
 
     private void UpdateFocusVisual()
@@ -322,6 +365,7 @@ public sealed class GridCellsPanel : Panel
         var offset = slot.IsFrozen ? 0 : -_owner.HorizontalOffset;
         _focusVisual.Arrange(new Rect(slot.X + offset, 0, slot.Width, RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height));
         _focusVisual.BorderBrush = _owner.CurrentCellBorderBrush;
+        _focusVisual.Clip = GetScrollClip(slot, slot.X + offset, GetFrozenBoundary(_owner.VisibleColumns, _owner.Layout), RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height);
     }
 
     /// <summary>Draws the vertical column separators when the grid enables them.</summary>

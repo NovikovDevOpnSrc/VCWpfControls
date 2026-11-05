@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — frozen-zone clipping
+
+- With `FrozenColumnCount > 0` and horizontal scrolling, scrollable cells (and headers, and
+  the current-cell focus border) rendered on top of the frozen columns: both panels are a
+  single clip region, so content shifted by the offset slid under the frozen zone. Scrollable
+  children are now clipped to the part of their slot right of the frozen boundary (and to
+  their own right edge, so text cannot bleed into the next column either). Pixel regression
+  tests render a scrolled frozen grid and assert no dark pixels inside the frozen territory
+  (verified to fail with the clip disabled).
+
 ## [0.2.5] — 2026-11-05
 
 Column separators + deterministic async pipeline hardening.

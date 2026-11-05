@@ -112,6 +112,14 @@ public sealed class GridColumnHeadersPresenter : Panel
         var layout = Owner.Layout;
         var columns = Owner.VisibleColumns;
         var offset = Owner.HorizontalOffset;
+        var frozenBoundary = 0d;
+        for (var i = 0; i < columns.Count; i++)
+        {
+            if (layout.GetSlot(columns[i]) is { IsFrozen: true } slot)
+            {
+                frozenBoundary = Math.Max(frozenBoundary, slot.X + slot.Width);
+            }
+        }
 
         for (var i = 0; i < columns.Count && i < Children.Count; i++)
         {
@@ -126,6 +134,21 @@ public sealed class GridColumnHeadersPresenter : Panel
 
             var x = slot.IsFrozen ? slot.X : slot.X - offset;
             child.Arrange(new Rect(x, 0, slot.Width, finalSize.Height));
+
+            // Scrollable headers must not slide under the frozen headers, matching the
+            // cells panel clipping (GridCellsPanel.GetScrollClip).
+            if (!slot.IsFrozen && frozenBoundary > 0)
+            {
+                var clipLeft = Math.Max(frozenBoundary - x, 0);
+                var clipWidth = slot.Width - clipLeft;
+                child.Clip = clipWidth <= 0
+                    ? new RectangleGeometry(new Rect(0, 0, 0, 0))
+                    : new RectangleGeometry(new Rect(clipLeft, 0, clipWidth, finalSize.Height));
+            }
+            else
+            {
+                child.Clip = null;
+            }
         }
 
         return finalSize;
