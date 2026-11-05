@@ -25,11 +25,13 @@
 - Header menu extensions: "Filter…" opens the column filter menu; "Column Chooser" as a
   separate reorderable dialog; "Reset layout" (restore original widths/order/visibility);
   copy/export from the menu.
-- Sort engine optimization: replace LINQ OrderBy chains (≈70 MB allocations on 100k rows,
-  see `benchmarks/RESULTS.md`) with a stable in-place list sort.
-- Editing: add-row entry (`CanUserAddRows`), paste from clipboard.
 - Filter menu: numeric/date range mode alongside the value list.
-- Cell selection unit (`SelectedCells`).
+- Cell selection unit (`SelectedCells`) — recommended next: rectangular ranges +
+  TSV copy of the selected block (pairs with the clipboard paste from v0.2.6).
+
+### Done (kept for history)
+- Sort engine optimization (v0.2.x: 70 MB → 14 MB on 100k rows, `benchmarks/RESULTS.md`).
+- Editing: add-row entry (`CanUserAddRows`) + clipboard paste (v0.2.6).
 
 ### TreeListView
 - Node check boxes with tri-state cascade (done).
