@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — API reference on the docs site
+
+- The documentation site now includes an auto-generated API reference (97 types: Grid,
+  TreeList, PropertyGrid, Editors, Docking) built from the library's XML doc comments.
+- `apigen.docfx.json` at the repo root extracts the metadata (docfx globs cannot escape
+  the config directory, hence the root placement); `docs/docfx.json` consumes
+  `api/**/*.yml`. Each language TOC gained an "API Reference" entry.
+- The docs workflow builds the Release library and regenerates the metadata on every
+  change under `docs/` or `src/VCWpfControls/` and no longer tolerates build failures
+  (`continue-on-error` removed). Local: `dotnet build src/VCWpfControls -c Release`,
+  `docfx metadata apigen.docfx.json`, `docfx docs/docfx.json`. Site builds with
+  0 warnings; `docs/api/` is generated (gitignored).
+
+
 ## [0.2.9] — 2026-11-07
 
 Docking auto-hide (edge tabs + hover flyout) + clipboard-write retry fix.

@@ -22,3 +22,5 @@
   href: editors.md
 - name: Докинг
   href: docking.md
+- name: Справочник API
+  href: ../api/

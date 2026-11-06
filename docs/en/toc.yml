@@ -22,3 +22,5 @@
   href: editors.md
 - name: Docking
   href: docking.md
+- name: API Reference
+  href: ../api/

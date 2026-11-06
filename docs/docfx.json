@@ -1,36 +1,22 @@
 {
-  // Static-content configuration (DocFX v2).
   // Build the site with:  docfx docs/docfx.json --serve
-  //
-  // API reference generation is intentionally disabled at this stage.
-  // To enable it later, build the library first (dotnet build src/VCWpfControls),
-  // then uncomment the "metadata" section below and reference the generated
-  // api/**/*.md files from a toc.yml:
-  //
-  // "metadata": [
-  //   {
-  //     "src": [
-  //       {
-  //         "files": [ "../src/VCWpfControls/bin/Debug/net8.0-windows/VCWpfControls.dll" ],
-  //         "cwd": "."
-  //       }
-  //     ],
-  //     "dest": "api",
-  //     "memberLayout": "samePage"
-  //   }
-  // ],
+  // The API reference is generated from the RELEASE build of the library; build it first:
+  //   dotnet build src/VCWpfControls -c Release
   "build": {
     "content": [
       {
         "files": [
           "index.md",
+          "ux-checklist.md",
           "toc.yml",
           "en/**/*.md",
           "en/toc.yml",
           "ru/**/*.md",
           "ru/toc.yml",
           "zh/**/*.md",
-          "zh/toc.yml"
+          "zh/toc.yml",
+          "api/**/*.yml",
+          "api/toc.yml"
         ]
       }
     ],

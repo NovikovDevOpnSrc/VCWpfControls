@@ -19,6 +19,7 @@ coverage/
 
 # DocFX
 docs/_site/
+docs/api/
 docs/api/.manifest/
 docs/**/*.tmp/
 

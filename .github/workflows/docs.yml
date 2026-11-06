@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'src/VCWpfControls/**'
+      - 'apigen.docfx.json'
   workflow_dispatch:
 
 permissions:
@@ -36,10 +38,16 @@ jobs:
       - name: Install docfx
         run: dotnet tool update -g docfx
 
-      # docs/docfx.json does not exist yet. The step is allowed to fail until
-      # the docs stabilize; remove continue-on-error once docfx.json is in place.
+      # The API reference is generated from the library's XML doc comments: build the
+      # Release library, extract metadata (apigen.docfx.json lives at the repo root
+      # because docfx globs cannot escape the config directory), then build the site.
+      - name: Build library (Release)
+        run: dotnet build src/VCWpfControls/VCWpfControls.csproj -c Release
+
+      - name: Generate API metadata
+        run: docfx metadata apigen.docfx.json
+
       - name: Build docs with docfx
-        continue-on-error: true
         run: docfx docs/docfx.json --output docs/_site
 
       # Upload and deploy only when docfx.json actually exists,

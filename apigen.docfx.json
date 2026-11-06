@@ -1,0 +1,18 @@
+{
+  // API metadata extraction config (DocFX v2). Kept at the repo root because docfx
+  // globs cannot escape the config's own directory ("../" is unsupported).
+  // Usage:  dotnet build src/VCWpfControls -c Release   (doc comments come from the XML)
+  //         docfx metadata apigen.docfx.json
+  // The output (docs/api/**.md + toc) is consumed by docs/docfx.json's build section.
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [ "src/VCWpfControls/VCWpfControls.csproj" ]
+        }
+      ],
+      "dest": "docs/api",
+      "memberLayout": "samePage"
+    }
+  ]
+}
