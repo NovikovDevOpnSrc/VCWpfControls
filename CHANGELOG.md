@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.9] — 2026-11-07
+
+Docking auto-hide (edge tabs + hover flyout) + clipboard-write retry fix.
+
 ### Added — docking auto-hide
 
 - `DockPane.IsAutoHidden`: the pane collapses to a thin edge tab (rotated text on
