@@ -26,12 +26,11 @@
   separate reorderable dialog; "Reset layout" (restore original widths/order/visibility);
   copy/export from the menu.
 - Filter menu: numeric/date range mode alongside the value list.
-- Cell selection unit (`SelectedCells`) — recommended next: rectangular ranges +
-  TSV copy of the selected block (pairs with the clipboard paste from v0.2.6).
-
 ### Done (kept for history)
 - Sort engine optimization (v0.2.x: 70 MB → 14 MB on 100k rows, `benchmarks/RESULTS.md`).
 - Editing: add-row entry (`CanUserAddRows`) + clipboard paste (v0.2.6).
+- Cell selection unit (`SelectionUnit=CellOrRow`): rectangular ranges, item-based
+  (survive sorting), bounding-box TSV copy (v0.2.7).
 
 ### TreeListView
 - Node check boxes with tri-state cascade (done).
