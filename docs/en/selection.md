@@ -98,3 +98,25 @@ grid.SelectItem(viewModel.EmployeeToHighlight);
 ```
 
 Group header rows never become the current row — navigation skips them automatically.
+
+
+## Cell selection (SelectedCells)
+
+```xml
+<grid:GridControl SelectionUnit="CellOrRow" ... />
+```
+
+In `CellOrRow` mode clicks select CELLS instead of rows:
+
+- click selects a cell; **Shift+click** selects the rectangle to the anchor;
+  **Ctrl+click** toggles a cell; **Ctrl+Shift+click** adds a rectangle;
+- **Shift+arrows** extend the rectangle from the anchor; `SelectAll` selects every cell;
+- ranges are stored ITEM-based: they survive sorting/filtering (the rectangle always
+  covers its two corner cells); ranges whose rows leave the source are pruned;
+- the selected cells are painted with the theme selection background;
+- `SelectedCells` returns the cells in view order; `SelectCellRange`/`AddCellRange`/
+  `UnselectAllCells` drive it programmatically; `CellSelectionChanged` fires on changes;
+- **Ctrl+C** copies the bounding box of the selected ranges as TSV — cells outside the
+  ranges inside the box come out empty (Excel semantics), pairs with Ctrl+V paste.
+
+Row selection keeps working through its API (`SelectItem`, `SelectedItems`) in both modes.

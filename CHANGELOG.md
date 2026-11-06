@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — cell selection (SelectedCells)
+
+- `GridControl.SelectionUnit` (`Row` default / `CellOrRow`): clicks select cells; Shift+click
+  selects the rectangle to the anchor, Ctrl+click toggles a cell, Ctrl+Shift+click adds a
+  rectangle, Shift+arrows extend from the anchor, `SelectAll` selects every cell.
+- `SelectedCells` (view order), `SelectCellRange`/`AddCellRange`/`UnselectAllCells`,
+  `IsCellSelected`, `CellSelectionChanged`; selected spans painted with the theme
+  selection background (row panels' OnRender, under the cell content).
+- Ranges are stored item-based and survive sorting/filtering (always covering both corner
+  cells); ranges of removed rows are pruned with the row selection.
+- `Ctrl+C` in cell mode copies the bounding box of the ranges as TSV with empty holes
+  (Excel semantics) — pairs with the v0.2.6 clipboard paste.
+- Demo: Selection page toggle with a live selected-cells counter; docs ×3.
+
+
 ## [0.2.6] — 2026-11-05
 
 Add-row (`CanUserAddRows`) + clipboard paste, column-frame alignment fixes, narrow-viewport floor, TreeListView indent.

@@ -387,13 +387,59 @@ public sealed class GridCellsPanel : Panel
         _focusVisual.Clip = GetFrozenBoundaryClip(slot, slot.X + offset, GetFrozenBoundary(_owner.VisibleColumns, _owner.Layout), RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height);
     }
 
-    /// <summary>Draws the vertical column separators when the grid enables them.</summary>
+    /// <summary>Draws the selected-cell background spans and the vertical column separators.</summary>
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
 
-        if (_owner is not { } owner
-            || !owner.ShowColumnSeparators
+        if (_owner is not { } owner)
+        {
+            return;
+        }
+
+        // Selected cells: painted before the children so text stays on top. View-row spans
+        // map to panel x through the layout slots (frozen absolute, scrollable shifted).
+        if (owner.SelectionUnit == GridSelectionUnit.CellOrRow
+            && _row?.RowInfo is { FlatIndex: var flatIndex }
+            && owner.TryFindResource(GridResources.SelectionBackgroundKey) is System.Windows.Media.Brush selectionBrush)
+        {
+            var layoutSel = owner.Layout;
+            var columnsSel = owner.VisibleColumns;
+            foreach (var (colStart, colEnd) in owner.GetSelectedCellSpans(flatIndex))
+            {
+                double x0 = 0, x1 = 0;
+                var haveStart = false;
+                var haveEnd = false;
+                for (var i = colStart; i <= colEnd && i < columnsSel.Count; i++)
+                {
+                    if (layoutSel.GetSlot(columnsSel[i]) is not { } slot)
+                    {
+                        continue;
+                    }
+
+                    var sx = slot.IsFrozen ? slot.X : slot.X - owner.HorizontalOffset;
+                    if (!haveStart || sx < x0)
+                    {
+                        x0 = sx;
+                        haveStart = true;
+                    }
+
+                    var ex = sx + slot.Width;
+                    if (!haveEnd || ex > x1)
+                    {
+                        x1 = ex;
+                        haveEnd = true;
+                    }
+                }
+
+                if (haveStart)
+                {
+                    dc.DrawRectangle(selectionBrush, null, new System.Windows.Rect(x0, 0, x1 - x0, RenderSize.Height));
+                }
+            }
+        }
+
+        if (!owner.ShowColumnSeparators
             || (owner.ColumnSeparatorBrush ?? owner.GridLinesBrush) is not { } brush)
         {
             return;

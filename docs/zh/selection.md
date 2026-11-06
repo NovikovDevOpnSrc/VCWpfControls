@@ -97,3 +97,25 @@ grid.SelectItem(viewModel.EmployeeToHighlight);
 ```
 
 分组标题行永远不会成为当前行 —— 导航会自动跳过它们。
+
+
+## 单元格选择（SelectedCells）
+
+```xml
+<grid:GridControl SelectionUnit="CellOrRow" ... />
+```
+
+在 `CellOrRow` 模式下，点击选择的是**单元格**而非行：
+
+- 单击选择单元格；**Shift+单击**选择到锚点的矩形；**Ctrl+单击**切换单元格；
+  **Ctrl+Shift+单击**追加矩形；
+- **Shift+方向键**从锚点扩展矩形；`SelectAll` 选中全部单元格；
+- 区域按数据元素存储：排序/筛选后依然有效（矩形始终覆盖两个角单元格）；
+  离开数据源的区域会被清理；
+- 选中的单元格以主题选中色绘制；
+- `SelectedCells` 按视图顺序返回单元格；`SelectCellRange`/`AddCellRange`/
+  `UnselectAllCells` 用于编程控制；变更触发 `CellSelectionChanged`；
+- **Ctrl+C** 以 TSV 复制所选区域的包围盒——盒内未选中的单元格输出为空（与
+  Excel 一致），与 Ctrl+V 粘贴配合使用。
+
+两种模式下，行选择 API（`SelectItem`、`SelectedItems`）都保持可用。

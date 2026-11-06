@@ -466,7 +466,11 @@ public partial class GridControl
 
     /// <summary>Moves the current cell by the given delta (columns/rows), skipping group rows.</summary>
     internal void MoveCurrentCell(int columnDelta, int rowDelta)
+        => MoveCurrentCell(columnDelta, rowDelta, extend: null);
+
+    internal void MoveCurrentCell(int columnDelta, int rowDelta, bool? extend)
     {
+        var extendSelection = extend ?? (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
         var view = DataEngine.View;
         var currentIndex = -1;
         for (var i = 0; i < view.Count; i++)
@@ -518,7 +522,7 @@ public partial class GridControl
         if (targetIndex < view.Count && view[targetIndex] is GridDataRow targetRow)
         {
             SetCurrentCell(targetRow.Item, targetColumn, alignIntoView: true);
-            if (SelectionMode == GridSelectionMode.SingleRow || (Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+            if (SelectionMode == GridSelectionMode.SingleRow || !extendSelection)
             {
                 // Plain navigation moves the current cell; selection follows in Single mode.
                 if (SelectionMode == GridSelectionMode.SingleRow)
@@ -526,6 +530,11 @@ public partial class GridControl
                     UnselectAll();
                     SelectItem(targetRow.Item);
                 }
+            }
+            else if (extendSelection && SelectionUnit == GridSelectionUnit.CellOrRow)
+            {
+                // Shift+arrows extend the rectangular cell selection from the anchor.
+                ExtendCellSelectionToCurrent();
             }
         }
     }

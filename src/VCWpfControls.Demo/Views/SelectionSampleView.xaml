@@ -2,7 +2,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
-    <grid:GridControl x:Name="Grid"
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <CheckBox x:Name="CellUnitToggle" VerticalAlignment="Center"
+                      Checked="OnCellUnitToggled" Unchecked="OnCellUnitToggled"
+                      Content="Cell selection (click, Shift/Ctrl rectangles, Shift+arrows, copy)" />
+            <TextBlock x:Name="CellCount" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7"
+                       Text="0 cells selected" />
+        </StackPanel>
+        <grid:GridControl x:Name="Grid"
                       ItemsSource="{Binding Employees}"
                       SelectionMode="Extended"
                       RowHeight="28"
@@ -22,4 +30,5 @@
             </DataTemplate>
         </grid:GridControl.RowDetailsTemplate>
     </grid:GridControl>
+    </DockPanel>
 </UserControl>

@@ -32,6 +32,20 @@ public partial class GridControl
             return;
         }
 
+        if (SelectionUnit == GridSelectionUnit.CellOrRow)
+        {
+            var columns = VisibleColumns;
+            var items = DataItemsInOrder();
+            if (columns.Count > 0 && items.Count > 0)
+            {
+                SelectCellRange(
+                    new GridCellInfo(items[0], columns[0]),
+                    new GridCellInfo(items[^1], columns[^1]));
+            }
+
+            return;
+        }
+
         var added = new List<object>();
         foreach (var rowInfo in DataEngine.View)
         {
@@ -152,6 +166,13 @@ public partial class GridControl
         var modifiers = Keyboard.Modifiers;
         var isCtrl = (modifiers & ModifierKeys.Control) == ModifierKeys.Control;
         var isShift = (modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+
+        if (SelectionUnit == GridSelectionUnit.CellOrRow && column is not null)
+        {
+            // Cell mode: clicks build rectangular cell ranges; row selection is untouched.
+            HandleCellMousePress(item, column, isCtrl, isShift);
+            return;
+        }
 
         if (SelectionMode == GridSelectionMode.SingleRow)
         {
@@ -356,6 +377,8 @@ public partial class GridControl
 
     private void PruneSelectionToSource()
     {
+        PruneCellSelectionToSource();
+
         // Selection survives filtering; it is only pruned when the source itself
         // no longer contains the items.
         var allItems = MaterializeAllItems();
@@ -425,8 +448,14 @@ public partial class GridControl
         var items = _selectedItems.Count > 0
             ? _selectedItems
             : CurrentItem is not null ? new List<object> { CurrentItem } : new List<object>();
-        if (items.Count == 0)
+        if (items.Count == 0 && SelectedCells.Count == 0)
         {
+            return;
+        }
+
+        if (SelectedCells.Count > 0)
+        {
+            CopySelectedCellsToClipboard();
             return;
         }
 
