@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — UIA-driven end-to-end tests (and a funnel a11y fix)
+
+- `MousePathsUiTests`: real-application flows through UIA patterns only (Invoke/Toggle/
+  Select — no raw SendInput mouse/keyboard, which disconnected RDP sessions deny):
+  the funnel filter popup end-to-end (open → uncheck a value → OK → the excluded rows
+  vanish from the UIA tree), the cell-selection toggle (live counter + row selection
+  never leaking into SelectedCells), and Table.ColumnHeaders exposing header names.
+- Navigation matches nav items by their caption Text child (the ListItem name is the
+  view-model type); WPF filter popups live in a top-level `Popup` HWND — searched from
+  the desktop; assertions are data-based (row-name composition) because GridPattern
+  RowCount reflects the virtualized viewport, not the data size.
+- **A11y fix found by these tests**: the header funnel `ToggleButton` opened the filter
+  menu only on `Click` — the UIA Toggle pattern flips `IsChecked` without raising Click,
+  so assistive tech/keyboards could not open the menu. It now opens on `Checked` too
+  (and resets the state before opening).
+- Raw-input paths (header drag, typing) stay covered by the STA suites. Local pixel
+  tests went empty (user RDP session disconnected) — CI is the verification source.
+
+
 ### Fixed — #15: element headers export as type names
 
 - `GridExporter.ToCsv`/`ToHtml` wrote headers set to ELEMENTS (e.g. `TextBlock` — the

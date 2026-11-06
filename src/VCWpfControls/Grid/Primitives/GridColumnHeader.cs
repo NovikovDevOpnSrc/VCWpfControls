@@ -140,7 +140,11 @@ public class GridColumnHeader : Control
 
         if (GetTemplateChild("PART_FilterButton") is ToggleButton filterButton)
         {
+            // Both paths: Click for the mouse AND Checked for UIA/keyboard activation
+            // (the Toggle pattern flips IsChecked without raising Click - without the
+            // Checked hook, assistive tech cannot open the filter menu at all).
             filterButton.Click += OnFilterButtonClick;
+            filterButton.Checked += OnFilterButtonClick;
         }
     }
 
@@ -148,8 +152,8 @@ public class GridColumnHeader : Control
     {
         if (sender is ToggleButton { IsChecked: true } button)
         {
-            Owner?.OpenColumnFilterMenu(Column!);
             button.IsChecked = false; // momentary action, not a persistent toggle state
+            Owner?.OpenColumnFilterMenu(Column!);
         }
     }
 
