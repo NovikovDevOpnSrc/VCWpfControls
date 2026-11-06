@@ -47,6 +47,19 @@ and validated in unit tests.
 
 Drag a pane's tab and drop it over a zone: the left/top/right/bottom quarters and the center of the manager light up while dragging; dropping moves the pane. The drop hint is drawn with an adorner using the library theme brushes.
 
+## Auto-hide
+
+```xml
+<docking:DockPane Header="Tools" Zone="Left" IsAutoHidden="True" ... />
+```
+
+An auto-hidden pane collapses to a thin tab at its edge (left/right tabs are rotated);
+hovering the tab for ~250 ms or clicking it flies the pane out as an overlay — it does
+NOT push the layout. Moving the mouse away for ~400 ms collapses it again; the 📌 button
+in the flyout header docks the pane back into its zone. Center panes ignore auto-hide
+(setting it reverts). `IsAutoHidden` participates in `SaveLayout`/`LoadLayout`; the
+`AutoHiddenLeftPanes`/`Top`/`Right`/`Bottom` collections expose the collapsed panes.
+
 ## Not yet (see ROADMAP)
 
-Auto-hide and nested splitter groups.
+Nested splitter groups.

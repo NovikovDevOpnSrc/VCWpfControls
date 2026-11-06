@@ -36,6 +36,18 @@ manager.LoadLayout(xml);             // 按面板 Name（回退到标题）匹�
 
 序列化器不依赖 UI（`DockLayoutSerializer`）——布局可存入设置文件并用单元测试校验。
 
+## 自动隐藏
+
+```xml
+<docking:DockPane Header="工具" Zone="Left" IsAutoHidden="True" ... />
+```
+
+处于自动隐藏的面板会折叠为所在边缘的细标签（左右标签文字旋转 90°）；悬停约 250 毫秒
+或单击标签，面板以覆盖层形式弹出——不会挤压布局。鼠标移开约 400 毫秒后自动收回；
+弹出层标题栏的 📌 按钮可将面板重新停靠回原区域。中心面板不支持自动隐藏（设置会被
+还原）。`IsAutoHidden` 参与 `SaveLayout`/`LoadLayout`；折叠的面板可通过
+`AutoHiddenLeftPanes`/`Top`/`Right`/`Bottom` 集合访问。
+
 ## 暂不支持（见 ROADMAP）
 
-自动隐藏、嵌套分隔组。
+嵌套分隔组。

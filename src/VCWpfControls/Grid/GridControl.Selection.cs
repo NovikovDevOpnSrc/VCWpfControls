@@ -472,13 +472,31 @@ public partial class GridControl
             lines.Add(string.Join("\t", columns.Select(c => Convert.ToString(c.GetCellValue(item), System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty)));
         }
 
-        try
+        TrySetClipboardText(string.Join(Environment.NewLine, lines));
+    }
+
+    /// <summary>
+    /// Writes text to the clipboard; retries briefly on clipboard contention (clipboard
+    /// managers hold it open transiently; the failure arrives as COMException 0x800401D0,
+    /// which ExternalException-only handlers miss). Best-effort: gives up silently.
+    /// </summary>
+    private static void TrySetClipboardText(string text)
+    {
+        for (var attempt = 0; ; attempt++)
         {
-            Clipboard.SetDataObject(string.Join(Environment.NewLine, lines), true);
-        }
-        catch (System.Runtime.InteropServices.ExternalException)
-        {
-            // Clipboard can be locked by another process; copying is best-effort.
+            try
+            {
+                Clipboard.SetDataObject(text, true);
+                return;
+            }
+            catch (System.Runtime.InteropServices.COMException) when (attempt < 8)
+            {
+                System.Threading.Thread.Sleep(30);
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                return; // genuinely busy: copying is best-effort
+            }
         }
     }
 

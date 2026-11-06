@@ -31,6 +31,11 @@ public class DockPane : HeaderedContentControl
     public static readonly DependencyProperty DockHeightProperty = DependencyProperty.Register(
         nameof(DockHeight), typeof(GridLength), typeof(DockPane), new PropertyMetadata(new GridLength(220)));
 
+    /// <summary>Identifies the <see cref="IsAutoHidden"/> dependency property.</summary>
+    public static readonly DependencyProperty IsAutoHiddenProperty = DependencyProperty.Register(
+        nameof(IsAutoHidden), typeof(bool), typeof(DockPane),
+        new PropertyMetadata(false, OnAutoHiddenChanged));
+
     /// <summary>Identifies the <see cref="IsFloating"/> dependency property.</summary>
     public static readonly DependencyProperty IsFloatingProperty = DependencyProperty.Register(
         nameof(IsFloating), typeof(bool), typeof(DockPane),
@@ -52,6 +57,30 @@ public class DockPane : HeaderedContentControl
     {
         add => AddHandler(ClosedEvent, value);
         remove => RemoveHandler(ClosedEvent, value);
+    }
+
+    /// <summary>
+    /// Whether the pane is collapsed to an edge tab (auto-hide): hovering/clicking the tab
+    /// flies the pane out as an overlay; the pin button in the flyout docks it back.
+    /// Center panes ignore auto-hide.
+    /// </summary>
+    public bool IsAutoHidden
+    {
+        get => (bool)GetValue(IsAutoHiddenProperty);
+        set => SetValue(IsAutoHiddenProperty, value);
+    }
+
+    private static void OnAutoHiddenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var pane = (DockPane)d;
+        if (pane.IsAutoHidden && pane.Zone == DockZone.Center)
+        {
+            // Center panes cannot auto-hide: revert without re-syncing.
+            pane.SetCurrentValue(IsAutoHiddenProperty, false);
+            return;
+        }
+
+        pane.Manager?.SyncPane(pane);
     }
 
     /// <summary>The docking zone of the pane.</summary>

@@ -9,7 +9,13 @@ using static VCWpfControls.Control.Tests.TestModels;
 
 namespace VCWpfControls.Control.Tests;
 
+[CollectionDefinition("Clipboard", DisableParallelization = true)]
+public sealed class ClipboardTestsFixture
+{
+}
+
 /// <summary>Pasting TSV clipboard text starting at the current cell (Ctrl+V).</summary>
+[Collection("Clipboard")]
 public class PasteTests
 {
     private static (GridControl Grid, ObservableCollection<Employee> Source, Window Window) Create()

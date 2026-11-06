@@ -14,7 +14,7 @@ namespace VCWpfControls.Docking;
 /// persistence via <see cref="SaveLayout"/>/<see cref="LoadLayout"/>.
 /// </summary>
 [ContentProperty(nameof(Panes))]
-public class DockingManager : Control
+public partial class DockingManager : Control
 {
     /// <summary>Identifies the <see cref="ActivePane"/> dependency property.</summary>
     public static readonly DependencyProperty ActivePaneProperty = DependencyProperty.Register(
@@ -47,6 +47,7 @@ public class DockingManager : Control
     public DockingManager()
     {
         _panes.CollectionChanged += OnPanesChanged;
+        InitAutoHide();
     }
 
     /// <summary>Occurs after a pane was closed (hidden) by the user.</summary>
@@ -100,6 +101,7 @@ public class DockingManager : Control
         TopRow = GetTemplateChild(PartTopRow) as System.Windows.Controls.RowDefinition;
         BottomRow = GetTemplateChild(PartBottomRow) as System.Windows.Controls.RowDefinition;
         AttachZoneHandlers();
+        AttachAutoHideOverlay();
 
         foreach (var pane in _panes)
         {
@@ -251,6 +253,17 @@ public class DockingManager : Control
         ClearDropAdorner();
     }
 
+    /// <summary>Test hook: whether the given zone currently hosts visible panes.</summary>
+    internal bool HasVisiblePanesForTest(DockZone zone)
+        => (zone switch
+        {
+            DockZone.Left => LeftHost,
+            DockZone.Top => TopHost,
+            DockZone.Right => RightHost,
+            DockZone.Bottom => BottomHost,
+            _ => CenterHost,
+        }) is { HasVisiblePanes: true };
+
     /// <summary>Test access to the zone hit-testing.</summary>
     internal DockZone ZoneAtForTest(Point point) => ZoneAt(point, RenderSize);
 
@@ -281,6 +294,8 @@ public class DockingManager : Control
             {
                 host.Panes.Remove(pane);
             }
+
+            RemoveFromAutoHideCollections(pane);
         }
 
         foreach (var pane in e.NewItems?.Cast<DockPane>() ?? Array.Empty<DockPane>())
@@ -313,8 +328,11 @@ public class DockingManager : Control
             host.Panes.Remove(pane);
         }
 
+        RemoveFromAutoHideCollections(pane);
+
         if (pane.IsHidden)
         {
+            CloseAutoHideFlyout();
             if (_floatingWindows.Remove(pane, out var closed))
             {
                 CloseFloatingWindow(closed);
@@ -337,6 +355,15 @@ public class DockingManager : Control
             CloseFloatingWindow(dockedBack);
         }
 
+        if (pane.IsAutoHidden && pane.Zone is not DockZone.Center)
+        {
+            // Collapsed to an edge tab: the flyout overlay shows it on demand.
+            CloseAutoHideFlyout();
+            AutoHiddenCollectionOf(pane.Zone).Add(pane);
+            RefreshZoneVisibility();
+            return;
+        }
+
         var target = pane.Zone switch
         {
             DockZone.Left => LeftHost,
@@ -351,6 +378,7 @@ public class DockingManager : Control
             return;
         }
 
+        CloseAutoHideFlyout();
         target.Panes.Add(pane);
         target.Select(pane);
         ApplyZoneSize(pane, target);
@@ -550,6 +578,7 @@ public class DockingManager : Control
                 Name = pane.LayoutKey,
                 Zone = pane.Zone,
                 IsHidden = pane.IsHidden,
+                IsAutoHidden = pane.IsAutoHidden,
                 IsFloating = pane.IsFloating,
                 Width = ResolveSize(pane, zone, horizontal: true),
                 Height = ResolveSize(pane, zone, horizontal: false),
@@ -614,6 +643,7 @@ public class DockingManager : Control
             }
 
             pane.Zone = entry.Zone;
+            pane.IsAutoHidden = entry.IsAutoHidden;
             pane.IsHidden = entry.IsHidden;
             if (entry.IsFloating)
             {

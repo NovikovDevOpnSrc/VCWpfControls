@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — docking auto-hide
+
+- `DockPane.IsAutoHidden`: the pane collapses to a thin edge tab (rotated text on
+  left/right); hovering ~250 ms or clicking flies it out as an OVERLAY (the layout is not
+  pushed aside); leaving ~400 ms collapses it back; the pin button in the flyout header
+  docks it into its zone again. Center panes ignore auto-hide. Auto-hide wins over
+  floating (the window closes, the pane pins to its zone).
+- `AutoHiddenLeftPanes`/`Top`/`Right`/`Bottom` collections expose the collapsed panes;
+  `OpenAutoHideFlyout`/`CloseAutoHideFlyout` drive the flyout programmatically;
+  `IsAutoHideFlyoutOpen`/`FlyoutPane` reflect its state.
+- `SaveLayout`/`LoadLayout` round-trip the flag (`ah` attribute).
+- Fixed a clipboard flake in the test suite: `CopyToClipboard` caught only
+  ExternalException while contention raises COMException 0x800401D0 — writes now retry
+  like reads, and clipboard-using test classes are serialized into one xunit collection
+  (three consecutive full runs green).
+
+
 ## [0.2.8] — 2026-11-07
 
 Header menu extensions (Filter..., Column Chooser, Reset layout) + numeric/date filter ranges.

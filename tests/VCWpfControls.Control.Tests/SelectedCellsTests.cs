@@ -13,6 +13,7 @@ namespace VCWpfControls.Control.Tests;
 /// Cell-level selection (SelectionUnit=CellOrRow): click/Shift/Ctrl ranges, Shift+arrow
 /// extension, item-based ranges surviving refresh, bounding-box TSV copy.
 /// </summary>
+[Collection("Clipboard")]
 public class SelectedCellsTests
 {
     private static (GridControl Grid, ObservableCollection<Employee> Source, Window Window) Create(

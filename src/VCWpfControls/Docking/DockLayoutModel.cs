@@ -39,6 +39,9 @@ public sealed class DockPaneLayout
     /// <summary>Whether the pane is closed/hidden.</summary>
     public bool IsHidden { get; set; }
 
+    /// <summary>Whether the pane is collapsed to an edge tab (auto-hide).</summary>
+    public bool IsAutoHidden { get; set; }
+
     /// <summary>Whether the pane lives in a floating window.</summary>
     public bool IsFloating { get; set; }
 
@@ -82,6 +85,7 @@ public static class DockLayoutSerializer
                 new XAttribute("width", pane.Width.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("height", pane.Height.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("hidden", pane.IsHidden ? "1" : "0"),
+                new XAttribute("ah", pane.IsAutoHidden ? "1" : "0"),
                 new XAttribute("floating", pane.IsFloating ? "1" : "0"),
                 new XAttribute("fx", pane.FloatingLeft.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("fy", pane.FloatingTop.ToString(System.Globalization.CultureInfo.InvariantCulture)),
@@ -118,6 +122,7 @@ public static class DockLayoutSerializer
                 Width = ParseDouble(element.Attribute("width")),
                 Height = ParseDouble(element.Attribute("height")),
                 IsHidden = (string?)element.Attribute("hidden") == "1",
+                IsAutoHidden = (string?)element.Attribute("ah") == "1",
                 IsFloating = (string?)element.Attribute("floating") == "1",
                 FloatingLeft = ReadDouble(element, "fx"),
                 FloatingTop = ReadDouble(element, "fy"),

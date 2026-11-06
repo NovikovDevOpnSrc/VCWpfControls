@@ -544,6 +544,8 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid>
+                            <!-- Layout rows/columns below; the auto-hide tab strips overlay on top. -->
+                            <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="PART_TopRow" Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -603,6 +605,10 @@
                                 Visibility="{Binding HasVisiblePanes, ElementName=PART_BottomHost, Converter={x:Static docking:DockingManager.BoolToVisibility}}" />
 
                             <docking:DockZoneHost x:Name="PART_BottomHost" Grid.Row="4" />
+                            </Grid>
+
+                            <!-- Auto-hide edge tab strips (built in code; transparent when empty). -->
+                            <Grid x:Name="PART_AutoHideOverlay" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
