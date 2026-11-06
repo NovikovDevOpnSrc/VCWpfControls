@@ -37,8 +37,10 @@
 - Built-in group/footer summaries per level.
 
 ### Docking
-- Auto-hide (pinned tabs with flyout).
 - Nested splitter groups inside one zone.
+
+### Done (kept for history)
+- Docking auto-hide: edge tab strips + hover flyout (v0.2.9).
 - Redock floating windows by dragging the window (not just the tab).
 
 ### Infrastructure
