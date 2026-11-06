@@ -27,6 +27,8 @@
   <data name="BestFitAll" xml:space="preserve"><value>Fit all columns</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Freeze up to this column</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Group by this column</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>From</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>To</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Filter...</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Column chooser</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>Visible</value></data>

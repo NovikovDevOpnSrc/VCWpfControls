@@ -52,6 +52,12 @@ public static class GridStrings
     /// <summary>Shown centered when the grid has no rows.</summary>
     public static string NoData => Get("NoData");
 
+    /// <summary>The "From" label of the range filter.</summary>
+    public static string FilterFrom => Get("FilterFrom");
+
+    /// <summary>The "To" label of the range filter.</summary>
+    public static string FilterTo => Get("FilterTo");
+
     /// <summary>The "Filter..." header menu entry.</summary>
     public static string FilterEllipsis => Get("FilterEllipsis");
 

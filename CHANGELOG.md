@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — filter ranges
+
+- Numeric and date columns get **From/To** boxes in the column filter menu (above the
+  value list): both bounds apply a `Between` filter, one bound applies `>=` / `<=`.
+  Culture-aware parsing (reuses the clipboard converter); a parsed range takes precedence
+  over the check list; reopening the menu preselects the active range. The engine already
+  supported the operators — this is pure UI. String/bool columns show no boxes.
+- Localized EN/RU/ZH (From/To); docs ×3; 5 STA tests (range priority validated by bug
+  injection).
+
+
 ### Added — header menu extensions
 
 - **Filter...** entry in the header context menu — opens the column's value-list filter

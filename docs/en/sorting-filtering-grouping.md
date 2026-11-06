@@ -13,7 +13,10 @@ filter → sort → group → flatten).
 > **Built-in UI.** Set `ShowFilterRow="True"` to get a filter row under the headers
 > (contains for text columns, typed equality for numeric/date columns; applied with a
 > 300 ms debounce). Every column header carries a funnel button opening a value-list filter
-> menu (search box + check list of distinct values, `(Select all)`/`Clear`/`OK`).
+> menu (search box + check list of distinct values, `(Select all)`/`Clear`/`OK`). Numeric
+and date columns also get **From/To** boxes above the list: both bounds apply a `Between`
+filter, one bound applies `>=` / `<=` (culture-aware parsing; a parsed range takes
+precedence over the check list, and reopening the menu preselects the active range).
 > Drag a column header into the **group panel** above the headers to group by it
 > (`CanUserGroupColumns="True"` by default); chips in the panel remove grouping levels.
 > Group rows render with an expand/collapse toggle; add aggregates to `SummaryItems` to show

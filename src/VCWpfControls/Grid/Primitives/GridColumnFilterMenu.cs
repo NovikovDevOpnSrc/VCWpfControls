@@ -25,6 +25,9 @@ public sealed class GridColumnFilterMenu
     private readonly TextBox _searchBox;
     private readonly StackPanel _itemsHost;
     private readonly List<FilterValueItem> _allItems = new();
+    private readonly TextBox? _fromBox;
+    private readonly TextBox? _toBox;
+    private readonly Type? _rangeType;
 
     /// <summary>Creates the menu for a column of the given grid.</summary>
     public GridColumnFilterMenu(GridControl owner, GridColumnBase column)
@@ -57,6 +60,25 @@ public sealed class GridColumnFilterMenu
         buttons.Children.Add(okButton);
         buttons.Children.Add(clearButton);
 
+        _rangeType = ResolveRangeType();
+        UIElement? rangeRow = null;
+        if (_rangeType is not null)
+        {
+            _fromBox = new TextBox { Margin = new Thickness(4, 2, 2, 4), MinWidth = 80 };
+            _toBox = new TextBox { Margin = new Thickness(2, 2, 4, 4), MinWidth = 80 };
+            rangeRow = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children =
+                {
+                    new TextBlock { Text = GridStrings.FilterFrom, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 2, 0) },
+                    _fromBox,
+                    new TextBlock { Text = GridStrings.FilterTo, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 2, 0) },
+                    _toBox,
+                },
+            };
+        }
+
         var content = new Border
         {
             Background = Brushes.White,
@@ -65,16 +87,7 @@ public sealed class GridColumnFilterMenu
             CornerRadius = new CornerRadius(4),
             Padding = new Thickness(2),
             MinWidth = 180,
-            Child = new StackPanel
-            {
-                Children =
-                {
-                    _searchBox,
-                    selectAll,
-                    new ScrollViewer { Content = _itemsHost, MaxHeight = 260 },
-                    buttons,
-                },
-            },
+            Child = BuildContent(_searchBox, rangeRow, selectAll, _itemsHost, buttons),
         };
 
         _popup = new Popup
@@ -88,6 +101,22 @@ public sealed class GridColumnFilterMenu
         _popup.Closed += (_, _) => Closed?.Invoke(this, EventArgs.Empty);
 
         LoadValues();
+    }
+
+    private static StackPanel BuildContent(
+        UIElement searchBox, UIElement? rangeRow, UIElement selectAll, StackPanel itemsHost, UIElement buttons)
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(searchBox);
+        if (rangeRow is not null)
+        {
+            panel.Children.Add(rangeRow);
+        }
+
+        panel.Children.Add(selectAll);
+        panel.Children.Add(new ScrollViewer { Content = itemsHost, MaxHeight = 260 });
+        panel.Children.Add(buttons);
+        return panel;
     }
 
     /// <summary>Raised after the menu closed (applied or dismissed).</summary>
@@ -190,12 +219,69 @@ public sealed class GridColumnFilterMenu
     {
         var anyUnchecked = _allItems.Any(item => !item.IsChecked);
         SelectAllToggle.IsChecked = !anyUnchecked;
+
+        if (_fromBox is null || _toBox is null)
+        {
+            return;
+        }
+
+        var active = GetActiveFilter();
+        if (active is null)
+        {
+            return;
+        }
+
+        if (active.Operator is GridFilterOperator.Between or GridFilterOperator.NotBetween)
+        {
+            _fromBox.Text = DisplayText(active.Value);
+            _toBox.Text = DisplayText(active.Value2);
+        }
+        else if (active.Operator is GridFilterOperator.GreaterThan or GridFilterOperator.GreaterThanOrEqual)
+        {
+            _fromBox.Text = DisplayText(active.Value);
+        }
+        else if (active.Operator is GridFilterOperator.LessThan or GridFilterOperator.LessThanOrEqual)
+        {
+            _toBox.Text = DisplayText(active.Value);
+        }
     }
 
     private void Apply(bool accepted)
     {
         if (accepted)
         {
+            // Remove the column's previous filter first.
+            var existing = GetActiveFilter();
+            if (existing is not null)
+            {
+                _owner.FilterDescriptions.Remove(existing);
+            }
+
+            // A parsed range (From and/or To) takes precedence over the value list:
+            // both ends => Between, one end => >= / <=.
+            var hasFrom = TryParseRangeValue(_fromBox?.Text, out var from);
+            var hasTo = TryParseRangeValue(_toBox?.Text, out var to);
+            if (hasFrom && hasTo)
+            {
+                _owner.FilterDescriptions.Add(new GridFilterDescription(_column.FieldName, GridFilterOperator.Between, from, to));
+                Close();
+                return;
+            }
+
+            if (hasFrom)
+            {
+                _owner.FilterDescriptions.Add(new GridFilterDescription(_column.FieldName, GridFilterOperator.GreaterThanOrEqual, from));
+                Close();
+                return;
+            }
+
+            if (hasTo)
+            {
+                _owner.FilterDescriptions.Add(new GridFilterDescription(_column.FieldName, GridFilterOperator.LessThanOrEqual, to));
+                Close();
+                return;
+            }
+
             var selected = new List<object?>();
             foreach (var item in _allItems)
             {
@@ -203,13 +289,6 @@ public sealed class GridColumnFilterMenu
                 {
                     selected.Add(item.Value);
                 }
-            }
-
-            // Remove the column's previous filter first.
-            var existing = GetActiveFilter();
-            if (existing is not null)
-            {
-                _owner.FilterDescriptions.Remove(existing);
             }
 
             // All or nothing selected means "no filter"; a partial selection applies an In filter.
@@ -221,6 +300,54 @@ public sealed class GridColumnFilterMenu
         }
 
         Close();
+    }
+
+    /// <summary>The value type the From/To boxes parse into (numeric or date columns only).</summary>
+    private Type? ResolveRangeType()
+    {
+        var valueType = _owner.DataEngine.ResolvedItemType is { } itemType
+            ? Data.PropertyAccessor.GetOrCreate(itemType, _column.FieldName).ValueType
+            : typeof(object);
+        var nonNullable = Nullable.GetUnderlyingType(valueType) ?? valueType;
+        if (nonNullable == typeof(DateTime))
+        {
+            return typeof(DateTime);
+        }
+
+        return nonNullable != typeof(object) && nonNullable != typeof(bool) && nonNullable != typeof(string)
+            && (nonNullable.IsPrimitive || nonNullable == typeof(decimal))
+            ? nonNullable
+            : null;
+    }
+
+    /// <summary>Culture-aware parse of one range end (empty/invalid text = no bound).</summary>
+    private bool TryParseRangeValue(string? text, out object? value)
+    {
+        value = null;
+        return text is { Length: > 0 } && _rangeType is not null
+            && GridClipboard.TryConvert(text.Trim(), _rangeType, out value);
+    }
+
+    /// <summary>The From box text (test hook; null when the column has no range mode).</summary>
+    internal string? FromTextForTest => _fromBox?.Text;
+
+    /// <summary>The To box text (test hook; null when the column has no range mode).</summary>
+    internal string? ToTextForTest => _toBox?.Text;
+
+    /// <summary>Types into the range boxes and applies (test hook).</summary>
+    internal void ApplyRangeForTest(string? from, string? to)
+    {
+        if (_fromBox is not null)
+        {
+            _fromBox.Text = from ?? string.Empty;
+        }
+
+        if (_toBox is not null)
+        {
+            _toBox.Text = to ?? string.Empty;
+        }
+
+        Apply(accepted: true);
     }
 
     private sealed class FilterValueItem

@@ -27,6 +27,8 @@
   <data name="BestFitAll" xml:space="preserve"><value>Подогнать все колонки</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Закрепить до этой колонки</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Группировать по этой колонке</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>От</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>До</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Фильтр...</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Выбор столбцов</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>Видимый</value></data>
