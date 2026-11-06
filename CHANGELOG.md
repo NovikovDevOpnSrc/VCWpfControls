@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — #15: element headers export as type names
+
+- `GridExporter.ToCsv`/`ToHtml` wrote headers set to ELEMENTS (e.g. `TextBlock` — the
+  standard trick for header tooltips) as `System.Windows.Controls.TextBlock`. All header
+  paths now unwrap elements through the shared `GridColumnBase.HeaderText` extractor —
+  including two more sites of the same family found by audit: BestFit's header width
+  measure and the group-panel/group-caption fallbacks. Regression-tested (fails with the
+  old conversion, verified by injection).
+
+
 ### Added — API reference on the docs site
 
 - The documentation site now includes an auto-generated API reference (97 types: Grid,

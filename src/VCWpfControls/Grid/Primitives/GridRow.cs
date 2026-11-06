@@ -273,7 +273,7 @@ public class GridRow : Control
         {
             var columnHeader = owner.Columns
                 .Where(c => string.Equals(c.EffectiveSortPath, description.FieldName, StringComparison.OrdinalIgnoreCase))
-                .Select(c => Convert.ToString(c.Header, System.Globalization.CultureInfo.CurrentCulture))
+                .Select(c => VCWpfControls.Grid.Columns.GridColumnBase.HeaderText(c.Header))
                 .FirstOrDefault() ?? description.FieldName;
             return string.Format(
                 System.Globalization.CultureInfo.CurrentCulture,

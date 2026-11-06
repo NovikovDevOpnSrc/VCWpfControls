@@ -125,7 +125,7 @@ public sealed class GridGroupPanel : Control
                 if (string.Equals(column.EffectiveSortPath, fieldName, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(column.FieldName, fieldName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return Convert.ToString(column.Header, System.Globalization.CultureInfo.CurrentCulture) ?? fieldName;
+                    return VCWpfControls.Grid.Columns.GridColumnBase.HeaderText(column.Header) ?? fieldName;
                 }
             }
         }

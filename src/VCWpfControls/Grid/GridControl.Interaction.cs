@@ -115,7 +115,7 @@ public partial class GridControl
     private const double BestFitHeaderPadding = 34d; // text + funnel/sort-glyph space
 
     private double MeasureHeaderWidth(GridColumnBase column)
-        => MeasureTextWidth(Convert.ToString(column.Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty) + BestFitHeaderPadding;
+        => MeasureTextWidth(VCWpfControls.Grid.Columns.GridColumnBase.HeaderText(column.Header) ?? string.Empty) + BestFitHeaderPadding;
 
     internal static string FormatCellText(GridColumnBase column, object? value)
     {

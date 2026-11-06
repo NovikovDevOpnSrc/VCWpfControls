@@ -29,7 +29,7 @@ public static class GridExporter
 
         if (includeHeader)
         {
-            builder.AppendLine(string.Join(separator, columns.Select(c => Quote(Convert.ToString(c.Header, culture) ?? string.Empty, separator))));
+            builder.AppendLine(string.Join(separator, columns.Select(c => Quote(GridColumnBase.HeaderText(c.Header) ?? string.Empty, separator))));
         }
 
         foreach (var row in grid.DataEngine.DataRows)
@@ -69,7 +69,7 @@ public static class GridExporter
             builder.Append("<thead><tr>");
             foreach (var column in columns)
             {
-                builder.Append("<th>").Append(Escape(Convert.ToString(column.Header, culture) ?? string.Empty)).Append("</th>");
+                builder.Append("<th>").Append(Escape(GridColumnBase.HeaderText(column.Header) ?? string.Empty)).Append("</th>");
             }
 
             builder.Append("</tr></thead>");
