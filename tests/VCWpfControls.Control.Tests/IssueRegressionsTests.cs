@@ -355,7 +355,8 @@ public class IssueRegressionsTests
         {
             var menu = grid.BuildColumnHeaderMenu(grid.Columns[0]);
             var chooser = menu.Items.OfType<MenuItem>().First(m => m.Items.Count > 0);
-            var labels = chooser.Items.OfType<MenuItem>().Select(m => m.Header as string).ToList();
+            // Skip the column-chooser dialog entry at the top; column toggles unwrap headers.
+            var labels = chooser.Items.OfType<MenuItem>().Skip(1).Select(m => m.Header as string).ToList();
             Assert.Equal(new[] { "Name", "Last price" }, labels);
         }
         finally

@@ -197,11 +197,20 @@ Right-click any column header for the built-in (localized EN/RU/ZH) menu:
 
 - **Sort Ascending / Sort Descending** — with a check mark on the active sort;
 - **Clear Sorting** — enabled while any sort is active;
+- **Filter...** — opens the column's filter menu (value list); enabled when
+  `CanUserFilter` is on;
 - **Fit column (content) / Fit all columns** — one-shot best fit;
 - **Group by this column** — toggle, adds/removes a grouping level;
 - **Freeze up to this column** — toggles `FrozenColumnCount`;
 - **Hide column** — disabled for the last visible column;
-- **Columns** — check-list submenu toggling each column's visibility.
+- **Columns** — check-list submenu toggling each column's visibility, led by the
+  **Column chooser...** dialog entry;
+- **Reset layout** — restores the layout captured when the columns were first built:
+  the column order, every width, visibility and the frozen column count.
+
+The **Column chooser** dialog (`OpenColumnChooser`) lists all columns with visibility
+checkboxes in the current order plus Move up/Move down buttons for reordering.
+`ResetLayout()` is also public — bind it to your own UI if you like.
 
 The menu is built by `BuildColumnHeaderMenu` and can be replaced by handling
 `ContextMenuOpening` on the grid and assigning your own `ContextMenu`.

@@ -45,6 +45,14 @@ public partial class GridControl
         menu.Items.Add(sortAscending);
         menu.Items.Add(sortDescending);
         menu.Items.Add(clearSorting);
+
+        var filter = new MenuItem
+        {
+            Header = GridStrings.FilterEllipsis,
+            IsEnabled = column.CanUserFilter,
+        };
+        filter.Click += (_, _) => OpenColumnFilterMenu(column);
+        menu.Items.Add(filter);
         menu.Items.Add(new Separator());
 
         var bestFit = new MenuItem { Header = GridStrings.BestFit };
@@ -115,6 +123,10 @@ public partial class GridControl
         menu.Items.Add(new Separator());
 
         var chooser = new MenuItem { Header = GridStrings.ColumnsHeader };
+        var chooserDialog = new MenuItem { Header = GridStrings.ColumnChooserTitle + "..." };
+        chooserDialog.Click += (_, _) => OpenColumnChooser();
+        chooser.Items.Add(chooserDialog);
+        chooser.Items.Add(new Separator());
         foreach (var candidate in Columns)
         {
             var toggleColumn = candidate;
@@ -129,7 +141,71 @@ public partial class GridControl
         }
 
         menu.Items.Add(chooser);
+
+        var reset = new MenuItem
+        {
+            Header = GridStrings.ResetLayout,
+            IsEnabled = _initialLayout is not null,
+        };
+        reset.Click += (_, _) => ResetLayout();
+        menu.Items.Add(reset);
         return menu;
+    }
+
+    /// <summary>Opens the column chooser dialog (visibility + reorder).</summary>
+    public void OpenColumnChooser() => OpenColumnChooserForTest();
+
+    /// <summary>Opens the chooser and returns it (test hook).</summary>
+    internal Primitives.GridColumnChooserWindow OpenColumnChooserForTest()
+    {
+        var window = new Primitives.GridColumnChooserWindow(this)
+        {
+            Owner = Window.GetWindow(this),
+        };
+        window.Show();
+        return window;
+    }
+
+    /// <summary>
+    /// Restores the layout captured when the columns were first built: the column order,
+    /// every column's width and visibility, and the frozen column count. The snapshot is
+    /// taken once, after column generation settles.
+    /// </summary>
+    public void ResetLayout()
+    {
+        if (_initialLayout is not { } snapshot)
+        {
+            return;
+        }
+
+        _resettingLayout = true;
+        try
+        {
+            FrozenColumnCount = _initialFrozenColumnCount;
+            foreach (var (column, width, visible) in snapshot)
+            {
+                column.Width = width;
+                column.Visible = visible;
+            }
+
+            // Reorder by removing everything and re-inserting in the snapshot order.
+            foreach (var (column, _, _) in snapshot)
+            {
+                Columns.Remove(column);
+            }
+
+            var index = 0;
+            foreach (var (column, _, _) in snapshot)
+            {
+                Columns.Insert(index++, column);
+            }
+        }
+        finally
+        {
+            _resettingLayout = false;
+            InvalidateLayout();
+            RefreshVisibleColumns(rebuildCells: true);
+        }
     }
 
     /// <summary>Opens the default header context menu below the given header.</summary>

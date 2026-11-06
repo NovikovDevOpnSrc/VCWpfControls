@@ -147,9 +147,12 @@ public class HeaderContextMenuTests
             var menu = grid.BuildColumnHeaderMenu(grid.Columns.First());
             var chooser = FindItem(menu, GridStrings.ColumnsHeader)!;
             var entries = chooser.Items.OfType<MenuItem>().ToList();
-            Assert.Equal(grid.Columns.Count, entries.Count);
+            // The dialog entry leads the submenu; column toggles follow the separator.
+            Assert.Equal(GridStrings.ColumnChooserTitle + "...", entries[0].Header);
+            var columnEntries = entries.Skip(1).ToList();
+            Assert.Equal(grid.Columns.Count, columnEntries.Count);
 
-            var salaryEntry = entries.First(m => Convert.ToString(m.Header, System.Globalization.CultureInfo.CurrentCulture) == "Salary");
+            var salaryEntry = columnEntries.First(m => Convert.ToString(m.Header, System.Globalization.CultureInfo.CurrentCulture) == "Salary");
             Assert.True(salaryEntry.IsChecked);
             Click(salaryEntry);
             TestWindowHost.Pump();

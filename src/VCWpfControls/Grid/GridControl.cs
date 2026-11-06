@@ -215,6 +215,10 @@ public partial class GridControl : ItemsControl
 
     private readonly List<GridRow> _rowRegistry = new();
     private GridItemsView _itemsView = null!;
+    private (GridColumnBase Column, GridColumnWidth Width, bool Visible)[]? _initialLayout;
+    private int _initialFrozenColumnCount;
+    private bool _initialLayoutCaptured;
+    private bool _resettingLayout;
     private IReadOnlyList<GridColumnBase> _visibleColumns = Array.Empty<GridColumnBase>();
     private bool _syncingItems;
     private bool _autoColumnsGenerated;
@@ -605,6 +609,9 @@ public partial class GridControl : ItemsControl
 
     private Primitives.GridColumnFilterMenu? _openFilterMenu;
 
+    /// <summary>The currently open column filter menu, for tests.</summary>
+    internal Primitives.GridColumnFilterMenu? OpenFilterMenuForTest => _openFilterMenu;
+
     /// <summary>The filter row presenter (template part).</summary>
     internal GridFilterRowPresenter? FilterRowPresenter { get; private set; }
 
@@ -784,6 +791,32 @@ public partial class GridControl : ItemsControl
         }
 
         InvalidateLayout();
+        ScheduleInitialLayoutCapture();
+    }
+
+    /// <summary>Captures the initial layout once, after column generation settles
+    /// (dispatcher Loaded priority: auto-generation adds columns synchronously before it).</summary>
+    private void ScheduleInitialLayoutCapture()
+    {
+        if (_initialLayoutCaptured || _resettingLayout || Columns.Count == 0)
+        {
+            return;
+        }
+
+        _initialLayoutCaptured = true; // capture exactly once
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, CaptureInitialLayout);
+    }
+
+    private void CaptureInitialLayout()
+    {
+        if (_resettingLayout)
+        {
+            _initialLayoutCaptured = false; // retried after the reset settles
+            return;
+        }
+
+        _initialLayout = Columns.Select(c => (Column: c, c.Width, c.Visible)).ToArray();
+        _initialFrozenColumnCount = FrozenColumnCount;
     }
 
     /// <summary>Recomputes layout slots and refreshes everything that depends on them.</summary>

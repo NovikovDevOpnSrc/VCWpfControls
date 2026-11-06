@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — header menu extensions
+
+- **Filter...** entry in the header context menu — opens the column's value-list filter
+  menu (enabled when `CanUserFilter` is on).
+- **Column chooser...** dialog (`OpenColumnChooser()`): visibility checkboxes in the
+  current column order plus Move up/Move down reordering; reachable from the Columns
+  submenu.
+- **Reset layout** (`ResetLayout()`): restores the layout captured once after column
+  generation settles — the column order, every width, visibility and the frozen column
+  count.
+- Localized EN/RU/ZH (7 new strings); docs ×3 updated.
+
+
 ## [0.2.7] — 2026-11-07
 
 Cell selection (`SelectionUnit=CellOrRow`): rectangular ranges, bounding-box TSV copy.

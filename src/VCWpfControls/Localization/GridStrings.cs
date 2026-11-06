@@ -52,6 +52,27 @@ public static class GridStrings
     /// <summary>Shown centered when the grid has no rows.</summary>
     public static string NoData => Get("NoData");
 
+    /// <summary>The "Filter..." header menu entry.</summary>
+    public static string FilterEllipsis => Get("FilterEllipsis");
+
+    /// <summary>The column chooser dialog title.</summary>
+    public static string ColumnChooserTitle => Get("ColumnChooserTitle");
+
+    /// <summary>The visibility column header of the chooser dialog.</summary>
+    public static string ColumnChooserShowColumn => Get("ColumnChooserShowColumn");
+
+    /// <summary>The "Move up" button of the chooser dialog.</summary>
+    public static string MoveUp => Get("MoveUp");
+
+    /// <summary>The "Move down" button of the chooser dialog.</summary>
+    public static string MoveDown => Get("MoveDown");
+
+    /// <summary>The "Reset layout" header menu entry.</summary>
+    public static string ResetLayout => Get("ResetLayout");
+
+    /// <summary>The "Close" button caption.</summary>
+    public static string Close => Get("Close");
+
     /// <summary>Header menu: fit all columns.</summary>
     public static string BestFitAll => Get("BestFitAll");
 
