@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] — 2026-11-07
+
+Cell selection (`SelectionUnit=CellOrRow`): rectangular ranges, bounding-box TSV copy.
+
 ### Added — cell selection (SelectedCells)
 
 - `GridControl.SelectionUnit` (`Row` default / `CellOrRow`): clicks select cells; Shift+click
