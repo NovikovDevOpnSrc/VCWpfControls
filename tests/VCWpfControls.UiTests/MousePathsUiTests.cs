@@ -39,6 +39,33 @@ public sealed class MousePathsUiTests : IDisposable
         System.Threading.Thread.Sleep(300); // let the page settle
     }
 
+    private FlaUI.Core.AutomationElements.AutomationElement FindFilterPopup()
+    {
+        var desktop = _automation.GetDesktop();
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            var byClass = desktop.FindFirstChild(cf => cf.ByClassName("Popup"));
+            if (byClass?.FindFirstDescendant(cf => cf.ByControlType(ControlType.CheckBox)) is not null)
+            {
+                return byClass;
+            }
+
+            foreach (var window in desktop.FindAllChildren())
+            {
+                if (window.FindFirstDescendant(cf => cf.ByName("OK")) is not null
+                    && window.FindFirstDescendant(cf => cf.ByControlType(ControlType.CheckBox)
+                        .And(cf.ByName("(Select all)", PropertyConditionFlags.MatchSubstring))) is not null)
+                {
+                    return window;
+                }
+            }
+
+            System.Threading.Thread.Sleep(250);
+        }
+
+        throw new InvalidOperationException("filter popup window not found");
+    }
+
     private AutomationElement Grid()
         => _window.FindFirstDescendant(cf => cf.ByControlType(ControlType.DataGrid))
             ?? throw new InvalidOperationException("grid not found");
@@ -58,22 +85,14 @@ public sealed class MousePathsUiTests : IDisposable
         var funnel = header.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button))
             ?? throw new InvalidOperationException("funnel button not found");
         funnel.Patterns.Toggle.Pattern.Toggle(); // ToggleButton: opens the menu when checked
-        System.Threading.Thread.Sleep(400);
 
-        // WPF popups live in a separate UIA window: search from the desktop.
-        var desktop = _automation.GetDesktop();
-        var popup = desktop.FindFirstChild(cf => cf.ByClassName("Popup"))
-            ?? throw new InvalidOperationException("filter popup window not found");
-        var dbg = new System.Text.StringBuilder();
-        foreach (var child in popup.FindAllDescendants())
-        {
-            dbg.AppendLine(child.Properties.ControlType.ValueOrDefault + " '" + (child.Properties.Name.ValueOrDefault ?? string.Empty) + "'");
-        }
-
-        System.IO.File.WriteAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "uitest.txt"), dbg.ToString());
+        // WPF popups live in a separate top-level UIA window. Its class name is "Popup"
+        // locally but not guaranteed on every OS; poll briefly and fall back to scanning
+        // top-level windows for the popup's content.
+        var popup = FindFilterPopup();
         var checkbox = popup.FindFirstDescendant(cf => cf.ByControlType(ControlType.CheckBox)
             .And(cf.ByName("It")))
-            ?? throw new InvalidOperationException("It value checkbox not found; popup=" + dbg);
+            ?? throw new InvalidOperationException("It value checkbox not found");
         checkbox.Patterns.Toggle.Pattern.Toggle();
         // Scrollbar buttons are enabled too: OK is the LEFT one of the two bottom buttons.
         var ok = popup.FindAllDescendants(cf => cf.ByControlType(ControlType.Button))
