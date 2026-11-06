@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.10] — 2026-11-07
+
+API reference on the docs site, exporter header fix (#15), UIA end-to-end tests + funnel accessibility fix.
+
 ### Added — UIA-driven end-to-end tests (and a funnel a11y fix)
 
 - `MousePathsUiTests`: real-application flows through UIA patterns only (Invoke/Toggle/
