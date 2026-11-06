@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] — 2026-11-07
+
+Header menu extensions (Filter..., Column Chooser, Reset layout) + numeric/date filter ranges.
+
 ### Added — filter ranges
 
 - Numeric and date columns get **From/To** boxes in the column filter menu (above the
