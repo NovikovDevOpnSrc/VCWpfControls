@@ -24,3 +24,5 @@
   href: docking.md
 - name: Справочник API
   href: ../api/
+- name: Движок сводных
+  href: pivot.md

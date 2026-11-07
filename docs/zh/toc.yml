@@ -24,3 +24,5 @@
   href: docking.md
 - name: API 参考
   href: ../api/
+- name: 透视引擎
+  href: pivot.md

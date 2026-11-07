@@ -24,3 +24,5 @@
   href: docking.md
 - name: API Reference
   href: ../api/
+- name: Pivot engine
+  href: pivot.md

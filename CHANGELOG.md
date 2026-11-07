@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — pivot engine (stage 1: headless)
+
+- `PivotEngine.Compute(items, rowFields, columnFields, measures, includeTotals)`:
+  groups any IEnumerable by row/column field values and aggregates every intersection
+  through the shared footer calculator (Sum/Min/Max/Avg/Count; aggregates round back to
+  the source-like type). UI-free — Core-tested without STA.
+- `PivotMeasure` (field + function + caption; several per cell), `PivotAxisValue`
+  (value + culture caption), `PivotResult` (sorted `Rows`/`Columns` with composite keys,
+  `Cells[row][column][measure]`, `RowTotals`/`ColumnTotals`/`GrandTotals`).
+- Semantics: null field values form their own group; empty intersections aggregate to
+  null (Count to 0); axis values sort ascending with nulls first; totals optional.
+- 10 Core tests (grouping/aggregation, totals, all functions, composite keys, null
+  groups, empty intersections, no-totals mode, empty source, measure validation,
+  axis-value equality) — bucket aggregation validated by injection. The rendering
+  PivotGrid control is stage 2.
+
+
 ### Added — Wizard control
 
 - `Wizard` + `WizardPage`: ordered pages with Back/Next/Finish/Cancel (localized EN/RU/ZH
