@@ -178,3 +178,23 @@ code-behind 即可集成：
 - 粘贴前触发 `PastingFromClipboard`（`e.Text` 为文本，`e.Cancel` 取消）。
 
 返回写入的单元格数。
+
+
+## 向导（Wizard）
+
+```xml
+<wizard:Wizard>
+    <wizard:WizardPage Header="欢迎" Content="..."/>
+    <wizard:WizardPage Header="填写" Content="..."/>
+    <wizard:WizardPage Header="完成" Content="..."/>
+</wizard:Wizard>
+```
+
+- `Pages`（内容属性）——有序的 <c>WizardPage</c>；`CurrentPageIndex` 自动收敛到范围内；
+  `CurrentPage`/`CanGoBack`/`CanGoNext`/`CanFinish` 反映当前状态。
+- `WizardPage.CanLeave`——绑定校验状态：为 false 时 Next/Finish 禁用，`GoNext`
+  忽略点击（始终允许后退）。
+- **PageChanging**（可取消——设置 `e.Cancel` 留在 `e.From`）、**PageChanged**、
+  **Finished**（最后一页的 Next）、**Cancelled**。
+- 最后一页的 Next 按钮变为 **Finish**；按钮文案已本地化（中/英/俄）。自定义模板：
+  `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`。

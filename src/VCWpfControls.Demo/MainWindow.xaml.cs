@@ -26,6 +26,7 @@ public partial class MainWindow : Window
             new TreeListSampleViewModel(),
             new EditorsSampleViewModel(),
             new DockingSampleViewModel(),
+            new WizardSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
     }

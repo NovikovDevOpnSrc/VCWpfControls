@@ -29,6 +29,10 @@
   <data name="GroupByColumn" xml:space="preserve"><value>Группировать по этой колонке</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>От</value></data>
   <data name="FilterTo" xml:space="preserve"><value>До</value></data>
+  <data name="WizardNext" xml:space="preserve"><value>Далее</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Готово</value></data>
+  <data name="WizardBack" xml:space="preserve"><value>Назад</value></data>
+  <data name="WizardCancel" xml:space="preserve"><value>Отмена</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Фильтр...</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Выбор столбцов</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>Видимый</value></data>

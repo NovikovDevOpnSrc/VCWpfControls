@@ -187,3 +187,23 @@ writes it into the grid starting at the current cell:
 - `PastingFromClipboard` fires before pasting (inspect `e.Text`, cancel with `e.Cancel`).
 
 Returns the number of cells written.
+
+
+## Wizard
+
+```xml
+<wizard:Wizard>
+    <wizard:WizardPage Header="Welcome" Content="..."/>
+    <wizard:WizardPage Header="Details" Content="..."/>
+    <wizard:WizardPage Header="Done" Content="..."/>
+</wizard:Wizard>
+```
+
+- `Pages` (content property) — the ordered <see cref="WizardPage"/>s; `CurrentPageIndex`
+  coerces into range; `CurrentPage`/`CanGoBack`/`CanGoNext`/`CanFinish` reflect the state.
+- `WizardPage.CanLeave` — bind your validation: while false, Next/Finish disable and
+  `GoNext` ignores clicks (Back is always allowed).
+- **PageChanging** (cancelable — set `e.Cancel` to keep the user on `e.From`),
+  **PageChanged**, **Finished** (Next on the last page), **Cancelled**.
+- The Next button becomes **Finish** on the last page; captions are localized
+  (EN/RU/ZH). Custom templates: provide `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`.

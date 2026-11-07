@@ -188,3 +188,23 @@ public class Order : IDataErrorInfo
 - перед вставкой вызывается `PastingFromClipboard` (текст в `e.Text`, отмена — `e.Cancel`).
 
 Возвращает число записанных ячеек.
+
+
+## Мастер (Wizard)
+
+```xml
+<wizard:Wizard>
+    <wizard:WizardPage Header="Приветствие" Content="..."/>
+    <wizard:WizardPage Header="Данные" Content="..."/>
+    <wizard:WizardPage Header="Готово" Content="..."/>
+</wizard:Wizard>
+```
+
+- `Pages` (content-свойство) — упорядоченные <c>WizardPage</c>; `CurrentPageIndex`
+  коэрцится в диапазон; `CurrentPage`/`CanGoBack`/`CanGoNext`/`CanFinish` — состояние.
+- `WizardPage.CanLeave` — привяжите валидацию: пока false, Next/Finish неактивны, а
+  `GoNext` игнорирует клики (назад идти можно всегда).
+- **PageChanging** (отменяемое — `e.Cancel` оставляет на `e.From`), **PageChanged**,
+  **Finished** (Next на последней странице), **Cancelled**.
+- Кнопка Next становится **Finish** на последней странице; надписи локализованы
+  (EN/RU/ZH). Свои шаблоны: `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`.

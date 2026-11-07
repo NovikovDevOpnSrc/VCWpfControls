@@ -52,6 +52,18 @@ public static class GridStrings
     /// <summary>Shown centered when the grid has no rows.</summary>
     public static string NoData => Get("NoData");
 
+    /// <summary>The wizard "Next" button caption.</summary>
+    public static string WizardNext => Get("WizardNext");
+
+    /// <summary>The wizard "Finish" button caption.</summary>
+    public static string WizardFinish => Get("WizardFinish");
+
+    /// <summary>The wizard "Back" button caption.</summary>
+    public static string WizardBack => Get("WizardBack");
+
+    /// <summary>The wizard "Cancel" button caption.</summary>
+    public static string WizardCancel => Get("WizardCancel");
+
     /// <summary>The "From" label of the range filter.</summary>
     public static string FilterFrom => Get("FilterFrom");
 

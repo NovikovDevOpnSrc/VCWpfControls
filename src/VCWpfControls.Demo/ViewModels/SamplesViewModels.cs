@@ -114,6 +114,16 @@ public partial class EditorsSampleViewModel : SampleViewModelBase
     public override string Description => "MaskedTextBox (phone, serial, date masks) and NumericUpDown spinners.";
 }
 
+/// <summary>A three-step wizard with a blocked page and events.</summary>
+public partial class WizardSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Wizard";
+
+    /// <inheritdoc />
+    public override string Description => "Paged wizard: Next/Back/Finish, page validation (CanLeave), cancelable PageChanging.";
+}
+
 /// <summary>TreeListView with an organization chart.</summary>
 public partial class TreeListSampleViewModel : SampleViewModelBase
 {

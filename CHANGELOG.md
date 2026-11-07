@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Wizard control
+
+- `Wizard` + `WizardPage`: ordered pages with Back/Next/Finish/Cancel (localized EN/RU/ZH
+  captions; Next becomes Finish on the last page). `CurrentPageIndex` coerces into range;
+  `CanGoBack`/`CanGoNext`/`CanFinish` reflect the state.
+- Page validation: `WizardPage.CanLeave` (bindable) disables forward navigation — Back is
+  always allowed.
+- Events: `PageChanging` (cancelable; a canceled move restores the index synchronously),
+  `PageChanged`, `Finished` (Next on the last page), `Cancelled`.
+- Template parts `PART_BackButton/NextButton/CancelButton` (commands refresh on state
+  changes); custom templates just provide the three buttons.
+- Demo page (blocked first page until a checkbox, live status line); docs ×3; 7 STA tests
+  (navigation + button states, finish flow, CanLeave gate, cancelable changing, events,
+  coercion), navigation injection-validated. 183/183.
+
+
 ### Added — AutoComplete editor + GridAutoCompleteColumn
 
 - `Editors.AutoComplete`: text input with a suggestion popup — any IEnumerable source

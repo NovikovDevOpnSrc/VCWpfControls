@@ -29,6 +29,10 @@
   <data name="GroupByColumn" xml:space="preserve"><value>Group by this column</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>From</value></data>
   <data name="FilterTo" xml:space="preserve"><value>To</value></data>
+  <data name="WizardNext" xml:space="preserve"><value>Next</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Finish</value></data>
+  <data name="WizardBack" xml:space="preserve"><value>Back</value></data>
+  <data name="WizardCancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Filter...</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Column chooser</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>Visible</value></data>
