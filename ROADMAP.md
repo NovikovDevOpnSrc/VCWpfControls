@@ -19,6 +19,28 @@
 - **Docking**: `DockingManager` — zones with splitters, tabbed center, floating windows,
   drag-to-redock, XML layout persistence.
 
+## Future features (from forum/market research, 2026-11)
+
+Ranked by community demand (r/csharp, Xceed/MahApps/WPF-UI trackers, LOB vendor catalogs):
+
+### Near (v0.3 candidates)
+- TreeListView: built-in per-level summaries (also closes the existing backlog item).
+- PropertyGrid: deferred value commit while typing + TypeConverter-based value display
+  (Xceed ships these in the PAID Plus edition - a free differentiator).
+- AutoComplete editor (grid column + standalone): explicitly requested in wpfui #15.
+
+### Mid
+- Wizard control (perennial "missing WPF controls" list item).
+- Docking: nested splitter groups inside one zone (existing backlog item).
+
+### Large / flagship
+- Pivot Grid (the most-requested uncovered LOB control: DataGrid -> Scheduler ->
+  Gantt/TreeGrid -> Pivot -> Charts per vendor catalogs).
+
+### Integration docs instead of building
+- Charts: LiveCharts2 (MIT) usage recipes with our theming.
+- Ribbon: Fluent.Ribbon (MIT) alongside our DockingManager.
+
 ## v0.2 candidates (next)
 
 ### GridControl
