@@ -29,6 +29,7 @@
   <data name="GroupByColumn" xml:space="preserve"><value>按此列分组</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>从</value></data>
   <data name="FilterTo" xml:space="preserve"><value>到</value></data>
+  <data name="PivotTotal" xml:space="preserve"><value>总计</value></data>
   <data name="WizardNext" xml:space="preserve"><value>下一步</value></data>
   <data name="WizardFinish" xml:space="preserve"><value>完成</value></data>
   <data name="WizardBack" xml:space="preserve"><value>上一步</value></data>

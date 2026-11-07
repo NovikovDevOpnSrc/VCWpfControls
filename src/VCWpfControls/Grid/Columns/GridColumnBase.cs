@@ -371,7 +371,7 @@ public abstract class GridColumnBase : DependencyObject
     protected virtual FrameworkElement? GenerateEditingElementCore() => null;
 
     /// <summary>Creates a binding to <see cref="FieldName"/> with validation switched on.</summary>
-    protected Binding CreateCellBinding(BindingMode mode)
+    protected internal virtual Binding CreateCellBinding(BindingMode mode)
     {
         var binding = new Binding(FieldName)
         {

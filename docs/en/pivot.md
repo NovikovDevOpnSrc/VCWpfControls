@@ -3,7 +3,31 @@ title: Pivot engine
 description: Compute pivot tables (rows, columns, measures) from any IEnumerable with the UI-free PivotEngine.
 ---
 
-# Pivot engine (stage 1: headless)
+# Pivot engine and PivotGrid
+
+## The control
+
+```xml
+<pivot:PivotGrid PivotItemsSource="{Binding Sales}" RowHeight="28">
+    <!-- fields are added in code or code-behind: -->
+</pivot:PivotGrid>
+```
+
+```csharp
+pivot.RowFields.Add("Region");           // leading columns, in order
+pivot.ColumnFields.Add("Product");       // one data column per combination
+pivot.Measures.Add(new PivotMeasure("Amount", GridSummaryFunction.Sum));
+```
+
+The control inherits `GridControl`: themes, header UI, sorting and virtualization come for
+free. It renders one leading column per row field, one star-sized data column per
+column-field combination (caption `A / B · Sum` when there are several measures), a
+localized **Total** column and a grand-total row (`IncludeTotals`, default true — the
+engine computes totals only when needed). Changing `RowFields`/`ColumnFields`/`Measures`
+collections or `PivotItemsSource` recomputes and rebuilds immediately; `Result` exposes
+the last `PivotResult`.
+
+## The engine (headless, stage 1)
 
 The `PivotEngine` computes pivot tables from any non-generic `IEnumerable` — grouping by
 row/column field values and aggregating each intersection with the shared footer

@@ -3,7 +3,31 @@ title: Движок сводных таблиц
 description: Вычисление сводных таблиц (строки, столбцы, меры) из любого IEnumerable через UI-free PivotEngine.
 ---
 
-# Движок сводных таблиц (этап 1: без UI)
+# Движок сводных таблиц и PivotGrid
+
+## Контрол
+
+```xml
+<pivot:PivotGrid PivotItemsSource="{Binding Sales}" RowHeight="28">
+    <!-- поля добавляются в code-behind: -->
+</pivot:PivotGrid>
+```
+
+```csharp
+pivot.RowFields.Add("Region");           // ведущие колонки, по порядку
+pivot.ColumnFields.Add("Product");       // колонка данных на каждую комбинацию
+pivot.Measures.Add(new PivotMeasure("Amount", GridSummaryFunction.Sum));
+```
+
+Контрол наследует `GridControl`: темы, UI заголовков, сортировка и виртуализация достаются
+бесплатно. Рендер: ведущая колонка на каждое поле строк; звёздная колонка данных на
+комбинацию полей столбцов (заголовок `A / B · Sum` при нескольких мерах); локализованная
+колонка **Итого** и итоговая строка (`IncludeTotals`, по умолчанию true — движок считает
+итоги только при включении). Изменение коллекций `RowFields`/`ColumnFields`/`Measures` или
+`PivotItemsSource` мгновенно пересчитывает и перестраивает таблицу; `Result` отдаёт
+последний `PivotResult`.
+
+## Движок (без UI, этап 1)
 
 `PivotEngine` вычисляет сводные таблицы из любого неуниверсального `IEnumerable` —
 группировка по значениям полей строк/столбцов и агрегация каждого пересечения общим

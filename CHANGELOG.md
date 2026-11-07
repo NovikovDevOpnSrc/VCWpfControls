@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — PivotGrid control (stage 2)
+
+- `PivotGrid : GridControl`: renders the `PivotEngine` result — one leading column per
+  row field, one star data column per column-field combination (caption `A / B · Sum`
+  with several measures), a localized Total column and a grand-total row
+  (`IncludeTotals`). Themes, headers, sorting and virtualization are inherited from the
+  grid; changing the field/measure collections or the source recomputes and rebuilds
+  immediately (`Result` exposes the last PivotResult).
+- `PivotRowItem` (Values/Cells/Totals/IsTotal) is the rendered row; `PivotTextColumn`
+  binds cells through arbitrary paths (`Cells[2]`, `Values[0].Caption`) —
+  `GridColumnBase.CreateCellBinding` became `protected internal virtual` for that.
+- Demo page (sales by region x product); docs ×3 gained the control section; 5 STA tests
+  (columns/rows/totals, path-bound display elements, multi-measure captions, no-totals
+  mode, field-change recompute) — recompute wiring validated by injection. 188/188.
+
+
 ### Added — pivot engine (stage 1: headless)
 
 - `PivotEngine.Compute(items, rowFields, columnFields, measures, includeTotals)`:

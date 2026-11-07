@@ -114,6 +114,30 @@ public partial class EditorsSampleViewModel : SampleViewModelBase
     public override string Description => "MaskedTextBox (phone, serial, date masks) and NumericUpDown spinners.";
 }
 
+/// <summary>Sales pivot: region rows x product columns with totals.</summary>
+public partial class PivotSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Pivot";
+
+    /// <inheritdoc />
+    public override string Description => "PivotEngine + PivotGrid: rows x columns aggregation with totals.";
+
+    /// <summary>The raw sales fed into the pivot.</summary>
+    public List<SaleRow> Sales { get; } = new()
+    {
+        new("East", "A", 10m), new("East", "B", 20m), new("East", "A", 7m),
+        new("West", "A", 5m), new("West", "B", 15m), new("West", "B", 30m),
+        new("North", "A", 2m), new("North", "B", 8m),
+    };
+
+    /// <summary>One raw sale row.</summary>
+    /// <param name="region">Region.</param>
+    /// <param name="product">Product.</param>
+    /// <param name="amount">Amount.</param>
+    public sealed record SaleRow(string Region, string Product, decimal Amount);
+}
+
 /// <summary>A three-step wizard with a blocked page and events.</summary>
 public partial class WizardSampleViewModel : SampleViewModelBase
 {

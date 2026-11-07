@@ -52,6 +52,9 @@ public static class GridStrings
     /// <summary>Shown centered when the grid has no rows.</summary>
     public static string NoData => Get("NoData");
 
+    /// <summary>The pivot totals caption.</summary>
+    public static string PivotTotal => Get("PivotTotal");
+
     /// <summary>The wizard "Next" button caption.</summary>
     public static string WizardNext => Get("WizardNext");
 
