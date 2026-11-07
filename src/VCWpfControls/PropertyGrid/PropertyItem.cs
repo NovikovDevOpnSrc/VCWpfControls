@@ -28,6 +28,16 @@ public enum PropertyItemEditorKind
     ReadOnly = 6,
 }
 
+/// <summary>When a property edit is pushed to the object.</summary>
+public enum PropertyGridCommitMode
+{
+    /// <summary>On Enter or when the editor loses focus (the default).</summary>
+    OnCommit = 0,
+
+    /// <summary>On every keystroke / toggle (no pending state).</summary>
+    Immediate = 1,
+}
+
 /// <summary>
 /// One editable property of <see cref="PropertyGrid.SelectedObject"/>: metadata resolved through
 /// reflection plus get/set access to the value. UI-free.
@@ -88,6 +98,20 @@ public sealed class PropertyItem
     /// <summary>Writes the value; throws on setter failure.</summary>
     public void SetValue(object? value) => Property.SetValue(Owner, value);
 
+    /// <summary>The type converter of the property type (base converter when none registered).</summary>
+    public System.ComponentModel.TypeConverter Converter
+        => _converter ??= System.ComponentModel.TypeDescriptor.GetConverter(PropertyType);
+
+    private System.ComponentModel.TypeConverter? _converter;
+
+    /// <summary>
+    /// Whether the property type has a REAL TypeConverter registered (not the do-nothing
+    /// base) that can convert from a string — the editor can accept typed text then.
+    /// </summary>
+    public bool HasStringConverter
+        => Converter.GetType() != typeof(System.ComponentModel.TypeConverter)
+        && Converter.CanConvertFrom(typeof(string));
+
     /// <summary>Reads the current value as display text.</summary>
     public string GetValueText()
     {
@@ -106,6 +130,22 @@ public sealed class PropertyItem
             }
 
             return $"{value.GetType().Name} ({count} items)";
+        }
+
+        // A registered converter wins (Guid, CultureInfo, custom structs...); the base
+        // converter would just call ToString, so it is not treated as one.
+        if (HasStringConverter && Converter.CanConvertTo(typeof(string)))
+        {
+            try
+            {
+                return Converter.ConvertToString(null, System.Globalization.CultureInfo.CurrentCulture, value) ?? string.Empty;
+            }
+            catch (Exception exception) when (
+                exception is FormatException or InvalidCastException or OverflowException or ArgumentException
+                or System.ComponentModel.DataAnnotations.ValidationException)
+            {
+                // fall through to the default formatting
+            }
         }
 
         return Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;

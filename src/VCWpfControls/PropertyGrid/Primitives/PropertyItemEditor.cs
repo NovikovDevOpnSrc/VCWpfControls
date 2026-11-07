@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows;
+using VCWpfControls.PropertyGrid;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
@@ -42,6 +43,11 @@ public sealed class PropertyItemEditor : ContentControl
     public static readonly DependencyProperty ItemProperty = DependencyProperty.Register(
         nameof(Item), typeof(PropertyItem), typeof(PropertyItemEditor), new PropertyMetadata(null));
 
+    /// <summary>Identifies the <see cref="CommitMode"/> dependency property.</summary>
+    public static readonly DependencyProperty CommitModeProperty = DependencyProperty.Register(
+        nameof(CommitMode), typeof(PropertyGridCommitMode), typeof(PropertyItemEditor),
+        new PropertyMetadata(PropertyGridCommitMode.OnCommit));
+
     private FrameworkElement? _editor;
     private bool _refreshing;
 
@@ -63,6 +69,16 @@ public sealed class PropertyItemEditor : ContentControl
     {
         get => (PropertyItem?)GetValue(ItemProperty);
         set => SetValue(ItemProperty, value);
+    }
+
+    /// <summary>
+    /// When edits are pushed: <see cref="PropertyGridCommitMode.OnCommit"/> (Enter, focus
+    /// loss; the default) or <see cref="PropertyGridCommitMode.Immediate"/> (every keystroke).
+    /// </summary>
+    public PropertyGridCommitMode CommitMode
+    {
+        get => (PropertyGridCommitMode)GetValue(CommitModeProperty);
+        set => SetValue(CommitModeProperty, value);
     }
 
     /// <inheritdoc />
@@ -152,10 +168,21 @@ public sealed class PropertyItemEditor : ContentControl
             textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
         }
 
+        if (CommitMode == PropertyGridCommitMode.Immediate && !item.IsReadOnly)
+        {
+            textBox.TextChanged += (_, _) => Commit(textBox, textBox.Text);
+        }
+
         textBox.LostFocus += (_, _) => Commit(textBox, textBox.Text);
         textBox.KeyDown += (_, e) =>
         {
-            if (e.Key == System.Windows.Input.Key.Enter && !multiLine)
+            if (e.Key == System.Windows.Input.Key.Escape)
+            {
+                // Cancel: restore the current value, discard the typed text.
+                RefreshValue();
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.Enter && !multiLine)
             {
                 Commit(textBox, textBox.Text);
                 e.Handled = true;
@@ -185,7 +212,7 @@ public sealed class PropertyItemEditor : ContentControl
         object? converted;
         try
         {
-            converted = ConvertValue(rawValue, targetType);
+            converted = ConvertValue(item, rawValue, targetType);
         }
         catch (Exception exception) when (
             exception is FormatException or InvalidCastException or OverflowException or ArgumentException)
@@ -218,20 +245,39 @@ public sealed class PropertyItemEditor : ContentControl
         });
     }
 
-    private static object? ConvertValue(object? rawValue, Type targetType)
+    private static object? ConvertValue(PropertyItem item, object? rawValue, Type targetType)
     {
         if (rawValue is null || targetType.IsInstanceOfType(rawValue))
         {
             return rawValue;
         }
 
-        if (string.IsNullOrEmpty(rawValue as string) && Nullable.GetUnderlyingType(targetType) is not null)
+        if (rawValue is string text)
         {
-            return null;
+            if (text.Length == 0 && Nullable.GetUnderlyingType(targetType) is not null)
+            {
+                return null;
+            }
+
+            // A registered TypeConverter (Guid, custom structs...) parses the text.
+            if (item.HasStringConverter)
+            {
+                return item.Converter.ConvertFromString(null, CultureInfo.CurrentCulture, text);
+            }
         }
 
         return Convert.ChangeType(rawValue, targetType, CultureInfo.CurrentCulture);
     }
+
+    /// <summary>Test conversion entry: parses text through the item's converter pipeline.</summary>
+    internal static object? ConvertForTest(PropertyItem item, string text)
+    {
+        var targetType = Nullable.GetUnderlyingType(item.PropertyType) ?? item.PropertyType;
+        return ConvertValue(item, text, targetType);
+    }
+
+    /// <summary>The built editor element (test hook).</summary>
+    internal object? EditorContentForTest() => _editor;
 
     /// <summary>Reloads the editor content from the current object value (no commit).</summary>
     internal void RefreshValue()

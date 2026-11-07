@@ -59,3 +59,18 @@ A common pattern is pairing it with a `GridControl`:
 The control uses the same `GridResources.*` resource keys as the grid (see
 [Theming](theming.md)); the search hint and the "Misc" category name are localized
 (EN/RU/ZH ship with the package).
+
+
+## Commit timing and canceling
+
+Edits push to the object on **Enter** or when the editor loses focus (`CommitMode=OnCommit`,
+the default — typing alone never fires `PropertyValueChanged`). `CommitMode="Immediate"`
+commits on every keystroke/toggle instead. **Esc** in a text editor cancels the pending
+input and restores the current value.
+
+## TypeConverter support
+
+Properties whose type has a registered `TypeConverter` that converts from `string`
+(`Guid`, `CultureInfo`, custom structs...) are editable as text: the display goes through
+`ConvertToString(culture)` and the input is parsed by `ConvertFromString(culture)`.
+Types without a converter remain read-only text.

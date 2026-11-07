@@ -35,6 +35,12 @@ public class PropertyGrid : Control
         nameof(ShowCategories), typeof(bool), typeof(PropertyGrid), new PropertyMetadata(true, OnDisplayOptionsChanged));
 
     /// <summary>Identifies the <see cref="LabelWidth"/> dependency property.</summary>
+    /// <summary>Identifies the <see cref="CommitMode"/> dependency property.</summary>
+    public static readonly DependencyProperty CommitModeProperty = DependencyProperty.Register(
+        nameof(CommitMode), typeof(PropertyGridCommitMode), typeof(PropertyGrid),
+        new PropertyMetadata(PropertyGridCommitMode.OnCommit));
+
+    /// <summary>Identifies the <see cref="LabelWidth"/> dependency property.</summary>
     public static readonly DependencyProperty LabelWidthProperty = DependencyProperty.Register(
         nameof(LabelWidth), typeof(double), typeof(PropertyGrid), new PropertyMetadata(130d));
 
@@ -84,6 +90,14 @@ public class PropertyGrid : Control
     }
 
     /// <summary>Width of the label column in pixels.</summary>
+    /// <summary>When property edits are pushed to the object (Enter/focus loss by default).</summary>
+    public PropertyGridCommitMode CommitMode
+    {
+        get => (PropertyGridCommitMode)GetValue(CommitModeProperty);
+        set => SetValue(CommitModeProperty, value);
+    }
+
+    /// <summary>The width of the label column.</summary>
     public double LabelWidth
     {
         get => (double)GetValue(LabelWidthProperty);
@@ -163,6 +177,70 @@ public class PropertyGrid : Control
             }
         }
     }
+
+    /// <summary>All flattened items including expandable children (test hook).</summary>
+    internal System.Collections.Generic.List<PropertyItem> GetAllItemsForTest()
+    {
+        var all = new System.Collections.Generic.List<PropertyItem>();
+        void Walk(System.Collections.Generic.IEnumerable<PropertyItem> items)
+        {
+            foreach (var item in items)
+            {
+                all.Add(item);
+                if (item.Children is not null)
+                {
+                    Walk(item.Children);
+                }
+            }
+        }
+
+        Walk(_items);
+        return all;
+    }
+
+    /// <summary>The editor host of the item as currently shown, if any (test hook).</summary>
+    internal Primitives.PropertyItemEditor? GetEditorForTest(PropertyItem item)
+    {
+        foreach (var child in _itemsHost?.Children.OfType<object>() ?? Enumerable.Empty<object>())
+        {
+            var found = FindEditor(child, item);
+            if (found is not null)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    private static Primitives.PropertyItemEditor? FindEditor(object root, PropertyItem item)
+    {
+        if (root is Primitives.PropertyItemEditor editor && ReferenceEquals(editor.Item, item))
+        {
+            return editor;
+        }
+
+        if (root is System.Windows.Media.Visual or System.Windows.FrameworkElement)
+        {
+            foreach (var child in System.Windows.LogicalTreeHelper.GetChildren((System.Windows.DependencyObject)root).OfType<object>())
+            {
+                var found = FindEditor(child, item);
+                if (found is not null)
+                {
+                    return found;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Display names of the items currently visible after filtering (test hook).</summary>
+    internal System.Collections.Generic.List<string> GetVisibleItemNamesForTest()
+        => FilterItems().Select(i => i.DisplayName).ToList();
+
+    /// <summary>The search box of the current template (test hook).</summary>
+    internal System.Windows.Controls.TextBox? GetSearchBoxForTest() => _searchBox;
 
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
@@ -256,6 +334,7 @@ public class PropertyGrid : Control
         var editorHost = new PropertyItemEditor
         {
             Item = item,
+            CommitMode = CommitMode,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Top,
             Margin = new Thickness(0, 2, 0, 4),
@@ -275,7 +354,9 @@ public class PropertyGrid : Control
 
         var border = new Border
         {
-            Child = grid,
+            // Do NOT parent the grid here for expandable items: BuildExpandableRow adds it
+            // into its own container - double logical parenting throws.
+            Child = item.IsExpandable ? null : grid,
             Padding = new Thickness(indentLevel * 16, 0, 0, 0),
             BorderBrush = TryFindResource(VCWpfControls.Grid.GridResources.GridLineKey) as Brush,
             BorderThickness = new Thickness(0, 0, 0, 1),
@@ -361,31 +442,14 @@ public class PropertyGrid : Control
             return;
         }
 
-        if (FindEditorForItem(_itemsHost, item) is { } editor)
+        // LOGICAL walk: the rows are code-built; a visual walk misses editors that have
+        // not rendered yet (or sit in collapsed expanders), silently dropping INPC updates.
+        if (FindEditor(_itemsHost, item) is { } editor)
         {
             editor.RefreshValue();
         }
     }
 
-    private static PropertyItemEditor? FindEditorForItem(DependencyObject parent, PropertyItem item)
-    {
-        var children = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
-        for (var i = 0; i < children; i++)
-        {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-            if (child is PropertyItemEditor { Item: { } candidate } editor && ReferenceEquals(candidate, item))
-            {
-                return editor;
-            }
-
-            if (FindEditorForItem(child, item) is { } nested)
-            {
-                return nested;
-            }
-        }
-
-        return null;
-    }
 
     private void OnEditorValueChanged(object sender, RoutedEventArgs e)
     {

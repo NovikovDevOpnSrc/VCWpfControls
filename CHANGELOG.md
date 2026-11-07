@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added/Fixed — PropertyGrid: TypeConverters, commit modes, reliability pass
+
+- **TypeConverter support**: properties with a registered string-convertible converter
+  (Guid, CultureInfo, custom structs) display via `ConvertToString(culture)` and parse
+  input via `ConvertFromString(culture)` — previously read-only type names. Editor-kind
+  resolution computes the converter in place (constructing a PropertyItem there recursed
+  through its own ctor — StackOverflow).
+- `PropertyGrid.CommitMode` (`OnCommit` default: Enter/focus-loss, what the editors
+  already did — now explicit + documented; `Immediate`: per keystroke). **Esc** cancels a
+  pending text edit and restores the value.
+- **Two latent bugs found by the new tests**: expandable rows double-parented their grid
+  (logical-tree exception); INPC refresh searched editors through the VISUAL tree, which
+  misses not-yet-rendered/collapsed rows — now a logical walk.
+- Coverage 4 → 14 tests (attributes, search, null display, enum commit, single
+  ValueChanged per commit, INPC refresh, Guid roundtrip, commit timing, Esc). Immediate
+  mode and converter parsing validated by bug injection. Control suite 164/164.
+
+
 ## [0.2.10] — 2026-11-07
 
 API reference on the docs site, exporter header fix (#15), UIA end-to-end tests + funnel accessibility fix.

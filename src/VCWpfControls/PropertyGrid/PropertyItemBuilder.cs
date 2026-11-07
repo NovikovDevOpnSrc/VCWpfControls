@@ -127,6 +127,17 @@ public static class PropertyItemBuilder
             return PropertyItemEditorKind.Text;
         }
 
+        // Types with a registered string converter (Guid, CultureInfo, custom structs...)
+        // are editable as text: the converter parses the input back. NOTE: compute the
+        // converter HERE - constructing a PropertyItem would re-enter this method
+        // (its ctor calls ResolveEditorKind) and blow the stack.
+        var converter = System.ComponentModel.TypeDescriptor.GetConverter(underlying);
+        if (converter.GetType() != typeof(System.ComponentModel.TypeConverter)
+            && converter.CanConvertFrom(typeof(string)))
+        {
+            return PropertyItemEditorKind.Text;
+        }
+
         return PropertyItemEditorKind.ReadOnly;
     }
 

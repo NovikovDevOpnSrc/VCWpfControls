@@ -53,3 +53,16 @@ description: 使用类型化编辑器、分类和搜索查看并编辑任意对�
 
 该控件与表格控件使用相同的 `GridResources.*` 资源键（见[主题](theming.md)）；搜索提示
 和“其他”分类名称已本地化（包内自带 中/英/俄）。
+
+
+## 提交时机与取消
+
+默认 `CommitMode=OnCommit`：按 **Enter** 或编辑器失焦时才写入对象——仅输入字符不会触发
+`PropertyValueChanged`。`CommitMode="Immediate"` 则每次键入即提交。文本编辑器中按
+**Esc** 取消未提交的输入并恢复当前值。
+
+## TypeConverter 支持
+
+类型注册了支持从 `string` 转换的 `TypeConverter`（`Guid`、`CultureInfo`、自定义结构体等）
+的属性可作为文本编辑：显示走 `ConvertToString(culture)`，输入由 `ConvertFromString(culture)`
+解析。没有转换器的类型仍显示为只读文本。
