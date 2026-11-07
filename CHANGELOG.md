@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — TreeListView per-level summaries
+
+- `TreeListView.TreeSummaryItems` (`GridTreeSummaryItem`): aggregates next to every node
+  row with children — Sum/Min/Max/Avg/Count through the shared footer calculator.
+  `Mode` selects subtree (all descendants, resolved through the lazy providers — collapsed
+  nodes included) vs direct children; `Level` restricts rows; the node itself never counts.
+  Values are computed on the FULL structure (expansion-independent), cached per node, and
+  drawn right-aligned in the row (OnRender, italic); collection changes repaint rows.
+- Demo: org-tree page sums Headcount per unit; docs ×3; 6 STA tests (subtree/children/
+  levels/expansion-independence/invalidation/all-functions), lazy resolution validated by
+  bug injection. Control suite 170/170.
+
+
 ### Added/Fixed — PropertyGrid: TypeConverters, commit modes, reliability pass
 
 - **TypeConverter support**: properties with a registered string-convertible converter

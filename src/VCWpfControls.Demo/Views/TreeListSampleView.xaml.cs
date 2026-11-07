@@ -1,4 +1,5 @@
 using System.Windows;
+using VCWpfControls.TreeList;
 using System.Windows.Controls;
 
 namespace VCWpfControls.Demo.Views;
@@ -10,6 +11,7 @@ public partial class TreeListSampleView : UserControl
     public TreeListSampleView()
     {
         InitializeComponent();
+        Tree.TreeSummaryItems.Add(new GridTreeSummaryItem("Headcount", VCWpfControls.Localization.GridSummaryFunction.Sum));
         this.SetValue(System.Windows.Automation.AutomationProperties.AutomationIdProperty, "TreeListSample");
         Tree.ShowNodeCheckBoxes = true;
         Tree.NodeCheckChanged += (_, _) => UpdateCheckedCount();

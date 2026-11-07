@@ -387,7 +387,7 @@ public sealed class GridCellsPanel : Panel
         _focusVisual.Clip = GetFrozenBoundaryClip(slot, slot.X + offset, GetFrozenBoundary(_owner.VisibleColumns, _owner.Layout), RenderSize.Height == 0 ? DesiredSize.Height : RenderSize.Height);
     }
 
-    /// <summary>Draws the selected-cell background spans and the vertical column separators.</summary>
+    /// <summary>Draws the selected-cell background spans, tree summaries and the column separators.</summary>
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
@@ -395,6 +395,26 @@ public sealed class GridCellsPanel : Panel
         if (_owner is not { } owner)
         {
             return;
+        }
+
+        // TreeListView node summaries: right-aligned at the row's right edge, above the
+        // background but below the cell content (OnRender runs before children).
+        if (owner is TreeList.TreeListView tree
+            && tree.TreeSummaryItems.Count > 0
+            && _row?.DataItem is { } nodeItem
+            && tree.GetTreeSummaryText(nodeItem) is { Length: > 0 } summaryText)
+        {
+            var typeface = new Typeface(owner.FontFamily, FontStyles.Italic, FontWeights.Normal, FontStretches.Normal);
+            var text = new FormattedText(
+                summaryText,
+                System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                typeface,
+                Math.Max(owner.FontSize * 0.92, 9),
+                (owner.TryFindResource(VCWpfControls.Grid.GridResources.TextBrushKey) as Brush) ?? Brushes.Black,
+                VisualTreeHelper.GetDpi(this).PixelsPerDip);
+            var x = Math.Max(RenderSize.Width - text.Width - 6, 0);
+            dc.DrawText(text, new System.Windows.Point(x, (RenderSize.Height - text.Height) / 2));
         }
 
         // Selected cells: painted before the children so text stays on top. View-row spans

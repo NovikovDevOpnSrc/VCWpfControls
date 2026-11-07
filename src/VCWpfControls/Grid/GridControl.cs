@@ -213,7 +213,7 @@ public partial class GridControl : ItemsControl
     /// <summary>Identifies the read-only <see cref="HorizontalOffset"/> dependency property.</summary>
     public static readonly DependencyProperty HorizontalOffsetProperty = HorizontalOffsetPropertyKey.DependencyProperty;
 
-    private readonly List<GridRow> _rowRegistry = new();
+    private protected readonly List<GridRow> _rowRegistry = new();
     private GridItemsView _itemsView = null!;
     private (GridColumnBase Column, GridColumnWidth Width, bool Visible)[]? _initialLayout;
     private int _initialFrozenColumnCount;

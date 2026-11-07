@@ -62,13 +62,117 @@ public class TreeListView : GridControl
         nameof(NodeCheckChanged), RoutingStrategy.Bubble,
         typeof(EventHandler<NodeCheckChangedEventArgs>), typeof(TreeListView));
     private readonly Dictionary<object, List<TreeListNode>> _loadedChildren = new();
+    private readonly Dictionary<object, string> _treeSummaryCache = new();
     private IEnumerable? _rootsSource;
     private INotifyCollectionChanged? _rootsNotifier;
     private readonly List<INotifyCollectionChanged> _childNotifiers = new();
 
     /// <summary>Creates the tree list view.</summary>
+    /// <summary>Aggregates shown next to tree nodes (see <see cref="GridTreeSummaryItem"/>).</summary>
+    public System.Collections.ObjectModel.ObservableCollection<GridTreeSummaryItem> TreeSummaryItems { get; }
+        = new();
+
+    /// <summary>Creates the tree list view.</summary>
     public TreeListView()
     {
+        TreeSummaryItems.CollectionChanged += (_, _) => InvalidateTreeSummaries();
+    }
+
+    /// <summary>Drops cached node summaries and repaints the realized rows.</summary>
+    internal void InvalidateTreeSummaries()
+    {
+        _treeSummaryCache.Clear();
+        foreach (var row in _rowRegistry)
+        {
+            row.CellsPanel?.InvalidateVisual();
+        }
+    }
+
+    /// <summary>
+    /// The summary text shown at the right of the node's row (null when no summary applies).
+    /// Computed over the FULL tree structure — expansion state does not change the values.
+    /// </summary>
+    internal string? GetTreeSummaryText(object item)
+    {
+        if (TreeSummaryItems.Count == 0)
+        {
+            return null;
+        }
+
+        if (_treeSummaryCache.TryGetValue(item, out var cached))
+        {
+            return cached.Length == 0 ? null : cached;
+        }
+
+        string? result = null;
+        if (_nodesByItem.TryGetValue(item, out var node))
+        {
+            result = BuildTreeSummaryText(node);
+        }
+
+        _treeSummaryCache[item] = result ?? string.Empty;
+        return result;
+    }
+
+    private string? BuildTreeSummaryText(TreeListNode node)
+    {
+        ResolveChildren(node); // lazy children: a node may be collapsed/unresolved
+        if (node.ChildrenCount == 0)
+        {
+            return null; // leaf: no summary
+        }
+
+        var parts = new List<string>();
+        foreach (var summary in TreeSummaryItems)
+        {
+            if (summary.Level is { } level && node.Level != level)
+            {
+                continue;
+            }
+
+            var items = CollectSummaryItems(node, summary.Mode);
+            var value = Grid.Data.GridSummaryCalculator.Calculate(
+                summary.Function, summary.FieldName, items,
+                (type, field) => Grid.Data.PropertyAccessor.GetOrCreate(type, field));
+            var formatted = value is null
+                ? string.Empty
+                : string.IsNullOrEmpty(summary.StringFormat)
+                    ? Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty
+                    : string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:" + summary.StringFormat + "}", value);
+            parts.Add(VCWpfControls.Localization.GridStrings.Summary(summary.Function, summary.FieldName, formatted));
+        }
+
+        return parts.Count == 0 ? null : string.Join("   ", parts);
+    }
+
+    private List<object> CollectSummaryItems(TreeListNode node, GridTreeSummaryMode mode)
+    {
+        var items = new List<object>();
+        if (mode == GridTreeSummaryMode.Children)
+        {
+            foreach (var child in node.Children ?? new List<TreeListNode>())
+            {
+                items.Add(child.Item);
+            }
+
+            return items;
+        }
+
+        void Walk(List<TreeListNode> children)
+        {
+            foreach (var child in children)
+            {
+                items.Add(child.Item);
+                ResolveChildren(child); // lazy subtrees: resolve before descending
+                if (child.Children is { } grand)
+                {
+                    Walk(grand);
+                }
+            }
+        }
+
+        Walk(node.Children ?? new List<TreeListNode>());
+        return items;
     }
 
     /// <summary>The root items of the tree (bindable).</summary>
@@ -217,6 +321,7 @@ public class TreeListView : GridControl
     protected override void RebuildDataView() => RebuildTree();
 
     /// <inheritdoc />
+    /// <summary>Rebuilds the whole tree view (structure, expansion, summaries).</summary>
     public override void Refresh() => RebuildTree();
 
     /// <summary>Whether the node's item is checked.</summary>

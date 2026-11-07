@@ -46,3 +46,20 @@ description: 带列的层级数据，支持展开/折叠与按级别排序。
 ## 节点复选框
 
 `ShowNodeCheckBoxes="True"` 为每个节点显示三态复选框。勾选节点会级联到后代；父节点根据子节点的混合状态显示不确定态。API：`IsNodeChecked(item)`、`SetNodeChecked(item, bool)`、`CheckedItems`（所有已勾选项，含折叠的）、路由事件 `NodeCheckChanged`。懒加载模式（`ChildrenProvider`）下，折叠节点仅记录自身状态，不加载子树。
+
+
+## 分层汇总
+
+```xml
+<treeList:TreeListView ChildMemberPath="Children" ...>
+    <treeList:TreeListView.TreeSummaryItems>
+        <treeList:GridTreeSummaryItem FieldName="Amount" Function="Sum" StringFormat="N0"/>
+        <treeList:GridTreeSummaryItem FieldName="Amount" Function="Count" Level="0"/>
+    </treeList:TreeListView.TreeSummaryItems>
+</treeList:TreeListView>
+```
+
+每个有子节点的行会在右缘显示聚合值（Sum/Min/Max/Avg/Count）。`Mode="Subtree"`（默认）
+聚合全部后代——包括已折叠与惰性加载（`ChildrenProvider`）的；`Mode="Children"` 只统计
+直接子节点。`Level` 将汇总限制到某一层级（null = 所有层级）；节点本身不计入。
+数值基于完整树结构计算，展开/折叠不影响；修改集合会立即重绘行。

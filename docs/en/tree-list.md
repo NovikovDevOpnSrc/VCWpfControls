@@ -56,3 +56,21 @@ Filtering of tree nodes, load-on-demand children, group panel/filter row do not 
 ## Node check boxes
 
 `ShowNodeCheckBoxes="True"` adds a tri-state check box to every node. Checking a node cascades to its descendants; ancestors derive an indeterminate state from mixed children. API: `IsNodeChecked(item)`, `SetNodeChecked(item, bool)`, `CheckedItems` (all checked items, collapsed included), routed event `NodeCheckChanged`. In lazy mode (`ChildrenProvider`) a collapsed node records its own state without loading the subtree.
+
+
+## Per-level summaries
+
+```xml
+<treeList:TreeListView ChildMemberPath="Children" ...>
+    <treeList:TreeListView.TreeSummaryItems>
+        <treeList:GridTreeSummaryItem FieldName="Amount" Function="Sum" StringFormat="N0"/>
+        <treeList:GridTreeSummaryItem FieldName="Amount" Function="Count" Level="0"/>
+    </treeList:TreeListView.TreeSummaryItems>
+```
+
+Each node row with children shows its aggregates at the right edge (Sum/Min/Max/Avg/Count).
+`Mode="Subtree"` (default) aggregates all descendants — including collapsed and lazy
+(`ChildrenProvider`) ones; `Mode="Children"` counts direct children only. `Level` restricts
+the summary to one tree level (null = every level); the node itself is never included.
+Values are computed over the full structure, so expansion does not change them; changing
+the collection repaints the rows immediately.
