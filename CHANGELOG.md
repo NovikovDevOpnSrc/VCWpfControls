@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — AutoComplete editor + GridAutoCompleteColumn
+
+- `Editors.AutoComplete`: text input with a suggestion popup — any IEnumerable source
+  (strings or objects via `ItemTextPath`), culture-invariant contains matching or a custom
+  `ItemFilter`, `MinimumPrefixLength`/`MaxSuggestions` gates, ArrowUp/Down + Enter/Tab/Esc
+  and click handling, `SuggestionAccepted` event, two-way `Text`, `SelectedItem`.
+  The matching logic is UI-free (`AutoCompleteFilter`, Core-tested).
+- `GridAutoCompleteColumn`: grid column editing through the AutoComplete editor (display
+  element identical to text columns; editing commits via the Text property).
+- Demo: name suggestions on the Column types page; docs ×3; tests: 6 Core (filter) +
+  6 STA (popup open/close, Enter accepts incl. ArrowDown navigation, Esc, prefix gate,
+  column wiring). Control suite 171/171.
+
+
 ### Added — TreeListView per-level summaries
 
 - `TreeListView.TreeSummaryItems` (`GridTreeSummaryItem`): aggregates next to every node

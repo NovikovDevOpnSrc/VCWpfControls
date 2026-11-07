@@ -36,3 +36,23 @@ description: Маскированный ввод и числовые спине�
   введённый текст разбирается с текущей культурой (некорректный ввод откатывается).
 - Отображение: `DecimalPlaces` (по умолчанию — по масштабу шага) или `FormatString`;
   `IsReadOnly` запрещает правку; событие `ValueChanged` уведомляет об изменениях.
+
+
+## AutoComplete
+
+Поле ввода с выпадающими подсказками (`Editors.AutoComplete`), также доступно как колонка
+грида (`GridAutoCompleteColumn`):
+
+- `ItemsSource` — любой IEnumerable; строки сравниваются напрямую, объекты — по `ItemTextPath`;
+- сопоставление по умолчанию — культуранезависимое вхождение без учёта регистра;
+  заменяется через `ItemFilter`;
+- `MinimumPrefixLength` (по умолчанию 1) и `MaxSuggestions` (по умолчанию 8) управляют
+  появлением списка;
+- **стрелки вверх/вниз** перемещают выбор, **Enter/Tab** принимают, **Esc** закрывает,
+  клик принимает; после принятия срабатывает `SuggestionAccepted`; `Text` поддерживает
+  двустороннюю привязку, `SelectedItem` несёт принятый элемент.
+
+```xml
+<editors:AutoComplete Text="{Binding City}" ItemsSource="{Binding Cities}" />
+<columns:GridAutoCompleteColumn FieldName="Name" ItemsSource="{Binding Names}" Width="190" />
+```

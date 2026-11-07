@@ -41,6 +41,14 @@ public partial class ColumnTypesSampleViewModel : SampleViewModelBase
 
     /// <summary>Departments for the combo column.</summary>
     public Department[] Departments { get; } = Enum.GetValues<Department>();
+
+    /// <summary>Name suggestions for the auto-complete column.</summary>
+    public string[] Names { get; } =
+    {
+        "Alice", "Albert", "Alexander", "Alexandra", "Alina",
+        "Boris", "Bogdan", "Barbara", "Vasily", "Vera", "Viktor",
+        "Galina", "Grigory", "Dmitry", "Diana", "Elena", "Evgeny",
+    };
 }
 
 /// <summary>Editing with INotifyDataErrorInfo validation.</summary>

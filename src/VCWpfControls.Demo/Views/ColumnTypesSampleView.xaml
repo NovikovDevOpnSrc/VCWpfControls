@@ -18,6 +18,8 @@
             <columns:GridNumericColumn FieldName="Salary" Header="Salary" Width="120" StringFormat="C" />
             <columns:GridDateColumn FieldName="HireDate" Header="Hired" Width="120" />
             <columns:GridCheckBoxColumn FieldName="IsActive" Header="Active" Width="70" />
+            <columns:GridAutoCompleteColumn FieldName="Name" Header="Name (auto-complete)" Width="190"
+                                            ItemsSource="{Binding DataContext.Names, RelativeSource={RelativeSource AncestorType=Window}}" />
             <columns:GridTemplateColumn FieldName="Salary" Header="Level" Width="90">
                 <columns:GridTemplateColumn.CellTemplate>
                     <DataTemplate>

@@ -34,3 +34,19 @@ description: 掩码输入与数值调节器。
   区域性解析（非法输入回退）。
 - 显示：`DecimalPlaces`（默认按步长推导）或 `FormatString`；`IsReadOnly` 禁止编辑；
   `ValueChanged` 路由事件通知变更。
+
+
+## AutoComplete
+
+带建议下拉的文本输入（`Editors.AutoComplete`），也可作为表格列（`GridAutoCompleteColumn`）：
+
+- `ItemsSource`——任意 IEnumerable；字符串直接匹配，对象按 `ItemTextPath` 取匹配文本；
+- 默认匹配为不区分大小写、与区域设置无关的“包含”；可通过 `ItemFilter` 自定义；
+- `MinimumPrefixLength`（默认 1）与 `MaxSuggestions`（默认 8）控制弹出时机与数量；
+- **上/下方向键**移动选择，**Enter/Tab** 接受，**Esc** 关闭，单击接受；接受后触发
+  `SuggestionAccepted`；`Text` 支持双向绑定，`SelectedItem` 携带被接受的项。
+
+```xml
+<editors:AutoComplete Text="{Binding City}" ItemsSource="{Binding Cities}" />
+<columns:GridAutoCompleteColumn FieldName="Name" ItemsSource="{Binding Names}" Width="190" />
+```

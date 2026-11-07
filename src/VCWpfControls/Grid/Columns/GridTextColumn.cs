@@ -258,6 +258,63 @@ public class GridComboBoxColumn : GridColumnBase
     }
 }
 
+/// <summary>Text column edited via the AutoComplete editor (suggestions from ItemsSource).</summary>
+public class GridAutoCompleteColumn : GridColumnBase
+{
+    /// <summary>Identifies the <see cref="ItemsSource"/> dependency property.</summary>
+    public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
+        nameof(ItemsSource), typeof(System.Collections.IEnumerable), typeof(GridAutoCompleteColumn), new PropertyMetadata(null));
+
+    /// <summary>The suggestion source.</summary>
+    public System.Collections.IEnumerable? ItemsSource
+    {
+        get => (System.Collections.IEnumerable?)GetValue(ItemsSourceProperty);
+        set => SetValue(ItemsSourceProperty, value);
+    }
+
+    /// <summary>Property path of the match text for non-string items.</summary>
+    public string? ItemTextPath { get; set; }
+
+    /// <summary>Creates the text display element.</summary>
+    protected override FrameworkElement GenerateElementCore()
+    {
+        var textBlock = new TextBlock
+        {
+            Margin = new Thickness(8, 0, 6, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+        };
+        textBlock.SetBinding(TextBlock.TextProperty, CreateCellBinding(BindingMode.OneWay));
+        return textBlock;
+    }
+
+    /// <summary>Creates the editing element: the AutoComplete editor.</summary>
+    protected override FrameworkElement GenerateEditingElementCore()
+    {
+        var editor = new VCWpfControls.Editors.AutoComplete
+        {
+            VerticalAlignment = VerticalAlignment.Stretch,
+            ItemTextPath = ItemTextPath,
+            ItemsSource = ItemsSource ?? Array.Empty<string>(),
+        };
+        editor.SetBinding(VCWpfControls.Editors.AutoComplete.TextProperty, CreateCellBinding(BindingMode.TwoWay));
+        return editor;
+    }
+
+    /// <inheritdoc />
+    internal override System.Windows.DependencyProperty? GetEditingCommitProperty()
+        => VCWpfControls.Editors.AutoComplete.TextProperty;
+
+    /// <inheritdoc />
+    internal override void RebindEditingElement(FrameworkElement element, object dataItem)
+    {
+        if (element is VCWpfControls.Editors.AutoComplete editor)
+        {
+            editor.SetBinding(VCWpfControls.Editors.AutoComplete.TextProperty, CreateEditingBinding(dataItem));
+        }
+    }
+}
+
 /// <summary>Column for date values, edited via a date picker.</summary>
 public class GridDateColumn : GridColumnBase
 {
