@@ -70,6 +70,21 @@ public class PivotGrid : GridControl
         nameof(IncludeTotals), typeof(bool), typeof(PivotGrid),
         new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnConfigurationChanged));
 
+    /// <summary>Identifies the <see cref="Condition"/> dependency property.</summary>
+    public static readonly DependencyProperty ConditionProperty = DependencyProperty.Register(
+        nameof(Condition), typeof(VCWpfControls.Conditions.ConditionNode), typeof(PivotGrid),
+        new PropertyMetadata(null, OnConfigurationChanged));
+
+    /// <summary>
+    /// A condition tree filtering the SOURCE ROWS before bucketing (bridge to the
+    /// condition editor; evaluated with ConditionEvaluator). Null disables it.
+    /// </summary>
+    public VCWpfControls.Conditions.ConditionNode? Condition
+    {
+        get => (VCWpfControls.Conditions.ConditionNode?)GetValue(ConditionProperty);
+        set => SetValue(ConditionProperty, value);
+    }
+
     /// <summary>Identifies the <see cref="FieldFilter"/> dependency property.</summary>
     public static readonly DependencyProperty FieldFilterProperty = DependencyProperty.Register(
         nameof(FieldFilter), typeof(Func<string, object?, bool>), typeof(PivotGrid),
@@ -175,7 +190,10 @@ public class PivotGrid : GridControl
             return;
         }
 
-        Result = PivotEngine.Compute(PivotItemsSource, RowFields, ColumnFields, Measures, IncludeTotals, FieldFilter, includeSourceRows: true);
+        var source = Condition is null or { IsEmpty: true }
+            ? PivotItemsSource
+            : VCWpfControls.Conditions.ConditionEvaluator.Where(PivotItemsSource!, Condition);
+        Result = PivotEngine.Compute(source, RowFields, ColumnFields, Measures, IncludeTotals, FieldFilter, includeSourceRows: true);
         var result = Result;
         var measureCount = Measures.Count;
 

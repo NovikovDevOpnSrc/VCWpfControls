@@ -85,6 +85,11 @@ public partial class GridControl : ItemsControl
         nameof(AutoGenerateColumns), typeof(bool), typeof(GridControl),
         new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnAutoGenerateColumnsChanged));
 
+    /// <summary>Identifies the <see cref="CustomFilterPredicate"/> dependency property.</summary>
+    public static readonly DependencyProperty CustomFilterPredicateProperty = DependencyProperty.Register(
+        nameof(CustomFilterPredicate), typeof(Predicate<object?>), typeof(GridControl),
+        new PropertyMetadata(null, OnCustomFilterPredicateChanged));
+
     /// <summary>Identifies the <see cref="CanUserSortColumns"/> dependency property.</summary>
     public static readonly DependencyProperty CanUserSortColumnsProperty = DependencyProperty.Register(
         nameof(CanUserSortColumns), typeof(bool), typeof(GridControl),
@@ -215,6 +220,7 @@ public partial class GridControl : ItemsControl
 
     private protected readonly List<GridRow> _rowRegistry = new();
     private GridItemsView _itemsView = null!;
+    private IEnumerable? _unfilteredSource;
     private (GridColumnBase Column, GridColumnWidth Width, bool Visible)[]? _initialLayout;
     private int _initialFrozenColumnCount;
     private bool _initialLayoutCaptured;
@@ -361,6 +367,58 @@ public partial class GridControl : ItemsControl
     {
         add => AddHandler(CellEditEndedEvent, value);
         remove => RemoveHandler(CellEditEndedEvent, value);
+    }
+
+    /// <summary>
+    /// A custom row predicate ANDed with the engine filters (powers the condition editor:
+    /// set it from <c>ConditionEvaluator.Matches</c>). Null disables it.
+    /// </summary>
+    public Predicate<object?>? CustomFilterPredicate
+    {
+        get => (Predicate<object?>?)GetValue(CustomFilterPredicateProperty);
+        set => SetValue(CustomFilterPredicateProperty, value);
+    }
+
+    private static void OnCustomFilterPredicateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        grid.ApplyCustomFilterToSource();
+    }
+
+    /// <summary>Feeds the engine the predicate-filtered view of the raw source.</summary>
+    private void ApplyCustomFilterToSource()
+    {
+        var raw = _unfilteredSource;
+        if (raw is null)
+        {
+            return;
+        }
+
+        DataEngine.SetSource(CustomFilterPredicate is { } predicate ? new FilteredEnumerable(raw, predicate) : raw);
+    }
+
+    /// <summary>An IEnumerable wrapper applying a row predicate lazily.</summary>
+    private sealed class FilteredEnumerable : IEnumerable
+    {
+        private readonly IEnumerable _source;
+        private readonly Predicate<object?> _predicate;
+
+        public FilteredEnumerable(IEnumerable source, Predicate<object?> predicate)
+        {
+            _source = source;
+            _predicate = predicate;
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            foreach (var item in _source)
+            {
+                if (item is not null && _predicate(item))
+                {
+                    yield return item;
+                }
+            }
+        }
     }
 
     /// <summary>The data source. Any <see cref="IEnumerable"/>; changes are tracked when it implements <see cref="INotifyCollectionChanged"/>.</summary>
@@ -1198,7 +1256,8 @@ public partial class GridControl : ItemsControl
             }
         }
 
-        grid.DataEngine.SetSource((IEnumerable?)e.NewValue);
+        grid._unfilteredSource = (IEnumerable?)e.NewValue;
+        grid.ApplyCustomFilterToSource();
     }
 
     private static bool TryGetItemType(IEnumerable source, out Type? itemType)

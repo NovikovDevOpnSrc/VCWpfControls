@@ -216,3 +216,18 @@ code-behind 即可集成：
   错误带位置显示，树保持不变。
 - 实时 `PreviewText`；每次编辑触发 `ConditionChanged`；`ErrorText` 为最近错误。求值：
   `ConditionEvaluator.Matches(item, Condition)` —— 与表格筛选一致的语义。
+
+## 与表格/透视集成（第三阶段）
+
+- **表头菜单 →「筛选...」**：排序命令下方的一个条目打开基于表格元素类型的模态
+  `ConditionBuilder`；**确定**将条件树应用为 `GridControl.CustomFilterPredicate`（经
+  `ConditionEvaluator`），**清除**移除筛选，**取消**保持不变。
+- `GridControl.CustomFilterPredicate` —— 任意 `Predicate<object?>`，与引擎筛选 AND 组合
+  （保留原始数据源：即使筛选清空视图也不会丢失元素类型，且可随时撤下筛选）。
+- `PivotGrid.Condition` —— 在分桶前过滤**源行**的条件树（与 `FieldFilter` 组合）；
+  `null` 禁用。
+
+```csharp
+grid.CustomFilterPredicate = item => ConditionEvaluator.Matches(item!, tree);
+pivot.Condition = tree;
+```

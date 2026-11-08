@@ -114,6 +114,16 @@ public partial class EditorsSampleViewModel : SampleViewModelBase
     public override string Description => "MaskedTextBox (phone, serial, date masks) and NumericUpDown spinners.";
 }
 
+/// <summary>Condition editor: builder + text tab applied to the grid and pivot.</summary>
+public partial class ConditionSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Conditions";
+
+    /// <inheritdoc />
+    public override string Description => "ConditionBuilder (visual tree + text language) filtering a grid via CustomFilterPredicate.";
+}
+
 /// <summary>Sales pivot: region rows x product columns with totals.</summary>
 public partial class PivotSampleViewModel : SampleViewModelBase
 {

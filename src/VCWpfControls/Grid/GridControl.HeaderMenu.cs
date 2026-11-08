@@ -46,6 +46,11 @@ public partial class GridControl
         menu.Items.Add(sortDescending);
         menu.Items.Add(clearSorting);
 
+        // Condition...: opens the ConditionBuilder over this grid's item type.
+        var conditionEntry = new MenuItem { Header = GridStrings.FilterEllipsis + "..." };
+        conditionEntry.Click += (_, _) => OpenConditionDialog();
+        menu.Items.Add(conditionEntry);
+
         var filter = new MenuItem
         {
             Header = GridStrings.FilterEllipsis,
@@ -151,6 +156,144 @@ public partial class GridControl
         menu.Items.Add(reset);
         return menu;
     }
+
+    /// <summary>
+    /// Opens a modal ConditionBuilder over the grid's item type; OK applies the tree as
+    /// <see cref="CustomFilterPredicate"/> (through ConditionEvaluator), Clear removes the
+    /// filter, Cancel keeps everything.
+    /// </summary>
+    public void OpenConditionDialog()
+    {
+        if (ResolveSourceItemTypeForConditions() is not { } itemType)
+        {
+            return;
+        }
+
+        var dialog = new Window
+        {
+            Title = GridStrings.FilterEllipsis,
+            Owner = Window.GetWindow(this),
+            ShowInTaskbar = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Width = 640,
+            Height = 480,
+            MinWidth = 480,
+            MinHeight = 360,
+        };
+
+        var builder = new Conditions.ConditionBuilder
+        {
+            Schema = Conditions.ConditionSchema.FromType(itemType),
+            Condition = _conditionTree ?? new Conditions.ConditionGroup(Conditions.ConditionGroupOperator.And),
+            Margin = new Thickness(12),
+        };
+        _conditionTree ??= builder.Condition;
+
+        AttachConditionDialogHandlers(dialog, builder);
+        _conditionDialogForTest = dialog;
+        dialog.Closed += (_, _) => _conditionDialogForTest = null;
+        dialog.ShowDialog();
+    }
+
+    /// <summary>Test hook: the condition dialog without the modal loop.</summary>
+    internal Window OpenConditionDialogForTest()
+    {
+        if (ResolveSourceItemTypeForConditions() is not { } itemType)
+        {
+            throw new InvalidOperationException($"ResolvedItemType is null; source={PivotItemsSourceDebugText()}");
+        }
+
+        var dialog = new Window
+        {
+            Title = GridStrings.FilterEllipsis,
+            ShowInTaskbar = false,
+            Width = 640,
+            Height = 480,
+        };
+        var builder = new Conditions.ConditionBuilder
+        {
+            Schema = Conditions.ConditionSchema.FromType(itemType),
+            Condition = _conditionTree ?? new Conditions.ConditionGroup(Conditions.ConditionGroupOperator.And),
+            Margin = new Thickness(12),
+        };
+        _conditionTree ??= builder.Condition;
+        AttachConditionDialogHandlers(dialog, builder);
+        _conditionDialogForTest = dialog;
+        dialog.Closed += (_, _) => _conditionDialogForTest = null;
+        dialog.Show();
+        return dialog;
+    }
+
+    /// <summary>
+    /// The item type for the condition dialog: the engine's resolved type, or inferred from
+    /// the RAW source — a predicate that filters everything out leaves the engine typeless.
+    /// </summary>
+    private Type? ResolveSourceItemTypeForConditions()
+    {
+        if (DataEngine.ResolvedItemType is { } resolved)
+        {
+            return resolved;
+        }
+
+        if (_unfilteredSource is System.Collections.IEnumerable { } raw && TryGetItemType(raw, out var inferred))
+        {
+            return inferred;
+        }
+
+        return null;
+    }
+
+    private string PivotItemsSourceDebugText()
+        => ItemsSource?.GetType().Name ?? "null";
+
+    private void AttachConditionDialogHandlers(Window dialog, Conditions.ConditionBuilder builder)
+    {
+        var ok = new Button { Content = GridStrings.FilterMenuOk, MinWidth = 80, Margin = new Thickness(4), Padding = new Thickness(10, 4, 10, 4) };
+        var cancel = new Button { Content = GridStrings.WizardCancel, MinWidth = 80, Margin = new Thickness(4), Padding = new Thickness(10, 4, 10, 4) };
+        var clear = new Button { Content = GridStrings.FilterMenuClear, MinWidth = 80, Margin = new Thickness(4), Padding = new Thickness(10, 4, 10, 4) };
+
+        ok.Click += (_, _) =>
+        {
+            _conditionTree = builder.Condition;
+            CustomFilterPredicate = _conditionTree is null || _conditionTree.IsEmpty
+                ? null
+                : item => Conditions.ConditionEvaluator.Matches(item!, _conditionTree);
+            dialog.Close();
+        };
+        clear.Click += (_, _) =>
+        {
+            _conditionTree = null;
+            CustomFilterPredicate = null;
+            dialog.Close();
+        };
+        cancel.Click += (_, _) => dialog.Close();
+
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        buttons.Children.Add(clear);
+        buttons.Children.Add(cancel);
+        buttons.Children.Add(ok);
+
+        var root = new DockPanel();
+        DockPanel.SetDock(buttons, Dock.Bottom);
+        root.Children.Add(buttons);
+        root.Children.Add(builder);
+        dialog.Content = root;
+    }
+
+    private Conditions.ConditionNode? _conditionTree;
+    private Window? _conditionDialogForTest;
+
+    /// <summary>The open condition dialog, for tests (null when closed).</summary>
+    internal Window? ConditionDialogForTest => _conditionDialogForTest;
+
+    /// <summary>Test hook: the dialog's builder.</summary>
+    internal Conditions.ConditionBuilder? ConditionBuilderForTest
+        => _conditionDialogForTest?.Content is DockPanel root && root.Children.Count > 0 && root.Children[1] is Conditions.ConditionBuilder builder
+            ? builder
+            : null;
+
+    /// <summary>The active condition tree (set by the dialog), for tests and callers.</summary>
+    internal Conditions.ConditionNode? ConditionTreeForTest => _conditionTree;
 
     /// <summary>Opens the column chooser dialog (visibility + reorder).</summary>
     public void OpenColumnChooser() => OpenColumnChooserForTest();

@@ -1,0 +1,35 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.ConditionSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
+             xmlns:conditions="clr-namespace:VCWpfControls.Conditions;assembly=VCWpfControls">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="2*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Margin="0,0,0,8"
+            Opacity="0.7"
+            Text="Edit the condition (Builder or Text tab) — Apply filters the grid through CustomFilterPredicate; right-click a header for Condition... too." />
+
+        <conditions:ConditionBuilder
+            x:Name="Builder"
+            Grid.Row="1"
+            Margin="0,0,0,8"
+            ConditionChanged="OnConditionChanged" />
+
+        <Button
+            x:Name="Apply"
+            Grid.Row="1"
+            Width="90"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Click="OnApplyClick"
+            Content="Apply" />
+
+        <grid:GridControl x:Name="Grid" Grid.Row="2" RowHeight="26" />
+    </Grid>
+</UserControl>

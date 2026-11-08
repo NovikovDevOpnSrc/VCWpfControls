@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — condition editor stage C: grid and pivot integration
+
+- `GridControl.CustomFilterPredicate` (`Predicate<object?>`): ANDed with the engine
+  filters; the RAW source is remembered, so a filter that empties the view keeps the item
+  type resolvable (the condition dialog falls back to it) and the filter lifts cleanly.
+- Header menu gained a **condition entry** (under the sorting commands) opening a modal
+  `ConditionBuilder` over the item type — OK applies the tree through
+  `ConditionEvaluator`, Clear removes the filter, Cancel keeps it.
+- `PivotGrid.Condition`: a condition tree filtering the SOURCE rows before bucketing
+  (composed with `FieldFilter`); null disables.
+- Demo page "Conditions" (builder + text tab + Apply); docs ×3. Tests: 4 STA — the
+  predicate path (combined with engine filters, lifting), the dialog OK/Clear/Cancel
+  flows (via a non-modal test hook; ShowDialog blocks an STA test), and the pivot bridge
+  (condition filters rows; totals follow; null restores).
+
+
 ### Added — condition editor stage B: the ConditionBuilder control
 
 - `ConditionBuilder`: visual editing of condition trees — recursive And (all)/Or (any)

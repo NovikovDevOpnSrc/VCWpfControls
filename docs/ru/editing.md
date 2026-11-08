@@ -227,3 +227,20 @@ public class Order : IDataErrorInfo
   ('IT')`); ошибки парсинга показываются с позицией, дерево не меняется.
 - Живой `PreviewText`; `ConditionChanged` на каждое изменение; `ErrorText` — последняя
   ошибка. Вычисление: `ConditionEvaluator.Matches(item, Condition)` — семантика грида.
+
+## Интеграция с гридом и pivot (этап C)
+
+- **Меню заголовка → «Фильтр...»**: под командами сортировки пункт открывает модальный
+  `ConditionBuilder` по типу элементов грида; **OK** применяет дерево как
+  `GridControl.CustomFilterPredicate` (через `ConditionEvaluator`), **Очистить** снимает
+  фильтр, **Отмена** ничего не меняет.
+- `GridControl.CustomFilterPredicate` — любой `Predicate<object?>`, объединяемый AND с
+  фильтрами движка (исходный источник сохраняется: даже фильтр, опустошающий вью, не
+  теряет тип элемента, и фильтр можно снять).
+- `PivotGrid.Condition` — дерево условий, фильтрующее ИСХОДНЫЕ строки до группировки
+  (совместно с `FieldFilter`); `null` отключает.
+
+```csharp
+grid.CustomFilterPredicate = item => ConditionEvaluator.Matches(item!, tree);
+pivot.Condition = tree;
+```

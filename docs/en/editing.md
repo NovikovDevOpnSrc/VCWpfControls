@@ -227,3 +227,20 @@ Returns the number of cells written.
 - Live `PreviewText`; `ConditionChanged` fires on every edit; `ErrorText` exposes the last
   parse error. Evaluation: `ConditionEvaluator.Matches(item, Condition)` — the exact grid
   filter semantics.
+
+## Grid and pivot integration (stage C)
+
+- **Header menu → "Filter..."**: under the sorting commands a condition entry opens a modal
+  `ConditionBuilder` over the grid's item type; **OK** applies the tree as
+  `GridControl.CustomFilterPredicate` (through `ConditionEvaluator`), **Clear** removes the
+  filter, **Cancel** keeps everything.
+- `GridControl.CustomFilterPredicate` — any `Predicate<object?>` ANDed with the engine
+  filters (the raw source is kept, so a filter that empties the view still knows the item
+  type and the filter can be lifted).
+- `PivotGrid.Condition` — a condition tree filtering the SOURCE ROWS before bucketing
+  (combined with `FieldFilter`); `null` disables it.
+
+```csharp
+grid.CustomFilterPredicate = item => ConditionEvaluator.Matches(item!, tree);
+pivot.Condition = tree;
+```

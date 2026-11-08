@@ -28,6 +28,7 @@ public partial class MainWindow : Window
             new DockingSampleViewModel(),
             new WizardSampleViewModel(),
             new PivotSampleViewModel(),
+            new ConditionSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
     }
