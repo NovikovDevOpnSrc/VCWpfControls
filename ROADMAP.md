@@ -44,8 +44,9 @@ Ranked by community demand (r/csharp, Xceed/MahApps/WPF-UI trackers, LOB vendor 
   (`[Salary] > 1000 And [Dept] In ('IT','HR')`).
 - Stage B (next): the ConditionBuilder control — typed value editors, And/Or groups UI,
   text tab with parse-error highlighting, human-readable preview. Localized x3.
-- Stage C: grid integration (CustomFilterPredicate + "Condition..." header-menu entry),
-  pivot FieldFilter bridge, JSON persistence, demo page, docs x3.
+- Stage C (SHIPPED): GridControl.CustomFilterPredicate (raw source remembered), condition
+  entry in the header menu opening a modal ConditionBuilder (OK/Clear/Cancel),
+  PivotGrid.Condition filtering source rows, demo page, docs x3.
 
 ### Integration docs instead of building
 - Charts: LiveCharts2 (MIT) usage recipes with our theming.
