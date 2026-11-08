@@ -31,6 +31,11 @@ public class DockPane : HeaderedContentControl
     public static readonly DependencyProperty DockHeightProperty = DependencyProperty.Register(
         nameof(DockHeight), typeof(GridLength), typeof(DockPane), new PropertyMetadata(new GridLength(220)));
 
+    /// <summary>Identifies the <see cref="SplitGroup"/> dependency property.</summary>
+    public static readonly DependencyProperty SplitGroupProperty = DependencyProperty.Register(
+        nameof(SplitGroup), typeof(int), typeof(DockPane),
+        new PropertyMetadata(0, OnSplitGroupChanged));
+
     /// <summary>Identifies the <see cref="IsAutoHidden"/> dependency property.</summary>
     public static readonly DependencyProperty IsAutoHiddenProperty = DependencyProperty.Register(
         nameof(IsAutoHidden), typeof(bool), typeof(DockPane),
@@ -151,6 +156,20 @@ public class DockPane : HeaderedContentControl
     internal string LayoutKey => !string.IsNullOrEmpty(Name)
         ? Name
         : Convert.ToString(Header, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+
+    /// <summary>
+    /// The splitter group of the pane WITHIN its zone: panes of one zone sharing a group
+    /// are tabbed together in one host; different groups stack with an independent
+    /// splitter between them (nested splitter groups).
+    /// </summary>
+    public int SplitGroup
+    {
+        get => (int)GetValue(SplitGroupProperty);
+        set => SetValue(SplitGroupProperty, value);
+    }
+
+    private static void OnSplitGroupChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((DockPane)d).Manager?.SyncPane((DockPane)d);
 
     private static void OnZoneChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         => ((DockPane)d).Manager?.SyncPane((DockPane)d);

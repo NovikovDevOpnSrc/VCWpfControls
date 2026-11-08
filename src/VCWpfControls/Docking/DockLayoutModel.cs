@@ -42,6 +42,9 @@ public sealed class DockPaneLayout
     /// <summary>Whether the pane is collapsed to an edge tab (auto-hide).</summary>
     public bool IsAutoHidden { get; set; }
 
+    /// <summary>The splitter group of the pane within its zone (0 = primary).</summary>
+    public int SplitGroup { get; set; }
+
     /// <summary>Whether the pane lives in a floating window.</summary>
     public bool IsFloating { get; set; }
 
@@ -86,6 +89,7 @@ public static class DockLayoutSerializer
                 new XAttribute("height", pane.Height.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("hidden", pane.IsHidden ? "1" : "0"),
                 new XAttribute("ah", pane.IsAutoHidden ? "1" : "0"),
+                new XAttribute("sg", pane.SplitGroup.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("floating", pane.IsFloating ? "1" : "0"),
                 new XAttribute("fx", pane.FloatingLeft.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new XAttribute("fy", pane.FloatingTop.ToString(System.Globalization.CultureInfo.InvariantCulture)),
@@ -123,6 +127,7 @@ public static class DockLayoutSerializer
                 Height = ParseDouble(element.Attribute("height")),
                 IsHidden = (string?)element.Attribute("hidden") == "1",
                 IsAutoHidden = (string?)element.Attribute("ah") == "1",
+                SplitGroup = int.TryParse((string?)element.Attribute("sg"), out var splitGroup) ? splitGroup : 0,
                 IsFloating = (string?)element.Attribute("floating") == "1",
                 FloatingLeft = ReadDouble(element, "fx"),
                 FloatingTop = ReadDouble(element, "fy"),

@@ -63,3 +63,20 @@ in the flyout header docks the pane back into its zone. Center panes ignore auto
 ## Not yet (see ROADMAP)
 
 Nested splitter groups.
+
+
+## Nested splitter groups
+
+```xml
+<docking:DockPane Header="Tools" Zone="Left" />                  <!-- group 0 (primary) -->
+<docking:DockPane Header="Explorer" Zone="Left" />               <!-- tabs with Tools -->
+<docking:DockPane Header="Output" Zone="Left" SplitGroup="1" />  <!-- own slot below -->
+<docking:DockPane Header="Errors" Zone="Left" SplitGroup="1" />  <!-- tabs with Output -->
+```
+
+Panes of one zone sharing a <c>SplitGroup</c> (default 0) tab together; each distinct
+group gets its own host stacked inside the zone with an **independent GridSplitter** —
+left/right zones stack vertically, top/bottom horizontally. Groups appear in ascending
+order; hiding the last pane of a group removes its host (and the splitter); the zone stays
+visible while any group has panes. `SplitGroup` round-trips through
+`SaveLayout`/`LoadLayout` (`sg` attribute). Center panes ignore groups (always one host).

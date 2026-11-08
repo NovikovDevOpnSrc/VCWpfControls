@@ -51,3 +51,19 @@ manager.LoadLayout(xml);             // 按面板 Name（回退到标题）匹�
 ## 暂不支持（见 ROADMAP）
 
 嵌套分隔组。
+
+
+## 嵌套分隔组
+
+```xml
+<docking:DockPane Header="工具" Zone="Left" />                  <!-- 组 0（主） -->
+<docking:DockPane Header="资源管理器" Zone="Left" />             <!-- 与工具同页签 -->
+<docking:DockPane Header="输出" Zone="Left" SplitGroup="1" />    <!-- 独立下方槽位 -->
+<docking:DockPane Header="错误" Zone="Left" SplitGroup="1" />    <!-- 与输出同页签 -->
+```
+
+同一区域中 <c>SplitGroup</c> 相同（默认 0）的面板合并为页签；每个不同的组获得自己
+的宿主，区域内通过**独立的 GridSplitter** 堆叠 —— 左/右区域垂直堆叠，上/下区域水平
+堆叠。组按升序排列；隐藏组的最后一个面板会移除其宿主（及分隔条）；只要任一组仍有
+面板，区域保持可见。`SplitGroup` 通过 `SaveLayout`/`LoadLayout` 往返（`sg` 属性）。
+中心面板忽略分组（始终单一宿主）。

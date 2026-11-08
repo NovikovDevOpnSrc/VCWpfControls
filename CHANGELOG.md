@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — docking: nested splitter groups
+
+- `DockPane.SplitGroup` (int, default 0): panes of one zone sharing a group tab together;
+  each distinct group gets its own host stacked INSIDE the zone with an independent
+  GridSplitter (left/right zones stack vertically, top/bottom horizontally; center ignores
+  groups). `DockZoneGroup` hosts the stack — the template's zone host becomes its primary
+  entry, so plain layouts are unchanged.
+- Zone visibility now considers nested hosts (a zone stays visible when only a split-group
+  host has panes); hiding the last pane of a group prunes its host and splitter;
+  `SplitGroup` round-trips through SaveLayout/LoadLayout (`sg` attribute).
+- 4 STA tests (grouping/splitter presence, prune-on-close, zone visibility via nested
+  hosts, XML round-trip); routing validated by injection. This closes the last v0.3
+  roadmap item.
+
+
 ### Added — third-party integration recipes (LiveCharts2, Fluent.Ribbon)
 
 - Demo page "Charts & Ribbon" (verified, runs): a Fluent.Ribbon toolbar (grouping

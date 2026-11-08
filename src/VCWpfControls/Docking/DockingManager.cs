@@ -68,12 +68,16 @@ public partial class DockingManager : Control
     }
 
     private DockZoneHost? LeftHost { get; set; }
+    private DockZoneGroup? LeftGroup { get; set; }
 
     private DockZoneHost? TopHost { get; set; }
+    private DockZoneGroup? TopGroup { get; set; }
 
     private DockZoneHost? RightHost { get; set; }
+    private DockZoneGroup? RightGroup { get; set; }
 
     private DockZoneHost? BottomHost { get; set; }
+    private DockZoneGroup? BottomGroup { get; set; }
 
     private DockZoneHost? CenterHost { get; set; }
 
@@ -96,6 +100,10 @@ public partial class DockingManager : Control
         RightHost = GetTemplateChild(PartRightHost) as DockZoneHost;
         BottomHost = GetTemplateChild(PartBottomHost) as DockZoneHost;
         CenterHost = GetTemplateChild(PartCenterHost) as DockZoneHost;
+        LeftGroup = EnsureGroup(LeftHost, PartLeftHost, DockZone.Left);
+        TopGroup = EnsureGroup(TopHost, PartTopHost, DockZone.Top);
+        RightGroup = EnsureGroup(RightHost, PartRightHost, DockZone.Right);
+        BottomGroup = EnsureGroup(BottomHost, PartBottomHost, DockZone.Bottom);
         LeftColumn = GetTemplateChild(PartLeftColumn) as System.Windows.Controls.ColumnDefinition;
         RightColumn = GetTemplateChild(PartRightColumn) as System.Windows.Controls.ColumnDefinition;
         TopRow = GetTemplateChild(PartTopRow) as System.Windows.Controls.RowDefinition;
@@ -254,15 +262,20 @@ public partial class DockingManager : Control
     }
 
     /// <summary>Test hook: whether the given zone currently hosts visible panes.</summary>
+    /// <summary>Test hook: the left zone's split-group container.</summary>
+    internal DockZoneGroup? LeftGroupForTest() => LeftGroup;
+
+    /// <summary>Test hook: the concatenated pane headers of the zone's host index.</summary>
+    internal string HostCaptionsForTest(int hostIndex)
+    {
+        var host = LeftGroup?.Hosts.Count > hostIndex ? LeftGroup.Hosts[hostIndex] : null;
+        return string.Join("|", host?.Panes.Select(p => p.Header?.ToString() ?? string.Empty) ?? Enumerable.Empty<string>());
+    }
+
     internal bool HasVisiblePanesForTest(DockZone zone)
-        => (zone switch
-        {
-            DockZone.Left => LeftHost,
-            DockZone.Top => TopHost,
-            DockZone.Right => RightHost,
-            DockZone.Bottom => BottomHost,
-            _ => CenterHost,
-        }) is { HasVisiblePanes: true };
+        => zone == DockZone.Center
+            ? CenterHost is { HasVisiblePanes: true }
+            : HostsOf(zone).Any(h => h.HasVisiblePanes);
 
     /// <summary>Test access to the zone hit-testing.</summary>
     internal DockZone ZoneAtForTest(Point point) => ZoneAt(point, RenderSize);
@@ -321,13 +334,96 @@ public partial class DockingManager : Control
     }
 
     /// <summary>Places the pane into the zone matching <see cref="DockPane.Zone"/>.</summary>
+    /// <summary>
+    /// Wraps the template's zone host into a <see cref="DockZoneGroup"/> placed at the same
+    /// grid cell: nested splitter groups live INSIDE the group, the first host is the
+    /// template's one.
+    /// </summary>
+    private static DockZoneGroup? EnsureGroup(DockZoneHost? templateHost, string partName, DockZone zone)
+    {
+        if (templateHost is null)
+        {
+            return null;
+        }
+
+        var group = new DockZoneGroup
+        {
+            Orientation = zone is DockZone.Left or DockZone.Right ? Orientation.Vertical : Orientation.Horizontal,
+        };
+        var row = System.Windows.Controls.Grid.GetRow(templateHost);
+        var column = System.Windows.Controls.Grid.GetColumn(templateHost);
+        var parent = templateHost.Parent as System.Windows.Controls.Grid;
+        if (parent is not null)
+        {
+            var index = parent.Children.IndexOf(templateHost);
+            parent.Children.Remove(templateHost);
+            group.Hosts.Add(templateHost);
+            System.Windows.Controls.Grid.SetRow(group, row);
+            System.Windows.Controls.Grid.SetColumn(group, column);
+            parent.Children.Insert(index, group);
+        }
+        else
+        {
+            group.Hosts.Add(templateHost);
+        }
+
+        return group;
+    }
+
+    /// <summary>All hosts of the zone (the group's hosts, or the single template host).</summary>
+    private IEnumerable<DockZoneHost> HostsOf(DockZone zone)
+        => ZoneGroupOf(zone)?.Hosts ?? (zone switch
+        {
+            DockZone.Left => LeftHost is null ? Enumerable.Empty<DockZoneHost>() : new[] { LeftHost },
+            DockZone.Top => TopHost is null ? Enumerable.Empty<DockZoneHost>() : new[] { TopHost },
+            DockZone.Right => RightHost is null ? Enumerable.Empty<DockZoneHost>() : new[] { RightHost },
+            DockZone.Bottom => BottomHost is null ? Enumerable.Empty<DockZoneHost>() : new[] { BottomHost },
+            _ => CenterHost is null ? Enumerable.Empty<DockZoneHost>() : new[] { CenterHost },
+        });
+
+    private DockZoneGroup? ZoneGroupOf(DockZone zone) => zone switch
+    {
+        DockZone.Left => LeftGroup,
+        DockZone.Top => TopGroup,
+        DockZone.Right => RightGroup,
+        DockZone.Bottom => BottomGroup,
+        _ => null,
+    };
+
+    /// <summary>The host of the pane's zone+split group, creating one for a new group.</summary>
+    private DockZoneHost? TargetHostOf(DockPane pane)
+    {
+        var zone = pane.Zone;
+        var group = ZoneGroupOf(zone);
+        if (group is null || pane.SplitGroup == 0)
+        {
+            // Group 0 is the primary (template) host — center panes never split.
+            return zone switch
+            {
+                DockZone.Left => LeftHost,
+                DockZone.Top => TopHost,
+                DockZone.Right => RightHost,
+                DockZone.Bottom => BottomHost,
+                _ => CenterHost,
+            };
+        }
+
+        while (group.Hosts.Count <= pane.SplitGroup)
+        {
+            group.Hosts.Add(new DockZoneHost());
+        }
+
+        return group.Hosts[pane.SplitGroup];
+    }
+
     internal void SyncPane(DockPane pane)
     {
-        foreach (var host in Zones)
+        foreach (var host in AllHosts())
         {
             host.Panes.Remove(pane);
         }
 
+        PruneEmptyGroupHosts();
         RemoveFromAutoHideCollections(pane);
 
         if (pane.IsHidden)
@@ -364,14 +460,7 @@ public partial class DockingManager : Control
             return;
         }
 
-        var target = pane.Zone switch
-        {
-            DockZone.Left => LeftHost,
-            DockZone.Top => TopHost,
-            DockZone.Right => RightHost,
-            DockZone.Bottom => BottomHost,
-            _ => CenterHost,
-        };
+        var target = TargetHostOf(pane);
 
         if (target is null)
         {
@@ -424,24 +513,28 @@ public partial class DockingManager : Control
     /// <summary>Collapses empty zones (row/column width 0) so the center fills the space.</summary>
     private void RefreshZoneVisibility()
     {
+        var leftVisible = HostsOf(DockZone.Left).Any(h => h.HasVisiblePanes);
+        var rightVisible = HostsOf(DockZone.Right).Any(h => h.HasVisiblePanes);
+        var topVisible = HostsOf(DockZone.Top).Any(h => h.HasVisiblePanes);
+        var bottomVisible = HostsOf(DockZone.Bottom).Any(h => h.HasVisiblePanes);
         if (LeftColumn is not null)
         {
-            LeftColumn.Width = LeftHost is { HasVisiblePanes: true } ? LeftColumn.Width : new GridLength(0);
+            LeftColumn.Width = leftVisible ? LeftColumn.Width : new GridLength(0);
         }
 
         if (RightColumn is not null)
         {
-            RightColumn.Width = RightHost is { HasVisiblePanes: true } ? RightColumn.Width : new GridLength(0);
+            RightColumn.Width = rightVisible ? RightColumn.Width : new GridLength(0);
         }
 
         if (TopRow is not null)
         {
-            TopRow.Height = TopHost is { HasVisiblePanes: true } ? TopRow.Height : new GridLength(0);
+            TopRow.Height = topVisible ? TopRow.Height : new GridLength(0);
         }
 
         if (BottomRow is not null)
         {
-            BottomRow.Height = BottomHost is { HasVisiblePanes: true } ? BottomRow.Height : new GridLength(0);
+            BottomRow.Height = bottomVisible ? BottomRow.Height : new GridLength(0);
         }
 
         if (ActivePane is null or { IsHidden: true })
@@ -450,6 +543,38 @@ public partial class DockingManager : Control
             if (visible is not null)
             {
                 ZoneOf(visible)?.Select(visible);
+            }
+        }
+    }
+
+    /// <summary>Every zone host in the layout, including nested split-group hosts.</summary>
+    private IEnumerable<DockZoneHost> AllHosts()
+    {
+        foreach (var zone in new[] { DockZone.Left, DockZone.Top, DockZone.Right, DockZone.Bottom, DockZone.Center })
+        {
+            foreach (var host in HostsOf(zone))
+            {
+                yield return host;
+            }
+        }
+    }
+
+    /// <summary>Removes empty non-primary hosts so closed groups disappear.</summary>
+    private void PruneEmptyGroupHosts()
+    {
+        foreach (var group in new[] { LeftGroup, TopGroup, RightGroup, BottomGroup })
+        {
+            if (group is null)
+            {
+                continue;
+            }
+
+            for (var i = group.Hosts.Count - 1; i >= 1; i--)
+            {
+                if (group.Hosts[i].Panes.Count == 0)
+                {
+                    group.Hosts.RemoveAt(i);
+                }
             }
         }
     }
@@ -579,6 +704,7 @@ public partial class DockingManager : Control
                 Zone = pane.Zone,
                 IsHidden = pane.IsHidden,
                 IsAutoHidden = pane.IsAutoHidden,
+                SplitGroup = pane.SplitGroup,
                 IsFloating = pane.IsFloating,
                 Width = ResolveSize(pane, zone, horizontal: true),
                 Height = ResolveSize(pane, zone, horizontal: false),
@@ -643,6 +769,7 @@ public partial class DockingManager : Control
             }
 
             pane.Zone = entry.Zone;
+            pane.SplitGroup = entry.SplitGroup;
             pane.IsAutoHidden = entry.IsAutoHidden;
             pane.IsHidden = entry.IsHidden;
             if (entry.IsFloating)
