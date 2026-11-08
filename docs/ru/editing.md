@@ -208,3 +208,22 @@ public class Order : IDataErrorInfo
   **Finished** (Next на последней странице), **Cancelled**.
 - Кнопка Next становится **Finish** на последней странице; надписи локализованы
   (EN/RU/ZH). Свои шаблоны: `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`.
+
+
+## Конструктор условий
+
+```xml
+<conditions:ConditionBuilder Schema="{Binding Schema}" Condition="{Binding Filter, Mode=TwoWay}" />
+```
+
+- `Schema` — фильтруемые поля (`ConditionSchema.FromType(typeof(Person))` выводит имена,
+  типы, подписи `[Display]` и подсказки enum'ов).
+- Визуальное дерево: рекурсивные группы **И (все) / Или (любое)**; в строке — комбобокс
+  поля, типо-осознанный комбобокс оператора (строки: contains/начинается с; числа и даты:
+  сравнения и `between`; enum и bool: равенство) и типизированные редакторы значения
+  (TextBox / CheckBox / DatePicker / enum-ComboBox; `between` — два редактора, `in` —
+  список через запятую). `+ Добавить условие`, `+ Добавить группу`, `✕` удалить.
+- **Текстовая вкладка** редактирует язык `ConditionParser` (`[Salary] > 1000 And [Dept] In
+  ('IT')`); ошибки парсинга показываются с позицией, дерево не меняется.
+- Живой `PreviewText`; `ConditionChanged` на каждое изменение; `ErrorText` — последняя
+  ошибка. Вычисление: `ConditionEvaluator.Matches(item, Condition)` — семантика грида.

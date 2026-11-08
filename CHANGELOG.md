@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — condition editor stage B: the ConditionBuilder control
+
+- `ConditionBuilder`: visual editing of condition trees — recursive And (all)/Or (any)
+  groups, per-row field + operator combos (operators filtered by the field type) and
+  typed value editors (TextBox/CheckBox/DatePicker/enum combo; `between` gets two,
+  `in` a comma list); add condition/group and remove buttons; localized EN/RU/ZH.
+- Text tab: edits the `ConditionParser` language; parse errors report their position
+  (`ErrorText`) and keep the previous tree; valid text replaces it. Live `PreviewText`
+  and `ConditionChanged` on every edit. Values parse through the shared clipboard
+  converter (culture-aware), empty text means null.
+- Hardened against WPF re-entrancy: row refresh guards the operator-combo rebuild and
+  the mode radio buttons no-op when the mode is already set.
+- 11 STA tests (auto group, add/remove condition/group, typed editors per field kind,
+  between dual editors, operator set switch on field change, And/Or switch, text-mode
+  error keeps tree, valid text replaces tree, preview). Stage C (grid/pivot
+  integration) is next.
+
+
 ### Added — condition expression editor, stage A (UI-free core)
 
 - `ConditionGroup`/`ConditionExpression`: a filter tree with nested And/Or groups;

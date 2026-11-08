@@ -29,6 +29,14 @@
   <data name="GroupByColumn" xml:space="preserve"><value>Группировать по этой колонке</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>От</value></data>
   <data name="FilterTo" xml:space="preserve"><value>До</value></data>
+  <data name="ConditionAdd" xml:space="preserve"><value>Добавить условие</value></data>
+  <data name="ConditionAddGroup" xml:space="preserve"><value>Добавить группу</value></data>
+  <data name="ConditionRemove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="ConditionAll" xml:space="preserve"><value>И (все)</value></data>
+  <data name="ConditionAny" xml:space="preserve"><value>Или (любое)</value></data>
+  <data name="ConditionBuilderTab" xml:space="preserve"><value>Конструктор</value></data>
+  <data name="ConditionTextTab" xml:space="preserve"><value>Текст</value></data>
+  <data name="ConditionPreview" xml:space="preserve"><value>Предпросмотр</value></data>
   <data name="PivotTotal" xml:space="preserve"><value>Итого</value></data>
   <data name="WizardNext" xml:space="preserve"><value>Далее</value></data>
   <data name="WizardFinish" xml:space="preserve"><value>Готово</value></data>

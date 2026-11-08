@@ -198,3 +198,21 @@ code-behind 即可集成：
   **Finished**（最后一页的 Next）、**Cancelled**。
 - 最后一页的 Next 按钮变为 **Finish**；按钮文案已本地化（中/英/俄）。自定义模板：
   `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`。
+
+
+## 条件构造器
+
+```xml
+<conditions:ConditionBuilder Schema="{Binding Schema}" Condition="{Binding Filter, Mode=TwoWay}" />
+```
+
+- `Schema` —— 可筛选字段（`ConditionSchema.FromType(typeof(Person))` 自动推断名称、类型、
+  `[Display]` 标题与枚举建议）。
+- 可视树：递归的**且（全部）/ 或（任一）**分组；每行一个字段下拉、类型感知的运算符
+  下拉（字符串：包含/开头；数字与日期：比较与 `between`；枚举与布尔：相等）以及类型化
+  取值编辑器（TextBox / CheckBox / DatePicker / 枚举下拉；`between` 两个编辑器，`in`
+  逗号分隔列表）。`+ 添加条件`、`+ 添加分组`、`✕` 删除。
+- **文本页**编辑 `ConditionParser` 语言（`[Salary] > 1000 And [Dept] In ('IT')`）；解析
+  错误带位置显示，树保持不变。
+- 实时 `PreviewText`；每次编辑触发 `ConditionChanged`；`ErrorText` 为最近错误。求值：
+  `ConditionEvaluator.Matches(item, Condition)` —— 与表格筛选一致的语义。

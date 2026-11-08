@@ -29,6 +29,14 @@
   <data name="GroupByColumn" xml:space="preserve"><value>按此列分组</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>从</value></data>
   <data name="FilterTo" xml:space="preserve"><value>到</value></data>
+  <data name="ConditionAdd" xml:space="preserve"><value>添加条件</value></data>
+  <data name="ConditionAddGroup" xml:space="preserve"><value>添加分组</value></data>
+  <data name="ConditionRemove" xml:space="preserve"><value>删除</value></data>
+  <data name="ConditionAll" xml:space="preserve"><value>且（全部）</value></data>
+  <data name="ConditionAny" xml:space="preserve"><value>或（任一）</value></data>
+  <data name="ConditionBuilderTab" xml:space="preserve"><value>构造器</value></data>
+  <data name="ConditionTextTab" xml:space="preserve"><value>文本</value></data>
+  <data name="ConditionPreview" xml:space="preserve"><value>预览</value></data>
   <data name="PivotTotal" xml:space="preserve"><value>总计</value></data>
   <data name="WizardNext" xml:space="preserve"><value>下一步</value></data>
   <data name="WizardFinish" xml:space="preserve"><value>完成</value></data>

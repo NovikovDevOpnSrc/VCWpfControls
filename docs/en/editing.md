@@ -207,3 +207,23 @@ Returns the number of cells written.
   **PageChanged**, **Finished** (Next on the last page), **Cancelled**.
 - The Next button becomes **Finish** on the last page; captions are localized
   (EN/RU/ZH). Custom templates: provide `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`.
+
+
+## Condition builder
+
+```xml
+<conditions:ConditionBuilder Schema="{Binding Schema}" Condition="{Binding Filter, Mode=TwoWay}" />
+```
+
+- `Schema` — the filterable fields (`ConditionSchema.FromType(typeof(Person))` infers
+  names, types, `[Display]` captions and enum suggestions).
+- Visual tree: recursive **And (all) / Or (any)** groups; per row a field combo, a
+  type-aware operator combo (strings get contains/starts-with, numbers and dates get
+  comparisons and `between`, enums and booleans get equality) and typed value editors
+  (TextBox / CheckBox / DatePicker / enum ComboBox; `between` shows two editors, `in` a
+  comma-separated list). `+ Add condition`, `+ Add group`, `✕` remove.
+- **Text tab** edits the `ConditionParser` language (`[Salary] > 1000 And [Dept] In ('IT')`);
+  parse errors appear with their position and keep the previous tree.
+- Live `PreviewText`; `ConditionChanged` fires on every edit; `ErrorText` exposes the last
+  parse error. Evaluation: `ConditionEvaluator.Matches(item, Condition)` — the exact grid
+  filter semantics.

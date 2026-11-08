@@ -52,6 +52,30 @@ public static class GridStrings
     /// <summary>Shown centered when the grid has no rows.</summary>
     public static string NoData => Get("NoData");
 
+    /// <summary>The condition builder "Add condition" caption.</summary>
+    public static string ConditionAdd => Get("ConditionAdd");
+
+    /// <summary>The condition builder "Add group" caption.</summary>
+    public static string ConditionAddGroup => Get("ConditionAddGroup");
+
+    /// <summary>The condition builder "Remove" caption.</summary>
+    public static string ConditionRemove => Get("ConditionRemove");
+
+    /// <summary>The And (all) group caption.</summary>
+    public static string ConditionAll => Get("ConditionAll");
+
+    /// <summary>The Or (any) group caption.</summary>
+    public static string ConditionAny => Get("ConditionAny");
+
+    /// <summary>The "Builder" tab caption.</summary>
+    public static string ConditionBuilderTab => Get("ConditionBuilderTab");
+
+    /// <summary>The "Text" tab caption.</summary>
+    public static string ConditionTextTab => Get("ConditionTextTab");
+
+    /// <summary>The "Preview" caption.</summary>
+    public static string ConditionPreview => Get("ConditionPreview");
+
     /// <summary>The pivot totals caption.</summary>
     public static string PivotTotal => Get("PivotTotal");
 
