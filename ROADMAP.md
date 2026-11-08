@@ -37,6 +37,16 @@ Ranked by community demand (r/csharp, Xceed/MahApps/WPF-UI trackers, LOB vendor 
 - Pivot Grid — SHIPPED (v0.3.0 candidate): UI-free PivotEngine, PivotGrid control,
   drill-down, dimension filters, CSV export (stages 5.1-5.3).
 
+### Condition expression editor (stage A done)
+- Stage A (SHIPPED, UI-free core): ConditionGroup/ConditionExpression tree (And/Or, nested),
+  ConditionSchema.FromType, ConditionEvaluator (delegates to GridFilterDescription.Matches —
+  the grid semantics), ConditionParser text language with round-trip
+  (`[Salary] > 1000 And [Dept] In ('IT','HR')`).
+- Stage B (next): the ConditionBuilder control — typed value editors, And/Or groups UI,
+  text tab with parse-error highlighting, human-readable preview. Localized x3.
+- Stage C: grid integration (CustomFilterPredicate + "Condition..." header-menu entry),
+  pivot FieldFilter bridge, JSON persistence, demo page, docs x3.
+
 ### Integration docs instead of building
 - Charts: LiveCharts2 (MIT) usage recipes with our theming.
 - Ribbon: Fluent.Ribbon (MIT) alongside our DockingManager.

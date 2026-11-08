@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — condition expression editor, stage A (UI-free core)
+
+- `ConditionGroup`/`ConditionExpression`: a filter tree with nested And/Or groups;
+  `ConditionSchema` (+ `FromType` reflection over booleans/enums/dates/numbers/strings,
+  `[Display]` names, enum suggestions) describes the filterable fields.
+- `ConditionEvaluator.Matches/MatchesAll/Where`: evaluation DELEGATES to
+  `GridFilterDescription.Matches` — the exact semantics the grid view uses, so a condition
+  tree and the grid can never disagree. Empty groups: And=true, Or=false.
+- `ConditionParser.Parse/Format`: DevExpress-style text language with full round-trip —
+  `[Field] Op value` (all 16 operators; Between takes a comma pair, In a comma list),
+  `And` binds tighter than `Or`, parentheses nest, literals: 'strings' ('' escape),
+  numbers (int→long→decimal), true/false/null, `#yyyy-MM-dd#` dates; `ConditionParseException`
+  carries the error position for editor underlining. Zero new dependencies.
+- 21 Core tests (schema, evaluator incl. And/Or discrimination, precedence, round-trips,
+  literals, 8 error cases); And-semantics injection-validated. Stage B (the control) is next.
+
+
 ## [0.3.0] — 2026-11-08
 
 The forum-driven milestone: PropertyGrid TypeConverters/commit modes, TreeList per-level summaries, AutoComplete editor, Wizard, and the flagship Pivot Grid (engine → control → drill-down/filters/CSV). Plus reliability fixes across PropertyGrid.
