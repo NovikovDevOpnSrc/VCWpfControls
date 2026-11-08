@@ -219,8 +219,9 @@ code-behind 即可集成：
 
 ## 与表格/透视集成（第三阶段）
 
-- **表头菜单 →「筛选...」**：排序命令下方的一个条目打开基于表格元素类型的模态
-  `ConditionBuilder`；**确定**将条件树应用为 `GridControl.CustomFilterPredicate`（经
+- **表头菜单 →「筛选...」**：打开基于表格元素类型的模态 `ConditionBuilder`，并
+  预置右键所在列的一个 Equals 条件（按条件筛选；值勾选列表移至单独的「按值
+  筛选...」条目）；**确定**将条件树应用为 `GridControl.CustomFilterPredicate`（经
   `ConditionEvaluator`），**清除**移除筛选，**取消**保持不变。
 - `GridControl.CustomFilterPredicate` —— 任意 `Predicate<object?>`，与引擎筛选 AND 组合
   （保留原始数据源：即使筛选清空视图也不会丢失元素类型，且可随时撤下筛选）。

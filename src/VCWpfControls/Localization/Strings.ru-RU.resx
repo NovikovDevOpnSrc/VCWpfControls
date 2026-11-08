@@ -43,6 +43,7 @@
   <data name="WizardBack" xml:space="preserve"><value>Назад</value></data>
   <data name="WizardCancel" xml:space="preserve"><value>Отмена</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Фильтр...</value></data>
+  <data name="FilterByValues" xml:space="preserve"><value>Фильтр по значениям</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Выбор столбцов</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>Видимый</value></data>
   <data name="MoveUp" xml:space="preserve"><value>Вверх</value></data>

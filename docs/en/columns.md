@@ -197,8 +197,9 @@ Right-click any column header for the built-in (localized EN/RU/ZH) menu:
 
 - **Sort Ascending / Sort Descending** — with a check mark on the active sort;
 - **Clear Sorting** — enabled while any sort is active;
-- **Filter...** — opens the column's filter menu (value list); enabled when
-  `CanUserFilter` is on;
+- **Filter...** — opens the condition builder (`ConditionBuilder`) preseeded with one
+  condition on THIS column — filter by condition; enabled when `CanUserFilter` is on;
+- **Filter by values...** — the column's value-check list (the classic value filter);
 - **Fit column (content) / Fit all columns** — one-shot best fit;
 - **Group by this column** — toggle, adds/removes a grouping level;
 - **Freeze up to this column** — toggles `FrozenColumnCount`;

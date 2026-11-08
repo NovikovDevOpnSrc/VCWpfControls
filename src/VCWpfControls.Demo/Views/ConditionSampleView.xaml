@@ -13,7 +13,7 @@
         <TextBlock
             Margin="0,0,0,8"
             Opacity="0.7"
-            Text="Edit the condition (Builder or Text tab) — Apply filters the grid through CustomFilterPredicate; right-click a header for Condition... too." />
+            Text="Edit the condition (Builder or Text tab) — Apply filters the grid through CustomFilterPredicate; right-click a header → Filter... opens the same builder preseeded with that column." />
 
         <conditions:ConditionBuilder
             x:Name="Builder"

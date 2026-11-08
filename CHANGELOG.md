@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — header menu "Filter..." now filters BY CONDITION (user request)
+
+- The right-click "Filter..." entry opens the condition builder (`ConditionBuilder`)
+  PRESEEDED with one Equals condition on the clicked column — filter by condition instead
+  of the value-check multitude. The value list moved to a separate "Filter by values..."
+  entry, and the old duplicate "Filter......" text (two near-identical entries —
+  `FilterEllipsis + "..."` next to `FilterEllipsis`) was removed. `OpenConditionDialog`
+  takes an optional column; tests drive it through `ShowConditionDialogModally = false`
+  (modal/non-modal share one path). New string `FilterByValues` x3. Preseed
+  injection-validated.
+
 ### Fixed — pivot automation names + clipboard copy (found by the new e2e round)
 
 - `PivotTextColumn` overrides the new virtual `GridColumnBase.GetCellValue` to resolve its

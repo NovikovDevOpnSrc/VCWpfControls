@@ -97,8 +97,11 @@ public static class GridStrings
     /// <summary>The "To" label of the range filter.</summary>
     public static string FilterTo => Get("FilterTo");
 
-    /// <summary>The "Filter..." header menu entry.</summary>
+    /// <summary>The "Filter..." header menu entry (opens the condition builder).</summary>
     public static string FilterEllipsis => Get("FilterEllipsis");
+
+    /// <summary>The "Filter by values..." header menu entry (the value-check list).</summary>
+    public static string FilterByValues => Get("FilterByValues");
 
     /// <summary>The column chooser dialog title.</summary>
     public static string ColumnChooserTitle => Get("ColumnChooserTitle");

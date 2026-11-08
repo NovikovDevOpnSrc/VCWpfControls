@@ -69,8 +69,12 @@ public class ConditionIntegrationTests
     {
         var grid = CreateGrid(out var window);
         var menu = grid.BuildColumnHeaderMenu(grid.Columns[0]);
-        // The condition entry sits right under the sorting commands.
-        var conditionEntry = menu.Items.OfType<MenuItem>().First(m => m.Header as string == GridStrings.FilterEllipsis + "...");
+        // The condition dialog lives under "Filter..." (preseeded with the column); the
+        // old duplicate "Filter......" entry is gone.
+        Assert.DoesNotContain(menu.Items.OfType<MenuItem>(),
+            m => m.Header as string == GridStrings.FilterEllipsis + "...");
+        Assert.Contains(menu.Items.OfType<MenuItem>(),
+            m => m.Header as string == GridStrings.FilterEllipsis);
         try
         {
             var before = grid.Items.Count;

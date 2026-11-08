@@ -230,10 +230,11 @@ Returns the number of cells written.
 
 ## Grid and pivot integration (stage C)
 
-- **Header menu → "Filter..."**: under the sorting commands a condition entry opens a modal
-  `ConditionBuilder` over the grid's item type; **OK** applies the tree as
-  `GridControl.CustomFilterPredicate` (through `ConditionEvaluator`), **Clear** removes the
-  filter, **Cancel** keeps everything.
+- **Header menu → "Filter..."**: opens a modal `ConditionBuilder` over the grid's item
+  type, PRESEEDED with one Equals condition on the right-clicked column (filter by
+  condition; the value-check list moved to the separate "Filter by values..." entry);
+  **OK** applies the tree as `GridControl.CustomFilterPredicate` (through
+  `ConditionEvaluator`), **Clear** removes the filter, **Cancel** keeps everything.
 - `GridControl.CustomFilterPredicate` — any `Predicate<object?>` ANDed with the engine
   filters (the raw source is kept, so a filter that empties the view still knows the item
   type and the filter can be lifted).

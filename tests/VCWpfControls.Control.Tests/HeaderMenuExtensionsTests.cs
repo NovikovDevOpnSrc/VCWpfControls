@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using VCWpfControls.Conditions;
 using VCWpfControls.Control.Tests.Infrastructure;
 using VCWpfControls.Grid;
 using VCWpfControls.Grid.Columns;
@@ -10,7 +11,8 @@ using static VCWpfControls.Control.Tests.TestModels;
 namespace VCWpfControls.Control.Tests;
 
 /// <summary>
-/// Header menu extensions: the "Filter..." entry opens the column filter menu, the
+/// Header menu extensions: the "Filter..." entry opens the condition builder preseeded
+/// with the clicked column, "Filter by values..." opens the value-check list, the
 /// column chooser dialog toggles visibility and reorders, and ResetLayout restores the
 /// captured order/widths/visibility/frozen count.
 /// </summary>
@@ -57,23 +59,59 @@ public class HeaderMenuExtensionsTests
         => item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent, item));
 
     [StaFact]
-    public void FilterEntry_OpensColumnFilterMenu()
+    public void FilterEntry_OpensConditionDialog_PreseededWithColumnField()
     {
         var grid = CreateGrid(out var window);
         try
         {
-            var menu = BuildMenu(grid, grid.Columns[0]);
+            var menu = BuildMenu(grid, grid.Columns[1]); // Salary
             var filter = FindItem(menu, GridStrings.FilterEllipsis);
             Assert.True(filter.IsEnabled); // CanUserFilter defaults to true
 
+            // The old duplicate text ("Filter......") entry is gone.
+            Assert.DoesNotContain(menu.Items.OfType<MenuItem>(),
+                m => m.Header as string == GridStrings.FilterEllipsis + "...");
+
+            grid.ShowConditionDialogModally = false; // the entry opens the modal dialog
             Click(filter);
             TestWindowHost.Pump();
-            Assert.NotNull(grid.OpenFilterMenuForTest);
+            var dialog = grid.ConditionDialogForTest;
+            Assert.NotNull(dialog);
+
+            // The builder starts with ONE condition on the clicked column's field.
+            var builder = grid.ConditionBuilderForTest;
+            Assert.NotNull(builder);
+            var group = Assert.IsType<ConditionGroup>(builder!.Condition);
+            var expression = Assert.IsType<ConditionExpression>(Assert.Single(group.Children));
+            Assert.Equal("Salary", expression.FieldName);
+
+            dialog!.Close();
+            TestWindowHost.Pump();
 
             // A non-filterable column disables the entry.
             grid.Columns[1].CanUserFilter = false;
             var menu2 = BuildMenu(grid, grid.Columns[1]);
             Assert.False(FindItem(menu2, GridStrings.FilterEllipsis).IsEnabled);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void FilterByValuesEntry_OpensValueListMenu()
+    {
+        var grid = CreateGrid(out var window);
+        try
+        {
+            var menu = BuildMenu(grid, grid.Columns[0]);
+            var values = FindItem(menu, GridStrings.FilterByValues);
+            Assert.True(values.IsEnabled);
+
+            Click(values);
+            TestWindowHost.Pump();
+            Assert.NotNull(grid.OpenFilterMenuForTest);
         }
         finally
         {

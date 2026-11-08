@@ -43,6 +43,7 @@
   <data name="WizardBack" xml:space="preserve"><value>上一步</value></data>
   <data name="WizardCancel" xml:space="preserve"><value>取消</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>筛选...</value></data>
+  <data name="FilterByValues" xml:space="preserve"><value>按值筛选</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>列选择器</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>可见</value></data>
   <data name="MoveUp" xml:space="preserve"><value>上移</value></data>

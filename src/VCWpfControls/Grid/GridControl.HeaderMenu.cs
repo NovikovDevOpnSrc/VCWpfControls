@@ -46,18 +46,23 @@ public partial class GridControl
         menu.Items.Add(sortDescending);
         menu.Items.Add(clearSorting);
 
-        // Condition...: opens the ConditionBuilder over this grid's item type.
-        var conditionEntry = new MenuItem { Header = GridStrings.FilterEllipsis + "..." };
-        conditionEntry.Click += (_, _) => OpenConditionDialog();
-        menu.Items.Add(conditionEntry);
-
+        // Filter...: the CONDITION builder preseeded with this column (filter by
+        // condition); the value-check list moved under "Filter by values...".
         var filter = new MenuItem
         {
             Header = GridStrings.FilterEllipsis,
             IsEnabled = column.CanUserFilter,
         };
-        filter.Click += (_, _) => OpenColumnFilterMenu(column);
+        filter.Click += (_, _) => OpenConditionDialog(column);
         menu.Items.Add(filter);
+
+        var filterValues = new MenuItem
+        {
+            Header = GridStrings.FilterByValues,
+            IsEnabled = column.CanUserFilter,
+        };
+        filterValues.Click += (_, _) => OpenColumnFilterMenu(column);
+        menu.Items.Add(filterValues);
         menu.Items.Add(new Separator());
 
         var bestFit = new MenuItem { Header = GridStrings.BestFit };
@@ -160,15 +165,18 @@ public partial class GridControl
     /// <summary>
     /// Opens a modal ConditionBuilder over the grid's item type; OK applies the tree as
     /// <see cref="CustomFilterPredicate"/> (through ConditionEvaluator), Clear removes the
-    /// filter, Cancel keeps everything.
+    /// filter, Cancel keeps everything. When <paramref name="column"/> is given (the
+    /// header-menu "Filter..." path) the builder starts with one condition on that
+    /// column's field instead of an empty group.
     /// </summary>
-    public void OpenConditionDialog()
+    public void OpenConditionDialog(GridColumnBase? column = null)
     {
         if (ResolveSourceItemTypeForConditions() is not { } itemType)
         {
             return;
         }
 
+        var schema = Conditions.ConditionSchema.FromType(itemType);
         var dialog = new Window
         {
             Title = GridStrings.FilterEllipsis,
@@ -183,8 +191,8 @@ public partial class GridControl
 
         var builder = new Conditions.ConditionBuilder
         {
-            Schema = Conditions.ConditionSchema.FromType(itemType),
-            Condition = _conditionTree ?? new Conditions.ConditionGroup(Conditions.ConditionGroupOperator.And),
+            Schema = schema,
+            Condition = _conditionTree ?? PreseededCondition(column, schema),
             Margin = new Thickness(12),
         };
         _conditionTree ??= builder.Condition;
@@ -192,36 +200,53 @@ public partial class GridControl
         AttachConditionDialogHandlers(dialog, builder);
         _conditionDialogForTest = dialog;
         dialog.Closed += (_, _) => _conditionDialogForTest = null;
-        dialog.ShowDialog();
+        if (ShowConditionDialogModally)
+        {
+            dialog.ShowDialog();
+        }
+        else
+        {
+            dialog.Show();
+        }
     }
 
-    /// <summary>Test hook: the condition dialog without the modal loop.</summary>
-    internal Window OpenConditionDialogForTest()
+    /// <summary>
+    /// The dialog's initial tree for a column-scoped "Filter...": one Equals condition on
+    /// the column's field. Falls back to an empty group when the field is not in the schema
+    /// (computed paths) or no column was given.
+    /// </summary>
+    private static Conditions.ConditionNode PreseededCondition(GridColumnBase? column, Conditions.ConditionSchema schema)
     {
-        if (ResolveSourceItemTypeForConditions() is not { } itemType)
+        if (column is not null
+            && !string.IsNullOrEmpty(column.EffectiveSortPath)
+            && schema.Fields.Any(f => string.Equals(f.Name, column.EffectiveSortPath, StringComparison.OrdinalIgnoreCase)))
         {
-            throw new InvalidOperationException($"ResolvedItemType is null; source={PivotItemsSourceDebugText()}");
+            return new Conditions.ConditionGroup(Conditions.ConditionGroupOperator.And)
+            {
+                Children = { new Conditions.ConditionExpression(column.EffectiveSortPath, GridFilterOperator.Equals) },
+            };
         }
 
-        var dialog = new Window
+        return new Conditions.ConditionGroup(Conditions.ConditionGroupOperator.And);
+    }
+
+    /// <summary>Whether the condition dialog runs modal (<c>ShowDialog</c>); tests turn this off.</summary>
+    internal bool ShowConditionDialogModally { get; set; } = true;
+
+    /// <summary>Test hook: the condition dialog without the modal loop.</summary>
+    internal Window OpenConditionDialogForTest(GridColumnBase? column = null)
+    {
+        ShowConditionDialogModally = false;
+        try
         {
-            Title = GridStrings.FilterEllipsis,
-            ShowInTaskbar = false,
-            Width = 640,
-            Height = 480,
-        };
-        var builder = new Conditions.ConditionBuilder
+            OpenConditionDialog(column);
+        }
+        finally
         {
-            Schema = Conditions.ConditionSchema.FromType(itemType),
-            Condition = _conditionTree ?? new Conditions.ConditionGroup(Conditions.ConditionGroupOperator.And),
-            Margin = new Thickness(12),
-        };
-        _conditionTree ??= builder.Condition;
-        AttachConditionDialogHandlers(dialog, builder);
-        _conditionDialogForTest = dialog;
-        dialog.Closed += (_, _) => _conditionDialogForTest = null;
-        dialog.Show();
-        return dialog;
+            ShowConditionDialogModally = true;
+        }
+
+        return ConditionDialogForTest ?? throw new InvalidOperationException($"ResolvedItemType is null; source={PivotItemsSourceDebugText()}");
     }
 
     /// <summary>

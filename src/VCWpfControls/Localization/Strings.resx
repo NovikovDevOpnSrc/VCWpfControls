@@ -43,6 +43,7 @@
   <data name="WizardBack" xml:space="preserve"><value>Back</value></data>
   <data name="WizardCancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Filter...</value></data>
+  <data name="FilterByValues" xml:space="preserve"><value>Filter by values</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Column chooser</value></data>
   <data name="ColumnChooserShowColumn" xml:space="preserve"><value>Visible</value></data>
   <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
