@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — pivot automation names + clipboard copy (found by the new e2e round)
+
+- `PivotTextColumn` overrides the new virtual `GridColumnBase.GetCellValue` to resolve its
+  display `Path` (`Values[i].Caption` / `Cells[c]` / `Totals[m]`). The base read
+  `FieldName`, which on pivot columns names a whole collection — row/cell automation names
+  (and TSV copy from a pivot) carried `System.Object[]` instead of the cell text. Caught by
+  the first run of the new Pivot e2e; regression test injection-validated.
+
+### Added — FlaUI e2e for the post-v0.3 pages
+
+- `PostV3PagesUiTests` (UIA-pattern-only): Pivot (totals column + grand row through the
+  Table/DataItem patterns — this is the test that caught the GetCellValue bug), Gantt
+  (tree headers/rows, critical-path toggle, month zoom, Reset — the full-rebuild path in
+  the real shell), Conditions (builder add/remove condition row, empty-condition Apply
+  keeps all rows), Charts & Ribbon (page renders with the third-party ribbon + our grid;
+  Fluent exposes no UIA children — documented in the test, out of scope).
+- `DemoSmokeTests` navigation sweep now asserts page automation ids for Wizard, Pivot,
+  Gantt, Conditions and Charts & Ribbon too; the Gantt sample page gained its id.
+
 ## [0.4.0] — 2026-11-08
 
 Gantt chart: headless scheduling engine, GanttView (task tree + timeline), drag interactions (move/resize/link with live re-scheduling).

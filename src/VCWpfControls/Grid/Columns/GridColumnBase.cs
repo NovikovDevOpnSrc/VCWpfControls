@@ -260,8 +260,13 @@ public abstract class GridColumnBase : DependencyObject
     /// <summary>Sort direction currently applied to this column (kept in sync by the grid).</summary>
     internal Data.GridSortDirection SortDirection { get; set; }
 
-    /// <summary>Reads the cell value of the given item using the column's field path.</summary>
-    public object? GetCellValue(object item)
+    /// <summary>
+    /// Reads the cell value of the given item. The base implementation resolves
+    /// <see cref="FieldName"/> as a property path; columns that display a different path
+    /// (e.g. <see cref="Pivot.PivotTextColumn"/>) override this so automation names and
+    /// clipboard copy carry the DISPLAYED value, not the backing field.
+    /// </summary>
+    public virtual object? GetCellValue(object item)
     {
         ArgumentNullException.ThrowIfNull(item);
         return PropertyAccessor.GetOrCreate(item.GetType(), FieldName).GetValue(item);

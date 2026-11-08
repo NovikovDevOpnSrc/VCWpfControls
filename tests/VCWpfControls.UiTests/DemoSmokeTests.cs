@@ -42,6 +42,11 @@ public sealed class DemoSmokeTests : IDisposable
             ["Tree list"] = "TreeListSample",
             ["Editors"] = "EditorsSample",
             ["Docking"] = "DockingSample",
+            ["Wizard"] = "WizardSample",
+            ["Pivot"] = "PivotSample",
+            ["Gantt"] = "GanttSample",
+            ["Conditions"] = "ConditionSample",
+            ["Charts & Ribbon"] = "IntegrationSample",
         };
 
         foreach (var item in navList.Items)

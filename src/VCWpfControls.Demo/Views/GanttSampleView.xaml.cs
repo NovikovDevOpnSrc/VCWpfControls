@@ -12,6 +12,7 @@ public partial class GanttSampleView : UserControl
     public GanttSampleView()
     {
         InitializeComponent();
+        SetValue(System.Windows.Automation.AutomationProperties.AutomationIdProperty, "GanttSample");
     }
 
     private void OnTaskEdited(object sender, GanttTask task)

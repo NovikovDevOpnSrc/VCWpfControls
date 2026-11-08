@@ -29,4 +29,49 @@ public sealed class PivotTextColumn : GridTextColumn
         binding.Path = new PropertyPath(Path);
         return binding;
     }
+
+    /// <summary>
+    /// Resolves the DISPLAYED value from <see cref="Path"/> — the base would read
+    /// <see cref="GridColumnBase.FieldName"/>, which on pivot columns names a whole
+    /// collection, so automation peers and clipboard copy would carry
+    /// <c>System.Object[]</c> instead of the cell text.
+    /// </summary>
+    public override object? GetCellValue(object item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item is not PivotRowItem row)
+        {
+            return base.GetCellValue(item);
+        }
+
+        if (TryIndex(Path, "Values[", out var valueIndex))
+        {
+            return valueIndex < row.Values.Count ? row.Values[valueIndex].Caption : null;
+        }
+
+        if (TryIndex(Path, "Cells[", out var cellIndex))
+        {
+            return cellIndex < row.Cells.Length ? row.Cells[cellIndex] : null;
+        }
+
+        if (TryIndex(Path, "Totals[", out var totalIndex))
+        {
+            return totalIndex < row.Totals.Length ? row.Totals[totalIndex] : null;
+        }
+
+        return null;
+    }
+
+    private static bool TryIndex(string path, string prefix, out int index)
+    {
+        index = -1;
+        if (!path.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var start = prefix.Length;
+        var end = path.IndexOf(']', start);
+        return end > start && int.TryParse(path.AsSpan(start, end - start), out index);
+    }
 }

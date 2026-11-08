@@ -154,4 +154,40 @@ public class PivotGridTests
             window.Close();
         }
     }
+
+    [StaFact]
+    public void GetCellValue_ReturnsDisplayedValue_NotTheBackingCollection()
+    {
+        // Regression: FieldName on pivot columns names a whole collection (Values/Cells/
+        // Totals), so the base GetCellValue fed "System.Object[]" into row/cell
+        // automation names and clipboard copy. The override must resolve the Path.
+        var pivot = Create(out var window);
+        try
+        {
+            var rows = pivot.DataEngine.View
+                .OfType<VCWpfControls.Grid.Data.GridDataRow>()
+                .Select(d => (PivotRowItem)d.Item)
+                .ToList();
+            var east = rows[0];
+
+            var regionColumn = pivot.Columns[0];               // Path Values[0].Caption
+            var dataColumn = pivot.Columns[1];                 // Path Cells[0]
+            var totalColumn = pivot.Columns[3];                // Path Totals[0]
+
+            Assert.Equal("East", regionColumn.GetCellValue(east));
+            Assert.Equal(10m, dataColumn.GetCellValue(east));
+            Assert.Equal(30m, totalColumn.GetCellValue(east));
+
+            foreach (var column in pivot.Columns)
+            {
+                var text = Convert.ToString(column.GetCellValue(east), System.Globalization.CultureInfo.CurrentCulture);
+                Assert.False(text?.StartsWith("System.", StringComparison.Ordinal),
+                    $"column '{column.Header}' leaks the backing type: {text}");
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
 }
