@@ -3,7 +3,7 @@
 [![CI](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-免费开源的 WPF 控件库。**第一阶段**提供 **GridControl** —— 一个快速、对 MVVM 友好的数据表格控件，功能不逊于免费的 WPF 表格控件。
+免费开源的 WPF 业务控件库：**GridControl**（快速、对 MVVM 友好、功能不逊于免费 WPF 表格的数据表格）、**TreeListView**、**PropertyGrid**、**透视表 (Pivot Grid)**、**甘特图**、条件表达式编辑器、**Wizard 向导**、停靠布局与类型化编辑器 —— 全部基于 MIT 许可证，库本身零依赖，内置 EN/RU/ZH 本地化。
 
 **文档：** [English](README.md) | [Русский](README.ru.md) | [中文](README.zh-CN.md)
 
