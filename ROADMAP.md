@@ -34,8 +34,8 @@ Ranked by community demand (r/csharp, Xceed/MahApps/WPF-UI trackers, LOB vendor 
 - Docking: nested splitter groups inside one zone (existing backlog item).
 
 ### Large / flagship
-- Pivot Grid (the most-requested uncovered LOB control: DataGrid -> Scheduler ->
-  Gantt/TreeGrid -> Pivot -> Charts per vendor catalogs).
+- Pivot Grid — SHIPPED (v0.3.0 candidate): UI-free PivotEngine, PivotGrid control,
+  drill-down, dimension filters, CSV export (stages 5.1-5.3).
 
 ### Integration docs instead of building
 - Charts: LiveCharts2 (MIT) usage recipes with our theming.
