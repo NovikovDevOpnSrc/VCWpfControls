@@ -68,3 +68,4 @@ var rowTotal = result.RowTotals[rowIndex][measureIndex];
   empty intersections yield null (Count yields 0).
 - **Totals** (`includeTotals`, default true): `RowTotals`, `ColumnTotals`, `GrandTotals`
   aggregate across the opposite axis; pass false to save the work.
+

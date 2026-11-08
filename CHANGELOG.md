@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt control (stage 2: rendering)
+
+- `GanttView`: the task hierarchy in a TreeListView (left, splitter-resizable) plus the
+  `GanttTimelinePanel` timeline (right) — bars with a completion fill, milestone diamonds,
+  dependency arrows for FS/SS/FF/SF (critical links accented), a dashed today line, and
+  day/week/month zoom. `TaskRowHeight` keeps both halves in lock-step; the timeline
+  scrolls horizontally and mirrors the tree's vertical scroll. `AutoSchedule` runs the
+  engine on load/change; `ShowCriticalPath` outlines zero-float bars/links; double-click
+  on a bar raises `BarDoubleClicked`.
+- `GanttTaskNode` wraps tasks for the tree grid (Name/Start/Finish/% columns); the row
+  order maps the FLATTENED tree render order — the tree's Items is already flat, so the
+  first version's recursive collection duplicated children (caught by an order test).
+- Layout note: a TreeListView in an Auto grid column is measured with infinite width and
+  its headers presenter returns PositiveInfinity — the template pins the tree width.
+- Docs x3 (new "Gantt" page). 6 STA tests (tree+timeline from flat tasks, parent-first
+  order, bars/milestones rendered, auto-schedule shift, critical-path toggle, zoom;
+  offscreen pixel check green except the disconnected-RDP environment, CI verifies).
+
+
 ### Added — Gantt engine (stage 1: headless)
 
 - UI-free scheduling core for a Gantt chart: `GanttTask` (id/name/start/finish/completion/

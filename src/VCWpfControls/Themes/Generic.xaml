@@ -8,7 +8,9 @@
     xmlns:editors="clr-namespace:VCWpfControls.Editors"
     xmlns:docking="clr-namespace:VCWpfControls.Docking"
     xmlns:propertyGridPrimitives="clr-namespace:VCWpfControls.PropertyGrid.Primitives"
-    xmlns:wizard="clr-namespace:VCWpfControls.Wizard">
+    xmlns:wizard="clr-namespace:VCWpfControls.Wizard"
+    xmlns:gantt="clr-namespace:VCWpfControls.Gantt"
+    xmlns:treeList="clr-namespace:VCWpfControls.TreeList">
 
     <!-- ============ Theme palette (override these keys to re-theme the grid) ============ -->
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FFFFFFFF" />
@@ -732,6 +734,52 @@
                             <ContentPresenter
                                 Content="{Binding CurrentPage, RelativeSource={RelativeSource TemplatedParent}}" />
                         </DockPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <!-- ============ GanttView ============ -->
+
+    <Style TargetType="{x:Type gantt:GanttView}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type gantt:GanttView}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <treeList:TreeListView x:Name="PART_Tree" Grid.Column="0" Width="420" MinWidth="220" />
+
+                            <GridSplitter
+                                Grid.Column="1"
+                                Width="4"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Stretch"
+                                ResizeBehavior="PreviousAndNext"
+                                ResizeDirection="Columns" />
+
+                            <ScrollViewer
+                                x:Name="PART_TimelineScroll"
+                                Grid.Column="2"
+                                VerticalScrollBarVisibility="Hidden"
+                                HorizontalScrollBarVisibility="Auto">
+                                <gantt:GanttTimelinePanel x:Name="PART_Timeline" />
+                            </ScrollViewer>
+                        </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

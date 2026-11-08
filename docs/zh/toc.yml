@@ -28,3 +28,5 @@
   href: pivot.md
 - name: 第三方集成
   href: integration.md
+- name: 甘特图
+  href: gantt.md

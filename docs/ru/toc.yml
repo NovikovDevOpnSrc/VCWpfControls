@@ -28,3 +28,5 @@
   href: pivot.md
 - name: Интеграция
   href: integration.md
+- name: Диаграмма Ганта
+  href: gantt.md
