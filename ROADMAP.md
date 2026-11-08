@@ -49,8 +49,9 @@ Ranked by community demand (r/csharp, Xceed/MahApps/WPF-UI trackers, LOB vendor 
   PivotGrid.Condition filtering source rows, demo page, docs x3.
 
 ### Integration docs instead of building
-- Charts: LiveCharts2 (MIT) usage recipes with our theming.
-- Ribbon: Fluent.Ribbon (MIT) alongside our DockingManager.
+- SHIPPED: demo page "Charts & Ribbon" + docs x3 integration page (LiveCharts2 2.0.5,
+  Fluent.Ribbon 11.0.2, both MIT, demo-only packages; NU1701 and namespace gotchas
+  encoded).
 
 ## v0.2 candidates (next)
 
