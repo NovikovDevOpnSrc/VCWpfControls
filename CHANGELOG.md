@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt engine (stage 1: headless)
+
+- UI-free scheduling core for a Gantt chart: `GanttTask` (id/name/start/finish/completion/
+  milestone/parent — flat list keyed by id), `GanttDependency` with all four precedence
+  relations (FinishToStart/StartToStart/FinishToFinish/StartToFinish) plus lag days
+  (negative = lead/overlap).
+- `GanttEngine.AutoSchedule`: forward-only relaxation — violating successors shift to the
+  earliest satisfying date (duration captured before the move; the first version recomputed
+  it after moving the start and collapsed cascaded tasks to zero days — caught by the
+  chain test). `GanttCycleException` carries the cycle path (self-references included;
+  links with unknown ids are ignored).
+- `GanttEngine.CriticalPath`: CPM floats over a Kahn topological order (early/late passes);
+  critical = zero total float; FF/SF constrain the successor's finish keeping its duration.
+  With no links only the project-finish task is critical.
+- `GanttEngine.BuildTimescale` (Day/Week/Month; weeks align to the culture's first day —
+  invariant starts Sunday, de-DE Monday) + `AlignToWeek`. 20 Core tests; the critical-float
+  comparison is injection-validated.
+
+
 ## [0.3.1] — 2026-11-08
 
 Condition expression editor (engine → ConditionBuilder control → grid/pivot integration), third-party integration recipes (LiveCharts2 + Fluent.Ribbon), nested docking splitter groups. The v0.3 roadmap is complete.
