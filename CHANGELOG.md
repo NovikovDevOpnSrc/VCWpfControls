@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Scheduler stage 1 (headless engine)
+
+- `VCWpfControls.Scheduler` engine + model (UI-free, no STA): `SchedulerAppointment`
+  (all-day, resource, location), `SchedulerRecurrence` — an RRULE subset: Daily / Weekly
+  (weekday set) / Monthly (day-of-month, clamped into short months — the 31st lands on the
+  last day of February) / Yearly (month + day, Feb 29 → Feb 28 in non-leap years), interval
+  (every N units), `Count`/`Until` limits with RFC-5545 semantics (counted from the SERIES
+  start, not the queried range; deleted occurrences still consume their slot) and per-date
+  `Exceptions`.
+- `SchedulerEngine`: `Expand`/`OccurrencesOf` (half-open range overlap — touching a
+  boundary is not inside), `LayoutOverlaps` (interval-graph lane clustering for day/week
+  views: transitively overlapping occurrences share a cluster; touching intervals share a
+  lane), `FindConflicts` (per-resource double bookings; touching ≠ conflict; no resource =
+  never conflicts), `ViewRange` (Day / WorkWeek Mon-Fri / Week by culture / Month) and
+  `MonthGrid` (42-day six-week grid aligned to the culture week start).
+- 28 Core tests. The weekly walk's day offset is computed from the CULTURE week start, not
+  the enum value — the naive `(int)day` produced Saturdays for Friday selections under
+  Monday-first cultures (caught red by the weekday test, fixed to green).
+
 ### Added / Fixed — fit options (user request)
 
 - New `GridControl.FillColumnsToViewport()` + header-menu "Fit all columns (fill width)":
