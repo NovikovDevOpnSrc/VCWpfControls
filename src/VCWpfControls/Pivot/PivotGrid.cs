@@ -26,6 +26,31 @@ public sealed class PivotRowItem
     public bool IsTotal { get; init; }
 }
 
+/// <summary>Event arguments of <see cref="PivotGrid.DrillDownRequested"/>.</summary>
+public sealed class PivotDrillDownEventArgs : EventArgs
+{
+    /// <summary>Creates the args.</summary>
+    public PivotDrillDownEventArgs(PivotRowItem row, Grid.Columns.GridColumnBase column, IReadOnlyList<object> sourceRows, object?[] aggregates)
+    {
+        Row = row;
+        Column = column;
+        SourceRows = sourceRows;
+        Aggregates = aggregates;
+    }
+
+    /// <summary>The clicked pivot row.</summary>
+    public PivotRowItem Row { get; }
+
+    /// <summary>The clicked data column.</summary>
+    public Grid.Columns.GridColumnBase Column { get; }
+
+    /// <summary>The source rows aggregated into the clicked cell.</summary>
+    public IReadOnlyList<object> SourceRows { get; }
+
+    /// <summary>The cell's aggregates (per measure).</summary>
+    public object?[] Aggregates { get; }
+}
+
 /// <summary>
 /// A pivot table control: computes <see cref="PivotEngine"/> results from
 /// <see cref="PivotItemsSource"/> and renders them in a <see cref="GridControl"/> — one column
@@ -44,6 +69,11 @@ public class PivotGrid : GridControl
     public static readonly DependencyProperty IncludeTotalsProperty = DependencyProperty.Register(
         nameof(IncludeTotals), typeof(bool), typeof(PivotGrid),
         new PropertyMetadata(GridColumnBase.Boxed.BoolTrue, OnConfigurationChanged));
+
+    /// <summary>Identifies the <see cref="FieldFilter"/> dependency property.</summary>
+    public static readonly DependencyProperty FieldFilterProperty = DependencyProperty.Register(
+        nameof(FieldFilter), typeof(Func<string, object?, bool>), typeof(PivotGrid),
+        new PropertyMetadata(null, OnConfigurationChanged));
 
     /// <summary>Creates the pivot grid.</summary>
     public PivotGrid()
@@ -77,6 +107,60 @@ public class PivotGrid : GridControl
         set => SetValue(IncludeTotalsProperty, value);
     }
 
+    /// <summary>
+    /// Dimension filter applied before bucketing: receives (fieldName, value) and returns
+    /// false to exclude the source row. Affects every row/column field.
+    /// </summary>
+    public Func<string, object?, bool>? FieldFilter
+    {
+        get => (Func<string, object?, bool>?)GetValue(FieldFilterProperty);
+        set => SetValue(FieldFilterProperty, value);
+    }
+
+    /// <summary>The source rows behind one cell (drill-down); empty for the grand-total row.</summary>
+    public IReadOnlyList<object> GetDrillDownRows(int rowIndex, int columnIndex)
+    {
+        if (Result?.SourceRows is not { } rows
+            || rowIndex < 0 || rowIndex >= rows.Length
+            || columnIndex < 0 || columnIndex >= rows[rowIndex].Length)
+        {
+            return Array.Empty<object>();
+        }
+
+        return rows[rowIndex][columnIndex] ?? Array.Empty<object>();
+    }
+
+    /// <summary>Raised when the user double-clicks a data cell — carries the source rows behind it.</summary>
+    public event EventHandler<PivotDrillDownEventArgs>? DrillDownRequested;
+
+    /// <inheritdoc />
+    protected override void OnMouseDoubleClick(System.Windows.Input.MouseButtonEventArgs e)
+    {
+        base.OnMouseDoubleClick(e);
+        RaiseDrillDownForCurrentCell();
+    }
+
+    /// <summary>
+    /// Raises <see cref="DrillDownRequested"/> for the current data cell (double-click
+    /// path; also callable programmatically).
+    /// </summary>
+    internal void RaiseDrillDownForCurrentCell()
+    {
+        // The current cell is already updated by the mouse-down pass.
+        if (CurrentItem is PivotRowItem row && !row.IsTotal
+            && CurrentColumn is PivotTextColumn column
+            && _dataColumnIndexes.TryGetValue(column, out var cellIndex))
+        {
+            DrillDownRequested?.Invoke(this, new PivotDrillDownEventArgs(
+                row,
+                column,
+                GetDrillDownRows(cellIndex.Row, cellIndex.Column),
+                Result!.Cells[cellIndex.Row][cellIndex.Column]));
+        }
+    }
+
+    private readonly Dictionary<Grid.Columns.GridColumnBase, (int Row, int Column)> _dataColumnIndexes = new();
+
     /// <summary>The last computed result (null before the first computation).</summary>
     public PivotResult? Result { get; private set; }
 
@@ -91,11 +175,12 @@ public class PivotGrid : GridControl
             return;
         }
 
-        Result = PivotEngine.Compute(PivotItemsSource, RowFields, ColumnFields, Measures, IncludeTotals);
+        Result = PivotEngine.Compute(PivotItemsSource, RowFields, ColumnFields, Measures, IncludeTotals, FieldFilter, includeSourceRows: true);
         var result = Result;
         var measureCount = Measures.Count;
 
         Columns.Clear();
+        _dataColumnIndexes.Clear();
         for (var i = 0; i < RowFields.Count; i++)
         {
             Columns.Add(new PivotTextColumn
@@ -117,13 +202,15 @@ public class PivotGrid : GridControl
             for (var m = 0; m < measureCount; m++)
             {
                 var header = measureCount == 1 ? caption : $"{caption} · {Measures[m]}";
-                Columns.Add(new PivotTextColumn
+                var dataColumn = new PivotTextColumn
                 {
                     FieldName = "Cells",
                     Header = header,
                     Width = new GridColumnWidth(1, GridUnitType.Star),
                     Path = $"Cells[{ColumnCellIndex(combo, m)}]",
-                });
+                };
+                Columns.Add(dataColumn);
+                _dataColumnIndexes[dataColumn] = (combo, m);
             }
         }
 

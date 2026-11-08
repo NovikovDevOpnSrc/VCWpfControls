@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — pivot stage 3: drill-down, dimension filters, CSV export
+
+- **Drill-down**: `PivotEngine` optionally keeps per-intersection source buckets
+  (`includeSourceRows`); `PivotResult.SourceRows[row][column]` powers
+  `PivotGrid.GetDrillDownRows(r, c)`, and double-clicking a data cell raises
+  `DrillDownRequested` (Row/Column/SourceRows/Aggregates — open the rows in a details
+  grid; the grand-total row does not drill).
+- **Dimension filters**: `PivotEngine.Compute(..., fieldFilter)` and the
+  `PivotGrid.FieldFilter` DP — `Func<fieldName, value>` applied to every row/column field
+  before bucketing; totals aggregate the INCLUDED rows only (a filtered grand total over
+  unfiltered rows was caught by the tests); changing the filter recomputes.
+- **CSV**: `PivotExporter.ToCsv(result, culture?, rowFieldNames?)` — culture list
+  separator, quoting like the grid exporter, grand-total row when totals are present.
+- Tests: 5 Core (filter/totals consistency, null filter, source buckets, CSV layout,
+  ru-RU separator + empty cells) + 3 STA (filter recompute, drill-down rows, event args).
+  Full pivot suite: 15 Core + 8 STA. Local pixel tests hit the disconnected-RDP empty
+  render (environment); CI verifies.
+
+
 ### Added — PivotGrid control (stage 2)
 
 - `PivotGrid : GridControl`: renders the `PivotEngine` result — one leading column per

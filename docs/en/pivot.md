@@ -27,6 +27,19 @@ engine computes totals only when needed). Changing `RowFields`/`ColumnFields`/`M
 collections or `PivotItemsSource` recomputes and rebuilds immediately; `Result` exposes
 the last `PivotResult`.
 
+## Drill-down, dimension filters, CSV (stage 3)
+
+- **Drill-down**: `PivotGrid.GetDrillDownRows(rowIndex, columnIndex)` returns the source
+  rows aggregated into a cell (the engine keeps per-intersection buckets when the grid
+  computes); double-clicking a data cell raises `DrillDownRequested` with
+  `Row`/`Column`/`SourceRows`/`Aggregates` — show them in a details grid.
+- **Dimension filter**: `PivotGrid.FieldFilter` — `Func<string fieldName, object? value>`
+  applied to every row/column field before bucketing; return false to exclude the source
+  row. Totals aggregate the INCLUDED rows only. Changing the filter recomputes.
+- **CSV**: `PivotExporter.ToCsv(result, culture?, rowFieldNames?)` — headers from the row
+  field names and column captions, values quoted when needed, list separator follows the
+  culture, a grand-total row closes the table (when totals are present).
+
 ## The engine (headless, stage 1)
 
 The `PivotEngine` computes pivot tables from any non-generic `IEnumerable` — grouping by

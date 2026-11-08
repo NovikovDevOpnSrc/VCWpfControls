@@ -76,6 +76,12 @@ public sealed class PivotResult
 
     /// <summary>The grand total per measure.</summary>
     public object?[] GrandTotals { get; init; } = Array.Empty<object?>();
+
+    /// <summary>
+    /// Source rows per intersection [row][column] (null when none) — computed only when
+    /// requested; powers drill-down.
+    /// </summary>
+    public IReadOnlyList<object>?[][]? SourceRows { get; init; }
 }
 
 /// <summary>
@@ -94,7 +100,9 @@ public static class PivotEngine
         IReadOnlyList<string> rowFields,
         IReadOnlyList<string> columnFields,
         IReadOnlyList<PivotMeasure> measures,
-        bool includeTotals = true)
+        bool includeTotals = true,
+        Func<string, object?, bool>? fieldFilter = null,
+        bool includeSourceRows = false)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(rowFields);
@@ -131,8 +139,44 @@ public static class PivotEngine
         var rowIndexByKey = new Dictionary<object?[], int>(new AxisKeyComparer());
         var columnIndexByKey = new Dictionary<object?[], int>(new AxisKeyComparer());
 
+        var sourceBuckets = includeSourceRows
+            ? new Dictionary<(int Row, int Column), List<object>>()
+            : null;
+        var includedItems = new List<object>();
+
         foreach (var item in materialized)
         {
+            if (fieldFilter is not null)
+            {
+                var excluded = false;
+                foreach (var field in rowFields)
+                {
+                    if (!fieldFilter(field, Accessor(item.GetType(), field).GetValue(item)))
+                    {
+                        excluded = true;
+                        break;
+                    }
+                }
+
+                if (!excluded)
+                {
+                    foreach (var field in columnFields)
+                    {
+                        if (!fieldFilter(field, Accessor(item.GetType(), field).GetValue(item)))
+                        {
+                            excluded = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (excluded)
+                {
+                    continue;
+                }
+            }
+
+            includedItems.Add(item);
             var rowKey = KeyOf(item, rowFields);
             var columnKey = KeyOf(item, columnFields);
             if (!rowIndexByKey.TryGetValue(rowKey, out var r))
@@ -155,6 +199,15 @@ public static class PivotEngine
             }
 
             list.Add(item);
+            if (sourceBuckets is not null)
+            {
+                if (!sourceBuckets.TryGetValue((r, c), out var sourceList))
+                {
+                    sourceBuckets[(r, c)] = sourceList = new List<object>();
+                }
+
+                sourceList.Add(item);
+            }
         }
 
         var sortedRows = SortKeys(rowKeys);
@@ -176,6 +229,7 @@ public static class PivotEngine
         var rows = sortedRows.Select(k => k.Select(v => new PivotAxisValue(v)).ToList() as IReadOnlyList<PivotAxisValue>).ToList();
         var columns = sortedColumns.Select(k => k.Select(v => new PivotAxisValue(v)).ToList() as IReadOnlyList<PivotAxisValue>).ToList();
 
+        var sourceRows = includeSourceRows ? new IReadOnlyList<object>?[sortedRows.Count][] : null;
         var cells = new object?[sortedRows.Count][][];
         for (var r = 0; r < sortedRows.Count; r++)
         {
@@ -183,6 +237,18 @@ public static class PivotEngine
             for (var c = 0; c < sortedColumns.Count; c++)
             {
                 cells[r][c] = Aggregate(buckets.GetValueOrDefault((rowOrder[r], columnOrder[c])), measures, Accessor);
+            }
+        }
+
+        if (sourceRows is not null)
+        {
+            for (var r = 0; r < sortedRows.Count; r++)
+            {
+                sourceRows[r] = new IReadOnlyList<object>?[sortedColumns.Count];
+                for (var c = 0; c < sortedColumns.Count; c++)
+                {
+                    sourceRows[r][c] = sourceBuckets!.GetValueOrDefault((rowOrder[r], columnOrder[c]));
+                }
             }
         }
 
@@ -196,6 +262,7 @@ public static class PivotEngine
                 RowTotals = Array.Empty<object?[]>(),
                 ColumnTotals = Array.Empty<object?[]>(),
                 GrandTotals = Array.Empty<object?>(),
+                SourceRows = sourceRows,
             };
         }
 
@@ -224,7 +291,8 @@ public static class PivotEngine
             Cells = cells,
             RowTotals = rowTotals,
             ColumnTotals = columnTotals,
-            GrandTotals = Aggregate(materialized, measures, Accessor),
+            GrandTotals = Aggregate(fieldFilter is null ? materialized : includedItems, measures, Accessor),
+            SourceRows = sourceRows,
         };
     }
 

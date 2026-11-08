@@ -27,6 +27,19 @@ pivot.Measures.Add(new PivotMeasure("Amount", GridSummaryFunction.Sum));
 `PivotItemsSource` мгновенно пересчитывает и перестраивает таблицу; `Result` отдаёт
 последний `PivotResult`.
 
+## Drill-down, фильтры измерений, CSV (этап 3)
+
+- **Drill-down**: `PivotGrid.GetDrillDownRows(rowIndex, columnIndex)` возвращает строки
+  источника, агрегированные в ячейку (движок хранит корзины пересечений, когда считает
+  грид); двойной клик по ячейке данных поднимает `DrillDownRequested` с
+  `Row`/`Column`/`SourceRows`/`Aggregates` — покажите их в детальном гриде.
+- **Фильтр измерений**: `PivotGrid.FieldFilter` — `Func<string fieldName, object? value>`,
+  применяется к каждому полю строк/столбцов до группировки; верните false, чтобы исключить
+  строку источника. Итоги агрегируют только ВКЛЮЧЁННЫЕ строки. Смена фильтра — пересчёт.
+- **CSV**: `PivotExporter.ToCsv(result, culture?, rowFieldNames?)` — заголовки из имён
+  полей строк и подписей колонок, значения экранируются при необходимости, разделитель —
+  по культуре, итоговая строка завершает таблицу (когда есть итоги).
+
 ## Движок (без UI, этап 1)
 
 `PivotEngine` вычисляет сводные таблицы из любого неуниверсального `IEnumerable` —

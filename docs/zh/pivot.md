@@ -25,6 +25,18 @@ pivot.Measures.Add(new PivotMeasure("Amount", GridSummaryFunction.Sum));
 `Measures` 集合或 `PivotItemsSource` 会立即重算并重建；`Result` 公开最近的
 `PivotResult`。
 
+## 明细下钻、维度筛选、CSV（第三阶段）
+
+- **下钻**：`PivotGrid.GetDrillDownRows(rowIndex, columnIndex)` 返回聚合到该单元格的
+  源行（控件计算时引擎保留每个交叉的桶）；双击数据单元格触发
+  `DrillDownRequested`（携带 `Row`/`Column`/`SourceRows`/`Aggregates`）——可在明细表格
+  中展示。
+- **维度筛选**：`PivotGrid.FieldFilter` —— `Func<string fieldName, object? value>`，在
+  分桶前作用于每个行/列字段；返回 false 即排除该源行。总计只聚合**包含**的行；
+  修改筛选立即重算。
+- **CSV**：`PivotExporter.ToCsv(result, culture?, rowFieldNames?)` —— 表头来自行字段名
+  与列标题；必要时加引号；列表分隔符跟随区域设置；有总计时末行为总计行。
+
 ## 引擎（无 UI，第一阶段）
 
 `PivotEngine` 从任意非泛型 `IEnumerable` 计算透视表——按行/列字段值分组，并用共享的
