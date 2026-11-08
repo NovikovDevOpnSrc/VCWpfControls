@@ -28,6 +28,7 @@ public partial class MainWindow : Window
             new DockingSampleViewModel(),
             new WizardSampleViewModel(),
             new PivotSampleViewModel(),
+            new GanttSampleViewModel(),
             new ConditionSampleViewModel(),
             new IntegrationSampleViewModel(),
         };

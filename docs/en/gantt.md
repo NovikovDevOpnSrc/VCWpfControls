@@ -27,6 +27,24 @@ The forum research called Gantt the biggest open-source gap in WPF; VCWpfControl
   outlines critical bars/links in the accent brush. Double-click a bar → `BarDoubleClicked`
   (on the `GanttTimelinePanel`) for editor integration.
 
+## Drag interactions
+
+All edits are day-snapped and fire events after the dates land on the task:
+
+- **Move** — drag a bar body; Start and Finish shift together (milestones are fixed).
+- **Resize** — drag a bar's left/right edge; the duration changes, at least one day is kept.
+- **Link** — hold **Alt** and drag from a bar's edge onto another bar: a rubber band follows
+  the pointer and dropping creates a `FinishToStart` dependency (added to `Dependencies`,
+  immediately re-scheduled when `AutoSchedule` is on).
+
+```csharp
+view.TaskEdited += (_, task) => Persist(task);                       // move/resize
+view.LinkCreated += (_, dependency) => Persist(dependency);          // drawn link
+```
+
+Both halves refresh after an edit: the tree columns pick up the new dates and the engine
+re-runs `AutoSchedule`/`CriticalPath`, so successors jump and the critical chain updates live.
+
 ## The engine (headless)
 
 `GanttTask`/`GanttDependency` (FS/SS/FF/SF + lag/lead days), `GanttEngine.AutoSchedule`

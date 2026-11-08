@@ -154,6 +154,97 @@ public sealed class GanttTimelinePanel : FrameworkElement
     /// <summary>Raised when the user double-clicks a task bar.</summary>
     public event EventHandler<GanttTask>? BarDoubleClicked;
 
+    /// <summary>Raised after the user moved or resized a bar (task dates already updated).</summary>
+    public event EventHandler<GanttTask>? TaskEdited;
+
+    /// <summary>Raised after the user drew a link from one bar to another.</summary>
+    public event EventHandler<(GanttTask Predecessor, GanttTask Successor, GanttLinkType Type)>? LinkCreated;
+
+    /// <summary>What the pointer is dragging.</summary>
+    public enum DragMode
+    {
+        /// <summary>Not dragging.</summary>
+        None = 0,
+
+        /// <summary>Moving the whole bar.</summary>
+        Move = 1,
+
+        /// <summary>Resizing the start edge.</summary>
+        ResizeStart = 2,
+
+        /// <summary>Resizing the finish edge.</summary>
+        ResizeFinish = 3,
+
+        /// <summary>Drawing a dependency link from the finish anchor.</summary>
+        LinkFromFinish = 4,
+
+        /// <summary>Drawing a dependency link from the start anchor.</summary>
+        LinkFromStart = 5,
+    }
+
+    private DragMode _dragMode = DragMode.None;
+    private GanttTask? _dragTask;
+    private Point _dragOrigin;
+    private DateTime _dragStartOrigin;
+    private DateTime _dragFinishOrigin;
+    private Point _linkCurrent;
+
+    /// <summary>Applies a whole-day move to a task (drag-move path; test hook).</summary>
+    internal void MoveTask(GanttTask task, int deltaDays)
+    {
+        if (deltaDays == 0 || task.IsMilestone)
+        {
+            return;
+        }
+
+        task.Start = task.Start.AddDays(deltaDays);
+        task.Finish = task.Finish.AddDays(deltaDays);
+        TaskEdited?.Invoke(this, task);
+        InvalidateVisual();
+    }
+
+    /// <summary>Changes the task duration by moving the start edge (test hook).</summary>
+    internal void ResizeTaskStart(GanttTask task, int deltaDays)
+    {
+        if (deltaDays == 0 || task.IsMilestone)
+        {
+            return;
+        }
+
+        var newStart = task.Start.AddDays(deltaDays);
+        if (newStart >= task.Finish.Date)
+        {
+            return; // keep at least one day
+        }
+
+        task.Start = newStart;
+        TaskEdited?.Invoke(this, task);
+        InvalidateVisual();
+    }
+
+    /// <summary>Changes the task duration by moving the finish edge (test hook).</summary>
+    internal void ResizeTaskFinish(GanttTask task, int deltaDays)
+    {
+        if (deltaDays == 0)
+        {
+            return;
+        }
+
+        var newFinish = task.Finish.AddDays(deltaDays);
+        if (newFinish <= task.Start.Date)
+        {
+            return;
+        }
+
+        task.Finish = newFinish;
+        TaskEdited?.Invoke(this, task);
+        InvalidateVisual();
+    }
+
+    /// <summary>Creates a link between two tasks (drag-link path; test hook).</summary>
+    internal void CreateLink(GanttTask predecessor, GanttTask successor, GanttLinkType type)
+        => LinkCreated?.Invoke(this, (predecessor, successor, type));
+
     private static void OnLayoutChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var panel = (GanttTimelinePanel)d;
@@ -286,6 +377,18 @@ public sealed class GanttTimelinePanel : FrameworkElement
             }
         }
 
+        // Rubber band while the user draws a link.
+        if (_dragMode is DragMode.LinkFromFinish or DragMode.LinkFromStart && _dragTask is { } linkSource)
+        {
+            var sourceIndex = IndexOfReference(linkSource);
+            if (sourceIndex >= 0)
+            {
+                var rect = BarRect(linkSource, sourceIndex);
+                var from = new Point(rect.Right, rect.Y + rect.Height / 2);
+                drawingContext.DrawLine(new Pen(accent, 1) { DashStyle = DashStyles.Dash }, from, _linkCurrent);
+            }
+        }
+
         // Dependency arrows (drawn after bars so they stay visible).
         foreach (var link in Dependencies)
         {
@@ -386,25 +489,6 @@ public sealed class GanttTimelinePanel : FrameworkElement
         => new PointHitTestResult(this, hitTestParameters.HitPoint);
 
     /// <inheritdoc />
-    protected override void OnMouseMove(MouseEventArgs e)
-    {
-        base.OnMouseMove(e);
-        var point = e.GetPosition(this);
-        var index = TaskAt(point);
-        if (index != _hoverIndex)
-        {
-            _hoverIndex = index;
-            InvalidateVisual();
-        }
-
-        if (index >= 0)
-        {
-            var task = Tasks[index];
-            ToolTip = $"{task.Name}: {task.Start:d} \u2013 {task.Finish:d} ({task.Completion}%)";
-        }
-    }
-
-    /// <inheritdoc />
     protected override void OnMouseLeave(MouseEventArgs e)
     {
         base.OnMouseLeave(e);
@@ -417,7 +501,82 @@ public sealed class GanttTimelinePanel : FrameworkElement
     {
         base.OnMouseLeftButtonDown(e);
         Focus();
-        DetectDoubleClick(TaskAt(e.GetPosition(this)));
+        var (index, mode) = TaskZoneAt(e.GetPosition(this));
+        DetectDoubleClick(index);
+        if (index >= 0 && mode != DragMode.None)
+        {
+            _dragTask = Tasks[index];
+            _dragMode = mode;
+            _dragOrigin = e.GetPosition(this);
+            _dragStartOrigin = _dragTask.Start;
+            _dragFinishOrigin = _dragTask.Finish;
+            _linkCurrent = _dragOrigin;
+            CaptureMouse();
+        }
+
+        e.Handled = true;
+    }
+
+    /// <inheritdoc />
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        base.OnMouseMove(e);
+        var point = e.GetPosition(this);
+        var hover = TaskAt(point);
+        if (hover != _hoverIndex && _dragMode == DragMode.None)
+        {
+            _hoverIndex = hover;
+            InvalidateVisual();
+        }
+
+        if (hover >= 0 && _dragMode == DragMode.None)
+        {
+            var hovered = Tasks[hover];
+            ToolTip = $"{hovered.Name}: {hovered.Start:d} \u2013 {hovered.Finish:d} ({hovered.Completion}%)";
+        }
+
+        if (_dragMode != DragMode.None && _dragTask is { } task && IsMouseCaptured)
+        {
+            var delta = DayDeltaSinceOrigin();
+            switch (_dragMode)
+            {
+                case DragMode.Move:
+                    var applied = (int)((task.Start - _dragStartOrigin).TotalDays);
+                    MoveTask(task, delta - applied);
+                    break;
+                case DragMode.ResizeStart:
+                    var appliedStart = (int)((task.Start - _dragStartOrigin).TotalDays);
+                    ResizeTaskStart(task, delta - appliedStart);
+                    break;
+                case DragMode.ResizeFinish:
+                    var appliedFinish = (int)((task.Finish - _dragFinishOrigin).TotalDays);
+                    ResizeTaskFinish(task, delta - appliedFinish);
+                    break;
+                default:
+                    _linkCurrent = e.GetPosition(this); // rubber band while drawing a link
+                    InvalidateVisual();
+                    break;
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonUp(e);
+        if (_dragMode is DragMode.LinkFromFinish or DragMode.LinkFromStart && _dragTask is { } source)
+        {
+            var (targetIndex, _) = TaskZoneAt(e.GetPosition(this));
+            if (targetIndex >= 0 && !ReferenceEquals(Tasks[targetIndex], source))
+            {
+                CreateLink(source, Tasks[targetIndex], GanttLinkType.FinishToStart);
+            }
+        }
+
+        _dragMode = DragMode.None;
+        _dragTask = null;
+        ReleaseMouseCapture();
+        InvalidateVisual();
         e.Handled = true;
     }
 
@@ -451,19 +610,56 @@ public sealed class GanttTimelinePanel : FrameworkElement
     }
 
     private int TaskAt(Point point)
+        => TaskZoneAt(point).Index;
+
+    private (int Index, DragMode Mode) TaskZoneAt(Point point)
     {
         if (point.Y < HeaderHeight)
         {
-            return -1;
+            return (-1, DragMode.None);
         }
 
         var index = (int)((point.Y - HeaderHeight) / RowHeight);
         if (index < 0 || index >= Tasks.Count)
         {
-            return -1;
+            return (-1, DragMode.None);
         }
 
         var rect = BarRect(Tasks[index], index);
-        return point.X >= rect.Left - 3 && point.X <= rect.Right + 3 ? index : -1;
+        if (point.X < rect.Left - 3 || point.X > rect.Right + 3)
+        {
+            return (-1, DragMode.None);
+        }
+
+        // Edges resize; Alt+edge draws a link; the middle moves.
+        if (point.X <= rect.Left + 4)
+        {
+            return (index, DragMode.ResizeStart);
+        }
+
+        if (point.X >= rect.Right - 4)
+        {
+            return Keyboard.Modifiers == ModifierKeys.Alt
+                ? (index, DragMode.LinkFromFinish)
+                : (index, DragMode.ResizeFinish);
+        }
+
+        return (index, DragMode.Move);
+    }
+
+    private int DayDeltaSinceOrigin()
+        => (int)Math.Round((Mouse.GetPosition(this).X - _dragOrigin.X) / Math.Max(DayWidth, 1));
+
+    private int IndexOfReference(GanttTask task)
+    {
+        for (var i = 0; i < Tasks.Count; i++)
+        {
+            if (ReferenceEquals(Tasks[i], task))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

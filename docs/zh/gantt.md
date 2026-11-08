@@ -25,6 +25,23 @@ description: GanttView —— 任务树 + 时间线条形图、依赖箭头、�
 - `AutoSchedule` 在加载/变更时运行引擎（违反约束的后续任务前移）；`ShowCriticalPath`
   用强调色描出关键条形与连线。双击条形 → `BarDoubleClicked`（在 `GanttTimelinePanel` 上）。
 
+## 拖拽交互
+
+所有编辑按天对齐，日期写入任务后触发事件：
+
+- **移动** —— 拖动条形主体；开始与完成日期一起移动（里程碑固定不动）。
+- **调整时长** —— 拖动条形左/右边缘；时长随之变化，至少保留一天。
+- **连线** —— 按住 **Alt** 从条形边缘拖到另一条形上：橡皮筋线跟随指针，松开即创建
+  `FinishToStart` 依赖（加入 `Dependencies`，`AutoSchedule` 开启时立即重排计划）。
+
+```csharp
+view.TaskEdited += (_, task) => Save(task);                       // 移动/调整
+view.LinkCreated += (_, dependency) => Save(dependency);          // 绘制的连线
+```
+
+编辑后两半同步刷新：树视图列读取新日期，引擎重跑 `AutoSchedule`/`CriticalPath`，
+后续任务即时跳转，关键链路实时更新。
+
 ## 引擎（无 UI）
 
 `GanttTask`/`GanttDependency`（FS/SS/FF/SF + 延后/提前天数）、`GanttEngine.AutoSchedule`

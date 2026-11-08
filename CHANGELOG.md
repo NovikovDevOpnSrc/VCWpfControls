@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt control (stage 3: drag interactions)
+
+- Timeline drags, all day-snapped: **move** a bar body (Start/Finish together, milestones
+  fixed), **resize** via the edges (at least one day kept, clamp guarded), **link** by
+  Alt+dragging from an edge onto another bar — a rubber band follows the pointer and the
+  drop creates a `FinishToStart` dependency.
+- `GanttTimelinePanel.TaskEdited` / `LinkCreated` events; `GanttView` surfaces them, adds
+  drawn links to `Dependencies` and re-runs `AutoSchedule` + `CriticalPath` after every
+  edit (a full rebuild — the tree columns read dates through one-way bindings without
+  change notifications, so only fresh wrappers show new dates).
+- Demo page "Gantt" (release-plan sample, toggles, zoom, reset, action log). 9 STA tests
+  (hook semantics incl. clamps validated by bug injection; view wiring: edit → successor
+  reschedule, drawn link → Dependencies + cascade). Docs x3 updated.
+
+
 ### Added — Gantt control (stage 2: rendering)
 
 - `GanttView`: the task hierarchy in a TreeListView (left, splitter-resizable) plus the

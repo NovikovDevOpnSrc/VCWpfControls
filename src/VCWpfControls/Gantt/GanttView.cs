@@ -174,10 +174,40 @@ public class GanttView : Control
         {
             _timeline.RowHeight = TaskRowHeight;
             _timeline.Unit = TimescaleUnit;
+            _timeline.TaskEdited += OnTimelineTaskEdited;
+            _timeline.LinkCreated += OnTimelineLinkCreated;
         }
 
         Rebuild();
     }
+
+    /// <summary>Raised after a bar was moved/resized (dates already on the task).</summary>
+    public event EventHandler<GanttTask>? TaskEdited;
+
+    /// <summary>Raised after the user drew a link (already added to <see cref="Dependencies"/>).</summary>
+    public event EventHandler<GanttDependency>? LinkCreated;
+
+    private void OnTimelineTaskEdited(object? sender, GanttTask task)
+    {
+        RefreshAfterEdit();
+        TaskEdited?.Invoke(this, task);
+    }
+
+    private void OnTimelineLinkCreated(object? sender, (GanttTask Predecessor, GanttTask Successor, GanttLinkType Type) link)
+    {
+        var dependency = new GanttDependency(link.Predecessor.Id, link.Successor.Id, link.Type);
+        Dependencies?.Add(dependency);
+        RefreshAfterEdit();
+        LinkCreated?.Invoke(this, dependency);
+    }
+
+    /// <summary>
+    /// Re-runs auto-schedule/critical and refreshes both halves. A full rebuild (not just
+    /// a timeline repaint): the tree rows show the task dates through one-way bindings on
+    /// <see cref="GanttTaskNode"/>, which have no change notification — only fresh
+    /// wrappers pick up the new dates.
+    /// </summary>
+    internal void RefreshAfterEdit() => Rebuild();
 
     private void _treesCrollHook()
     {

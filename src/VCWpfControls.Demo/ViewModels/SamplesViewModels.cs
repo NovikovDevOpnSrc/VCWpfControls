@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VCWpfControls.Demo.Models;
+using VCWpfControls.Gantt;
 
 namespace VCWpfControls.Demo.ViewModels;
 
@@ -250,4 +251,74 @@ public partial class SortingSampleViewModel : SampleViewModelBase
     /// <summary>Current sort description shown on the page.</summary>
     [ObservableProperty]
     private string _sortInfo = "Unsorted";
+}
+
+/// <summary>Gantt chart: hierarchy, dependencies, auto-scheduling, critical path, drags.</summary>
+public partial class GanttSampleViewModel : SampleViewModelBase
+{
+    private static readonly DateTime Nov9 = new(2026, 11, 9);
+
+    /// <inheritdoc />
+    public override string Title => "Gantt";
+
+    /// <inheritdoc />
+    public override string Description => "Drag bars to move/resize (day-snapped), Alt+drag from an edge to link; auto-schedule and the critical path recompute live.";
+
+    /// <summary>The release-plan tasks (hierarchy through ParentId).</summary>
+    public ObservableCollection<GanttTask> Tasks { get; private set; } = new(CreateTasks());
+
+    /// <summary>The dependency arrows.</summary>
+    public ObservableCollection<GanttDependency> Dependencies { get; } = new()
+    {
+        new("plan", "analysis"),
+        new("analysis", "design"),
+        new("design", "build"),
+        new("build", "test"),
+        new("analysis", "docs", GanttLinkType.StartToStart),
+        new("test", "ship"),
+    };
+
+    /// <summary>The available zoom units for the combo box.</summary>
+    public GanttTimescaleUnit[] Units { get; } = Enum.GetValues<GanttTimescaleUnit>();
+
+    /// <summary>Whether the engine re-schedules on every edit.</summary>
+    [ObservableProperty]
+    private bool _autoSchedule = true;
+
+    /// <summary>Whether the critical chain renders accented.</summary>
+    [ObservableProperty]
+    private bool _showCriticalPath = true;
+
+    /// <summary>The timeline zoom unit.</summary>
+    [ObservableProperty]
+    private GanttTimescaleUnit _timescaleUnit = GanttTimescaleUnit.Day;
+
+    /// <summary>Last interaction (drag/link) reported by the view.</summary>
+    [ObservableProperty]
+    private string _lastAction = "Drag a bar to move it; drag an edge to resize; Alt+drag an edge onto another bar to link.";
+
+    /// <summary>Restores the original sample plan.</summary>
+    public void Reset()
+    {
+        Tasks = new ObservableCollection<GanttTask>(CreateTasks());
+        OnPropertyChanged(nameof(Tasks));
+    }
+
+    private static IEnumerable<GanttTask> CreateTasks()
+    {
+        GanttTask T(string id, string name, int start, int duration, string? parent = null, bool milestone = false)
+            => new(id, name, Nov9.AddDays(start), Nov9.AddDays(start + duration), 0, milestone, parent);
+
+        return new[]
+        {
+            T("rel", "Release 1.0", 0, 32),
+            T("plan", "Planning", 0, 3, "rel"),
+            T("analysis", "Analysis", 3, 5, "rel"),
+            T("design", "Design", 8, 7, "rel"),
+            T("build", "Build", 15, 10, "rel"),
+            T("test", "Testing", 25, 7, "rel"),
+            T("docs", "Documentation", 3, 8, "rel"),
+            T("ship", "Ship it!", 32, 0, "rel", milestone: true),
+        };
+    }
 }

@@ -1,0 +1,31 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.GanttSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:gantt="clr-namespace:VCWpfControls.Gantt;assembly=VCWpfControls">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <CheckBox Content="Auto-schedule"
+                      IsChecked="{Binding AutoSchedule}"
+                      Margin="0,0,12,0" VerticalAlignment="Center" />
+            <CheckBox Content="Critical path"
+                      IsChecked="{Binding ShowCriticalPath}"
+                      Margin="0,0,12,0" VerticalAlignment="Center" />
+            <ComboBox ItemsSource="{Binding Units}"
+                      SelectedItem="{Binding TimescaleUnit}"
+                      Width="90" VerticalAlignment="Center" />
+            <Button Content="Reset"
+                    Click="OnReset"
+                    Margin="12,0,0,0" Padding="10,4" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding LastAction}"
+                       VerticalAlignment="Center" Margin="16,0,0,0"
+                       Opacity="0.7" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <gantt:GanttView Tasks="{Binding Tasks}"
+                         Dependencies="{Binding Dependencies}"
+                         AutoSchedule="{Binding AutoSchedule}"
+                         ShowCriticalPath="{Binding ShowCriticalPath}"
+                         TimescaleUnit="{Binding TimescaleUnit}"
+                         TaskEdited="OnTaskEdited"
+                         LinkCreated="OnLinkCreated" />
+    </DockPanel>
+</UserControl>
