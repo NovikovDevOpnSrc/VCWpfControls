@@ -26,3 +26,5 @@
   href: ../api/
 - name: 透视引擎
   href: pivot.md
+- name: 第三方集成
+  href: integration.md

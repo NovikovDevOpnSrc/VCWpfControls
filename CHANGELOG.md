@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — third-party integration recipes (LiveCharts2, Fluent.Ribbon)
+
+- Demo page "Charts & Ribbon" (verified, runs): a Fluent.Ribbon toolbar (grouping
+  commands) above the grid and a LiveCharts2 CartesianChart charting the salary totals
+  per department. Demo-only packages (CPM): LiveChartsCore.SkiaSharpView.WPF 2.0.5,
+  Fluent.Ribbon 11.0.2 — both MIT; the LIBRARY stays dependency-free.
+- Docs ×3 gained an "Integration" page with the verified recipes: NU1701 suppression
+  needed for LiveCharts2's SkiaSharp/OpenTK fallback assets; Fluent's namespace is a
+  plain `clr-namespace:Fluent;assembly=Fluent` (the urn:/https: forms do not resolve);
+  charting grid aggregates and pivot totals.
+
+
 ### Added — condition editor stage C: grid and pivot integration
 
 - `GridControl.CustomFilterPredicate` (`Predicate<object?>`): ANDed with the engine

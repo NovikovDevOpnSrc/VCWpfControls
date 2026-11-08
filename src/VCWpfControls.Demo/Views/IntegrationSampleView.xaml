@@ -1,0 +1,27 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.IntegrationSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:fluent="clr-namespace:Fluent;assembly=Fluent">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="2*" />
+        </Grid.RowDefinitions>
+
+        <fluent:Ribbon Grid.Row="0" AutomaticStateManagement="False">
+            <fluent:RibbonTabItem Header="Chart">
+                <fluent:RibbonGroupBox Header="LiveCharts2">
+                    <fluent:Button Header="Group by Dept" Command="{Binding GroupByDeptCommand}" />
+                    <fluent:Button Header="Clear grouping" Command="{Binding ClearGroupingCommand}" />
+                </fluent:RibbonGroupBox>
+            </fluent:RibbonTabItem>
+        </fluent:Ribbon>
+
+        <grid:GridControl x:Name="Grid" Grid.Row="1" RowHeight="26" ShowColumnSeparators="True" />
+
+        <lvc:CartesianChart x:Name="Chart" Grid.Row="2" Margin="0,8,0,0" />
+    </Grid>
+</UserControl>

@@ -29,6 +29,7 @@ public partial class MainWindow : Window
             new WizardSampleViewModel(),
             new PivotSampleViewModel(),
             new ConditionSampleViewModel(),
+            new IntegrationSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
     }

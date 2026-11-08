@@ -26,3 +26,5 @@
   href: ../api/
 - name: Движок сводных
   href: pivot.md
+- name: Интеграция
+  href: integration.md

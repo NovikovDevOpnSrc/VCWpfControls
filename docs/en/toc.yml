@@ -26,3 +26,5 @@
   href: ../api/
 - name: Pivot engine
   href: pivot.md
+- name: Integration
+  href: integration.md

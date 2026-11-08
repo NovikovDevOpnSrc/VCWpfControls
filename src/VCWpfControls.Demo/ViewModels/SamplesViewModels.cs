@@ -114,6 +114,16 @@ public partial class EditorsSampleViewModel : SampleViewModelBase
     public override string Description => "MaskedTextBox (phone, serial, date masks) and NumericUpDown spinners.";
 }
 
+/// <summary>Third-party integration: LiveCharts2 chart of grid data + Fluent.Ribbon.</summary>
+public partial class IntegrationSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Charts & Ribbon";
+
+    /// <inheritdoc />
+    public override string Description => "LiveCharts2 (MIT) charting the grid aggregates; Fluent.Ribbon (MIT) hosting the page toolbar.";
+}
+
 /// <summary>Condition editor: builder + text tab applied to the grid and pivot.</summary>
 public partial class ConditionSampleViewModel : SampleViewModelBase
 {

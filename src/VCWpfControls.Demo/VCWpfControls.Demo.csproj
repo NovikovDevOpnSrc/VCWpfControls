@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- LiveCharts2 transitive SkiaSharp/OpenTK assets fall back to net-framework (NU1701). -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
@@ -14,6 +16,8 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="MahApps.Metro.IconPacks.Material" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" />
+    <PackageReference Include="Fluent.Ribbon" />
   </ItemGroup>
 
   <ItemGroup>
