@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-11-08
+
+Gantt chart: headless scheduling engine, GanttView (task tree + timeline), drag interactions (move/resize/link with live re-scheduling).
+
 ### Added — Gantt control (stage 3: drag interactions)
 
 - Timeline drags, all day-snapped: **move** a bar body (Start/Finish together, milestones
