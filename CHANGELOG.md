@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-11-08
+
+Condition expression editor (engine → ConditionBuilder control → grid/pivot integration), third-party integration recipes (LiveCharts2 + Fluent.Ribbon), nested docking splitter groups. The v0.3 roadmap is complete.
+
 ### Added — docking: nested splitter groups
 
 - `DockPane.SplitGroup` (int, default 0): panes of one zone sharing a group tab together;
