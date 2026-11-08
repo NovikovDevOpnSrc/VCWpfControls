@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added / Fixed — fit options (user request)
+
+- New `GridControl.FillColumnsToViewport()` + header-menu "Fit all columns (fill width)":
+  scales the visible columns proportionally to their current widths until they exactly
+  fill the control (water-filling; `MinWidth` pinned and redistributed; minimums beyond
+  the width keep the scrollbar). String `BestFitAllFill` x3.
+- Fixed BestFit hiding short headers ("ID"): `MeasureHeaderWidth` now reserves the
+  template's real furniture (margins 15 + always-laid-out sort slot 14 + funnel 24 when
+  filterable = up to 53px) instead of a flat 34px — the text area of short headers was
+  clipped to zero while the cell text stayed visible. Regression test asserts the
+  header ContentPresenter keeps a visible width (injection-validated); the stale
+  `< 90px` expectation in the content-fit test was updated to the header-visible bound.
+
 ### Changed — header menu "Filter..." now filters BY CONDITION (user request)
 
 - The right-click "Filter..." entry opens the condition builder (`ConditionBuilder`)

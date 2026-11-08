@@ -187,7 +187,15 @@ Exact one-shot sizing (measures up to 1000 rows of the current view by default, 
 ```csharp
 grid.BestFitColumn(column);        // one column (header included)
 grid.BestFitAllColumns();          // every visible column
+grid.FillColumnsToViewport();      // stretch all columns to fill the control width
 ```
+
+`FillColumnsToViewport` scales the visible columns proportionally to their current widths
+until they exactly fill the control (run `BestFitAllColumns` first for a content-proportional
+result); `MinWidth` is always honored — when the minimums alone exceed the width, the
+columns keep their minimums and the horizontal scrollbar stays. The header measurement
+reserves the template's real furniture (funnel + sort slot + margins), so short headers
+like "ID" stay visible after a fit.
 
 Double-clicking a column's resize splitter best-fits that column (Excel-style).
 
@@ -201,6 +209,7 @@ Right-click any column header for the built-in (localized EN/RU/ZH) menu:
   condition on THIS column — filter by condition; enabled when `CanUserFilter` is on;
 - **Filter by values...** — the column's value-check list (the classic value filter);
 - **Fit column (content) / Fit all columns** — one-shot best fit;
+- **Fit all columns (fill width)** — stretches the columns to fill the control;
 - **Group by this column** — toggle, adds/removes a grouping level;
 - **Freeze up to this column** — toggles `FrozenColumnCount`;
 - **Hide column** — disabled for the last visible column;

@@ -182,7 +182,13 @@ grid.AutoGeneratingColumn += (s, e) =>
 ```csharp
 grid.BestFitColumn(column);        // 单列（含表头）
 grid.BestFitAllColumns();          // 所有可见列
+grid.FillColumnsToViewport();      // 将所有列拉伸至控件完整宽度
 ```
+
+`FillColumnsToViewport` 按当前宽度比例缩放可见列，直至恰好填满控件（先执行
+`BestFitAllColumns` 可得到按内容比例的结果）；始终遵守 `MinWidth` —— 当各列最小宽度
+之和超过控件宽度时，各列保持最小宽度并保留水平滚动条。表头测量会预留模板的真实
+固定元素（筛选漏斗 + 排序位 + 边距），因此像「ID」这样的短表头在适配后依然可见。
 
 双击列的分隔条可按内容适配该列（类似 Excel）。
 
@@ -196,6 +202,7 @@ grid.BestFitAllColumns();          // 所有可见列
   ——按条件筛选；`CanUserFilter` 开启时可用；
 - **按值筛选...** — 经典的列值勾选列表；
 - **适配列宽（按内容） / 适配所有列宽** — 一次性精确适配；
+- **适配所有列宽（填满宽度）** — 将各列拉伸至控件完整宽度；
 - **按此列分组** — 开关，添加/移除一个分组级别；
 - **固定至此列** — 切换 `FrozenColumnCount`；
 - **隐藏列** — 最后一个可见列时禁用；

@@ -72,6 +72,10 @@ public partial class GridControl
         var bestFitAll = new MenuItem { Header = GridStrings.BestFitAll };
         bestFitAll.Click += (_, _) => BestFitAllColumns();
         menu.Items.Add(bestFitAll);
+
+        var fillAll = new MenuItem { Header = GridStrings.BestFitAllFill };
+        fillAll.Click += (_, _) => FillColumnsToViewport();
+        menu.Items.Add(fillAll);
         menu.Items.Add(new Separator());
 
         var groupField = column.EffectiveSortPath;

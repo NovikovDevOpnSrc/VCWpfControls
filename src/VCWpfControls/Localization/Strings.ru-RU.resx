@@ -25,6 +25,7 @@
   <data name="PropertyGridSearchHint" xml:space="preserve"><value>Поиск свойств...</value></data>
   <data name="BestFit" xml:space="preserve"><value>Подогнать колонку (по содержимому)</value></data>
   <data name="BestFitAll" xml:space="preserve"><value>Подогнать все колонки</value></data>
+  <data name="BestFitAllFill" xml:space="preserve"><value>Подогнать все колонки (во всю ширину)</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Закрепить до этой колонки</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Группировать по этой колонке</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>От</value></data>

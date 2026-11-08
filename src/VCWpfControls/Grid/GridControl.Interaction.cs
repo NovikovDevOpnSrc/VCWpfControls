@@ -111,11 +111,89 @@ public partial class GridControl
         }
     }
 
+    /// <summary>
+    /// Stretches the visible columns to fill the control's width: every column is scaled
+    /// proportionally to its CURRENT width (run <see cref="BestFitAllColumns"/> first for a
+    /// content-proportional result), never below its <see cref="GridColumnBase.MinWidth"/>.
+    /// When the minimums alone exceed the viewport, the columns keep their minimums and the
+    /// horizontal scrollbar stays.
+    /// </summary>
+    public void FillColumnsToViewport()
+    {
+        var columns = VisibleColumns.ToArray();
+        var viewport = ViewportWidth;
+        if (columns.Length == 0 || double.IsNaN(viewport) || viewport <= 0)
+        {
+            return;
+        }
+
+        // Water-filling: hand out the viewport proportional to current widths; columns
+        // whose share falls below MinWidth get pinned to it and the rest is redistributed.
+        var weights = columns.Select(c => c.ActualWidth > 1 ? c.ActualWidth : 100d).ToArray();
+        var result = new double[columns.Length];
+        var pinned = new bool[columns.Length];
+        double free = viewport;
+        double pinnedSum = 0;
+        for (var pass = 0; pass <= columns.Length; pass++)
+        {
+            var openWeight = 0d;
+            for (var i = 0; i < columns.Length; i++)
+            {
+                if (!pinned[i])
+                {
+                    openWeight += weights[i];
+                }
+            }
+
+            var newlyPinned = false;
+            for (var i = 0; i < columns.Length; i++)
+            {
+                if (pinned[i])
+                {
+                    continue;
+                }
+
+                var share = openWeight > 0 ? weights[i] / openWeight * free : free / columns.Length;
+                if (share < columns[i].MinWidth)
+                {
+                    result[i] = columns[i].MinWidth;
+                    pinned[i] = true;
+                    pinnedSum += columns[i].MinWidth;
+                    newlyPinned = true;
+                }
+                else
+                {
+                    result[i] = share;
+                }
+            }
+
+            free = viewport - pinnedSum;
+            if (!newlyPinned || free <= 0)
+            {
+                break;
+            }
+        }
+
+        for (var i = 0; i < columns.Length; i++)
+        {
+            ResizeColumn(columns[i], Math.Floor(Math.Max(result[i], columns[i].MinWidth)));
+        }
+    }
+
     private const double BestFitCellPadding = 10d;
-    private const double BestFitHeaderPadding = 34d; // text + funnel/sort-glyph space
 
     private double MeasureHeaderWidth(GridColumnBase column)
-        => MeasureTextWidth(VCWpfControls.Grid.Columns.GridColumnBase.HeaderText(column.Header) ?? string.Empty) + BestFitHeaderPadding;
+        => MeasureTextWidth(VCWpfControls.Grid.Columns.GridColumnBase.HeaderText(column.Header) ?? string.Empty)
+        + HeaderFurnitureWidth(column);
+
+    /// <summary>
+    /// The header template's fixed furniture: outer margins 8+6, the 1px right border,
+    /// the 12px sort slot (+2 margin, always laid out) and the 20px funnel button (+4
+    /// margin) shown while the column is filterable. The old flat 34px constant clipped
+    /// short headers like "ID" to zero — the furniture alone is up to 53px.
+    /// </summary>
+    private static double HeaderFurnitureWidth(GridColumnBase column)
+        => 15d + 14d + (column.CanUserFilter ? 24d : 0d);
 
     internal static string FormatCellText(GridColumnBase column, object? value)
     {

@@ -25,6 +25,7 @@
   <data name="PropertyGridSearchHint" xml:space="preserve"><value>搜索属性...</value></data>
   <data name="BestFit" xml:space="preserve"><value>适配列宽（按内容）</value></data>
   <data name="BestFitAll" xml:space="preserve"><value>适配所有列宽</value></data>
+  <data name="BestFitAllFill" xml:space="preserve"><value>适配所有列宽（填满宽度）</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>固定至此列</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>按此列分组</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>从</value></data>

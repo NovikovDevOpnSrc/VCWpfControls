@@ -83,8 +83,11 @@ public class GridBestFitTests
             TestWindowHost.Pump();
             var nameWidth = nameColumn.Width;
             Assert.True(nameWidth.IsAbsolute);
-            // Short uniform content: the column becomes narrow (header-driven, not star-wide).
-            Assert.True(nameWidth.Value < 90, $"name width {nameWidth.Value:F0} should fit short content");
+            // Short uniform content: the column becomes narrow (header-driven, not star-wide)
+            // but never below header text + the template's 53px furniture (see the
+            // ShortHeader test - the old 34px padding clipped headers like "ID" to zero).
+            Assert.True(nameWidth.Value < 140, $"name width {nameWidth.Value:F0} should fit short content");
+            Assert.True(nameWidth.Value >= 90, $"name width {nameWidth.Value:F0} must keep the header visible");
 
             grid.BestFitColumn(emailColumn);
             TestWindowHost.Pump();
@@ -139,5 +142,119 @@ public class GridBestFitTests
         {
             window.Close();
         }
+    }
+
+    [StaFact]
+    public void BestFit_ShortHeader_HeaderTextStaysVisible()
+    {
+        // Regression: the flat 34px header padding was smaller than the template's real
+        // furniture (margins 15 + sort slot 14 + funnel 24 = 53px) — a short header like
+        // "ID" was clipped to zero while the cell text stayed visible.
+        var grid = new GridControl { Width = 500 };
+        var window = TestWindowHost.Show(grid);
+        var idColumn = new GridTextColumn { FieldName = "Id", Header = "ID", Width = new GridColumnWidth(120, System.Windows.GridUnitType.Pixel) };
+        grid.Columns.Add(idColumn);
+        grid.ItemsSource = CreateEmployees(3); // short ids: 1, 2, 3
+        TestWindowHost.Pump();
+
+        try
+        {
+            grid.BestFitColumn(idColumn);
+            TestWindowHost.Pump();
+
+            var header = FindHeader(grid, idColumn);
+            Assert.NotNull(header);
+            var content = header!.Template.FindName("HeaderContent", header) as System.Windows.FrameworkElement;
+            Assert.NotNull(content);
+            Assert.True(content!.ActualWidth > 5,
+                $"header text 'ID' clipped to {content.ActualWidth:F1}px (column width {idColumn.Width.Value:F0})");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void FillColumnsToViewport_ScalesColumnsToViewport()
+    {
+        var grid = new GridControl { Width = 500, Height = 160 };
+        var window = TestWindowHost.Show(grid);
+        for (var i = 0; i < 3; i++)
+        {
+            grid.Columns.Add(new GridTextColumn { FieldName = "Name", Header = "C" + i, Width = new GridColumnWidth(100, System.Windows.GridUnitType.Pixel) });
+        }
+
+        grid.ItemsSource = CreateEmployees(3);
+        TestWindowHost.Pump();
+
+        try
+        {
+            grid.FillColumnsToViewport();
+            TestWindowHost.Pump();
+
+            var total = grid.Layout.TotalWidth;
+            Assert.True(Math.Abs(total - grid.ViewportWidth) <= 2,
+                $"filled total {total:F1} should match viewport {grid.ViewportWidth:F1}");
+            Assert.All(grid.Columns, c => Assert.True(c.Width.Value > 100, "every column grows proportionally"));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void FillColumnsToViewport_MinWidthColumnsArePinned()
+    {
+        var grid = new GridControl { Width = 500, Height = 160 };
+        var window = TestWindowHost.Show(grid);
+        var big = new GridTextColumn { FieldName = "Name", Header = "Big", Width = new GridColumnWidth(100, System.Windows.GridUnitType.Pixel), MinWidth = 400 };
+        var small = new GridTextColumn { FieldName = "Department", Header = "Small", Width = new GridColumnWidth(100, System.Windows.GridUnitType.Pixel) };
+        grid.Columns.Add(big);
+        grid.Columns.Add(small);
+        grid.ItemsSource = CreateEmployees(3);
+        TestWindowHost.Pump();
+
+        try
+        {
+            grid.FillColumnsToViewport();
+            TestWindowHost.Pump();
+
+            Assert.Equal(400d, big.Width.Value);                       // pinned at its minimum
+            Assert.True(small.Width.Value >= 500 - 400 - 2, $"rest goes to the open column, got {small.Width.Value:F0}");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static VCWpfControls.Grid.Primitives.GridColumnHeader? FindHeader(GridControl grid, GridColumnBase column)
+    {
+        VCWpfControls.Grid.Primitives.GridColumnHeader? found = null;
+        void Walk(System.Windows.DependencyObject node)
+        {
+            if (found is not null)
+            {
+                return;
+            }
+
+            var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(node);
+            for (var i = 0; i < count; i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(node, i);
+                if (child is VCWpfControls.Grid.Primitives.GridColumnHeader header && ReferenceEquals(header.Column, column))
+                {
+                    found = header;
+                    return;
+                }
+
+                Walk(child);
+            }
+        }
+
+        Walk(grid);
+        return found;
     }
 }

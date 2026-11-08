@@ -25,6 +25,7 @@
   <data name="PropertyGridSearchHint" xml:space="preserve"><value>Search properties...</value></data>
   <data name="BestFit" xml:space="preserve"><value>Fit column (content)</value></data>
   <data name="BestFitAll" xml:space="preserve"><value>Fit all columns</value></data>
+  <data name="BestFitAllFill" xml:space="preserve"><value>Fit all columns (fill width)</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Freeze up to this column</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Group by this column</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>From</value></data>
