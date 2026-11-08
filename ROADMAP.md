@@ -71,7 +71,7 @@ Ranked by community demand (r/csharp, Xceed/MahApps/WPF-UI trackers, LOB vendor 
 - Built-in group/footer summaries per level.
 
 ### Docking
-- Nested splitter groups inside one zone.
+- Nested splitter groups inside one zone — SHIPPED (DockPane.SplitGroup + DockZoneGroup).
 
 ### Done (kept for history)
 - Docking auto-hide: edge tab strips + hover flyout (v0.2.9).
