@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-11-08
+
+The forum-driven milestone: PropertyGrid TypeConverters/commit modes, TreeList per-level summaries, AutoComplete editor, Wizard, and the flagship Pivot Grid (engine → control → drill-down/filters/CSV). Plus reliability fixes across PropertyGrid.
+
 ### Added — pivot stage 3: drill-down, dimension filters, CSV export
 
 - **Drill-down**: `PivotEngine` optionally keeps per-intersection source buckets
