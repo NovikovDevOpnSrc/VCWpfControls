@@ -159,7 +159,8 @@ public class GanttBacklogTests
         try
         {
             var panel = view.Timeline!;
-            Assert.Equal(panel.HeaderHeight + 300 * panel.RowHeight, panel.DesiredSize.Height, 1);
+            // The true extent = header + rows + the legend strip (on by default).
+            Assert.Equal(panel.HeaderHeight + 300 * panel.RowHeight + panel.LegendHeight, panel.DesiredSize.Height, 1);
             Assert.Equal(300, panel.Tasks.Count);
         }
         finally

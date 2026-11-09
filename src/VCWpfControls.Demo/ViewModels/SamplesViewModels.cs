@@ -298,6 +298,14 @@ public partial class GanttSampleViewModel : SampleViewModelBase
     [ObservableProperty]
     private bool _showBaseline = true;
 
+    /// <summary>Whether the timeline shows the legend strip.</summary>
+    [ObservableProperty]
+    private bool _showLegend = true;
+
+    /// <summary>Whether task names render after the bars.</summary>
+    [ObservableProperty]
+    private bool _showBarLabels;
+
     /// <summary>The working-time calendar (null = every day works).</summary>
     public GanttCalendar? Calendar => SkipWeekends ? WeekendCalendar : null;
 
@@ -344,6 +352,9 @@ public partial class GanttSampleViewModel : SampleViewModelBase
             T("docs", "Documentation", 3, 8, "rel"),
             T("ship", "Ship it!", 32, 0, "rel", milestone: true),
         };
+
+        // A category color (the Fiori qualitative-palette pattern) on one task.
+        tasks[6].BarBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(46, 134, 87));
 
         // Baselines: the original plan — build and test have slipped against it.
         tasks[4].BaselineStart = Nov9.AddDays(14);

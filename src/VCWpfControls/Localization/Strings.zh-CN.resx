@@ -29,6 +29,12 @@
   <data name="SchedulerNewAppointment" xml:space="preserve"><value>新日程</value></data>
   <data name="NumericIncrease" xml:space="preserve"><value>增大值</value></data>
   <data name="NumericDecrease" xml:space="preserve"><value>减小值</value></data>
+  <data name="GanttLegendTask" xml:space="preserve"><value>任务</value></data>
+  <data name="GanttLegendSummary" xml:space="preserve"><value>汇总</value></data>
+  <data name="GanttLegendMilestone" xml:space="preserve"><value>里程碑</value></data>
+  <data name="GanttLegendCritical" xml:space="preserve"><value>关键路径</value></data>
+  <data name="GanttLegendBaseline" xml:space="preserve"><value>基线</value></data>
+  <data name="GanttLegendNonWorking" xml:space="preserve"><value>非工作日</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>固定至此列</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>按此列分组</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>从</value></data>

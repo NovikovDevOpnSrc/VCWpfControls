@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt UX-guideline compliance round (Oracle FusionFX / SAP Fiori / Smartsheet)
+
+Audited the chart against the three guidelines and closed every gap (the four misses plus
+the four user-approved debatables):
+
+- **Two-level time axis**: a major row (months, years at Month zoom —
+  `GanttEngine.BuildMajorTimescale`) above the minor zoom-unit row; required by Oracle and
+  Fiori.
+- **Oracle summary bars**: parents render as thin bracket bands carrying the
+  duration-weighted completion of ALL descendants (`GanttEngine.SummaryCompletion`);
+  milestones weigh one day.
+- **Legend** strip pinned to the timeline bottom (`ShowLegend`, default on): task /
+  summary / milestone / critical / baseline / non-working samples, localized ×3
+  (6 new strings).
+- **Bar labels** after the bars (`ShowBarLabels`, default OFF per Oracle), clipped.
+- **Discrete wheel zoom**: the wheel steps Day ↔ Week ↔ Month through the view's
+  `TimescaleUnit` (bindings stay in sync).
+- **Drag-to-pan** empty chart space scrolls the timeline; **cursor feedback**
+  (SizeWE/SizeAll/Hand) over edges/bodies/empty rows.
+- **`GanttTask.BarBrush`**: optional per-task color (the Fiori qualitative palette
+  pattern); null = theme.
+
+5 Core + 8 STA tests; the major-axis and the weighted-rollup regressions are
+injection-validated. Docs gantt.md ×3 gained a compliance section; demo toggles +
+a category brush.
+
 ### Fixed — Wizard gate ignored programmatic/UIA changes (found by the UI stress round)
 
 Two broken links kept the Next button disabled forever when CanLeave changed without USER

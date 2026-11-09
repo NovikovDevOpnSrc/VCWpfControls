@@ -27,6 +27,27 @@ The forum research called Gantt the biggest open-source gap in WPF; VCWpfControl
   outlines critical bars/links in the accent brush. Double-click a bar → `BarDoubleClicked`
   (on the `GanttTimelinePanel`) for editor integration.
 
+## Guideline compliance (Oracle FusionFX / SAP Fiori / Smartsheet)
+
+The chart follows the big-three Gantt UX guidelines:
+
+- **Two-level time axis** — a major row (months, or years at Month zoom) above the minor
+  zoom-unit row (required by Oracle and Fiori).
+- **Summary bars** — parent tasks render as Oracle summary bars (a thin band with end
+  caps) carrying the duration-weighted completion of all descendants
+  (`GanttEngine.SummaryCompletion`), not their own number.
+- **Legend** — a strip pinned to the bottom of the timeline (toggle with `ShowLegend`)
+  listing the shapes on screen: task, summary, milestone, critical path, baseline,
+  non-working days (localized ×3).
+- **Bar labels** — `ShowBarLabels` (default off, as Oracle recommends) draws the task
+  name after the bar, clipped to the chart width.
+- **Discrete wheel zoom** — the mouse wheel steps Day ↔ Week ↔ Month through the view's
+  `TimescaleUnit` (bindings and toolbars stay in sync).
+- **Drag-to-pan** — dragging empty chart space scrolls the timeline (hand cursor).
+- **Cursor feedback** — `SizeWE` over bar edges (resize), `SizeAll` over bodies (move).
+- **Per-task color** — `GanttTask.BarBrush` (null = theme): the Fiori qualitative-palette
+  pattern for categories/statuses.
+
 ## Baselines & inline editing
 
 - **Baseline** — set `BaselineStart`/`BaselineFinish` on tasks: a thin gray band renders

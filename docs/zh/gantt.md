@@ -25,6 +25,25 @@ description: GanttView —— 任务树 + 时间线条形图、依赖箭头、�
 - `AutoSchedule` 在加载/变更时运行引擎（违反约束的后续任务前移）；`ShowCriticalPath`
   用强调色描出关键条形与连线。双击条形 → `BarDoubleClicked`（在 `GanttTimelinePanel` 上）。
 
+## 设计规范符合度（Oracle FusionFX / SAP Fiori / Smartsheet）
+
+图表遵循三大甘特图设计规范：
+
+- **两级时间轴** — 上层（月份；按月缩放时为年份）位于缩放单元行之上（Oracle 与
+  Fiori 的要求）。
+- **汇总条** — 父任务绘制为 Oracle 汇总条（带端帽的细带），显示所有后代的按
+  工期加权完成度（`GanttEngine.SummaryCompletion`），而非自身数值。
+- **图例** — 固定在时间轴底部的条带（`ShowLegend` 切换），列出屏幕上的形状：
+  任务、汇总、里程碑、关键路径、基线、非工作日（本地化 ×3）。
+- **条形标签** — `ShowBarLabels`（默认关闭，遵循 Oracle）在条形后绘制任务名并
+  按图表宽度裁剪。
+- **离散滚轮缩放** — 鼠标滚轮在 Day ↔ Week ↔ Month 间步进，经由视图的
+  `TimescaleUnit`（绑定与工具栏保持同步）。
+- **拖拽平移** — 拖动图表空白处滚动时间轴（手型光标）。
+- **光标反馈** — 条形边缘 `SizeWE`（调整），条形本体 `SizeAll`（移动）。
+- **任务颜色** — `GanttTask.BarBrush`（null = 主题）：Fiori 的分类/状态配色
+  模式。
+
 ## 基线与就地编辑
 
 - **基线** — 在任务上设置 `BaselineStart`/`BaselineFinish`：实际色块下方绘制一条

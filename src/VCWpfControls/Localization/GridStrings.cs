@@ -91,6 +91,24 @@ public static class GridStrings
     /// <summary>The numeric up-down decrease button name.</summary>
     public static string NumericDecrease => Get("NumericDecrease");
 
+    /// <summary>The Gantt legend "Task" caption.</summary>
+    public static string GanttLegendTask => Get("GanttLegendTask");
+
+    /// <summary>The Gantt legend "Summary" caption.</summary>
+    public static string GanttLegendSummary => Get("GanttLegendSummary");
+
+    /// <summary>The Gantt legend "Milestone" caption.</summary>
+    public static string GanttLegendMilestone => Get("GanttLegendMilestone");
+
+    /// <summary>The Gantt legend "Critical path" caption.</summary>
+    public static string GanttLegendCritical => Get("GanttLegendCritical");
+
+    /// <summary>The Gantt legend "Baseline" caption.</summary>
+    public static string GanttLegendBaseline => Get("GanttLegendBaseline");
+
+    /// <summary>The Gantt legend "Non-working" caption.</summary>
+    public static string GanttLegendNonWorking => Get("GanttLegendNonWorking");
+
     /// <summary>The wizard "Next" button caption.</summary>
     public static string WizardNext => Get("WizardNext");
 

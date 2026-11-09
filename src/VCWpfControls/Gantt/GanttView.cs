@@ -45,6 +45,16 @@ public class GanttView : Control
         nameof(ShowBaseline), typeof(bool), typeof(GanttView),
         new PropertyMetadata(Boxes.True, OnDataChanged));
 
+    /// <summary>Identifies the <see cref="ShowLegend"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowLegendProperty = DependencyProperty.Register(
+        nameof(ShowLegend), typeof(bool), typeof(GanttView),
+        new PropertyMetadata(Boxes.True, OnDataChanged));
+
+    /// <summary>Identifies the <see cref="ShowBarLabels"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowBarLabelsProperty = DependencyProperty.Register(
+        nameof(ShowBarLabels), typeof(bool), typeof(GanttView),
+        new PropertyMetadata(Boxes.False, OnDataChanged));
+
     /// <summary>Identifies the <see cref="TimescaleUnit"/> dependency property.</summary>
     public static readonly DependencyProperty TimescaleUnitProperty = DependencyProperty.Register(
         nameof(TimescaleUnit), typeof(GanttTimescaleUnit), typeof(GanttView),
@@ -122,6 +132,20 @@ public class GanttView : Control
     {
         get => (bool)GetValue(ShowBaselineProperty);
         set => SetValue(ShowBaselineProperty, value);
+    }
+
+    /// <summary>Whether the legend strip renders pinned to the bottom of the timeline.</summary>
+    public bool ShowLegend
+    {
+        get => (bool)GetValue(ShowLegendProperty);
+        set => SetValue(ShowLegendProperty, value);
+    }
+
+    /// <summary>Whether task names render as labels after the bars (default off, Oracle).</summary>
+    public bool ShowBarLabels
+    {
+        get => (bool)GetValue(ShowBarLabelsProperty);
+        set => SetValue(ShowBarLabelsProperty, value);
     }
 
     /// <summary>The timeline zoom unit.</summary>
@@ -217,6 +241,8 @@ public class GanttView : Control
             _timeline.Unit = TimescaleUnit;
             _timeline.TaskEdited += OnTimelineTaskEdited;
             _timeline.LinkCreated += OnTimelineLinkCreated;
+            _timeline.ZoomStepRequested += OnTimelineZoomStep;
+            _timeline.PanRequested += OnTimelinePan;
         }
 
         Rebuild();
@@ -250,6 +276,24 @@ public class GanttView : Control
         // auto-schedule and the critical path see the new dates.
         RefreshAfterEdit();
         TaskEdited?.Invoke(this, node.Task);
+    }
+
+    private void OnTimelineZoomStep(object? sender, int steps)
+    {
+        var current = (int)TimescaleUnit;
+        var target = Math.Clamp(current + steps, 0, Enum.GetValues<GanttTimescaleUnit>().Length - 1);
+        if (target != current)
+        {
+            TimescaleUnit = (GanttTimescaleUnit)target; // the DP drives the panel and app bindings
+        }
+    }
+
+    private void OnTimelinePan(object? sender, double pixelIncrement)
+    {
+        if (_timelineScroll is not null)
+        {
+            _timelineScroll.ScrollToHorizontalOffset(_timelineScroll.HorizontalOffset + pixelIncrement);
+        }
     }
 
     private void OnTimelineLinkCreated(object? sender, (GanttTask Predecessor, GanttTask Successor, GanttLinkType Type) link)
@@ -362,6 +406,8 @@ public class GanttView : Control
         _timeline.CriticalTaskIds = _criticalIds;
         _timeline.Calendar = Calendar;
         _timeline.ShowBaseline = ShowBaseline;
+        _timeline.ShowLegend = ShowLegend;
+        _timeline.ShowBarLabels = ShowBarLabels;
     }
 
     /// <summary>Wraps the flat tasks into hierarchy view-models for the tree grid.</summary>

@@ -62,6 +62,12 @@ public sealed class GanttTask
     /// <summary>The baseline (planned) finish; null = no baseline for the task.</summary>
     public DateTime? BaselineFinish { get; set; }
 
+    /// <summary>
+    /// An optional per-task bar color (categories/statuses, the Fiori qualitative-palette
+    /// pattern); null = the theme brush. The scheduling engine never touches this.
+    /// </summary>
+    public System.Windows.Media.Brush? BarBrush { get; set; }
+
     /// <summary>The task duration in whole days (0 for milestones).</summary>
     public int DurationDays => IsMilestone ? 0 : Math.Max(0, (int)Math.Ceiling((Finish.Date - Start.Date).TotalDays));
 }

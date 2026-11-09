@@ -29,6 +29,12 @@
   <data name="SchedulerNewAppointment" xml:space="preserve"><value>New appointment</value></data>
   <data name="NumericIncrease" xml:space="preserve"><value>Increase value</value></data>
   <data name="NumericDecrease" xml:space="preserve"><value>Decrease value</value></data>
+  <data name="GanttLegendTask" xml:space="preserve"><value>Task</value></data>
+  <data name="GanttLegendSummary" xml:space="preserve"><value>Summary</value></data>
+  <data name="GanttLegendMilestone" xml:space="preserve"><value>Milestone</value></data>
+  <data name="GanttLegendCritical" xml:space="preserve"><value>Critical path</value></data>
+  <data name="GanttLegendBaseline" xml:space="preserve"><value>Baseline</value></data>
+  <data name="GanttLegendNonWorking" xml:space="preserve"><value>Non-working</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Freeze up to this column</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Group by this column</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>From</value></data>

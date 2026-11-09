@@ -102,7 +102,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
 
     /// <inheritdoc />
     protected override Size MeasureOverride(Size availableSize)
-        => new(TotalWidth, HeaderHeight + Tasks.Count * RowHeight);
+        => new(TotalWidth, HeaderHeight + Tasks.Count * RowHeight + (_showLegend ? LegendHeight : 0));
 
     /// <summary>Identifies the <see cref="DayWidth"/> dependency property.</summary>
     public static readonly DependencyProperty DayWidthProperty = DependencyProperty.Register(
@@ -110,7 +110,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
         new PropertyMetadata(28d, OnLayoutChanged));
 
     private List<GanttTimescaleCell> _cells = new();
+    private List<GanttTimescaleCell> _majorCells = new();
+    private HashSet<string> _parentIds = new();
     private List<DateTime> _nonWorkingDays = new();
+    private bool _panning;
+    private double _lastPanX;
     private DateTime _rangeStart = DateTime.Today;
     private DateTime _rangeEnd = DateTime.Today;
     private int _hoverIndex = -1;
@@ -206,6 +210,35 @@ public sealed class GanttTimelinePanel : FrameworkElement
     /// <summary>The non-working days of the current range (test hook).</summary>
     public IReadOnlyList<DateTime> NonWorkingDays => _nonWorkingDays;
 
+    /// <summary>The MAJOR (upper) timescale row cells (test hook).</summary>
+    public IReadOnlyList<GanttTimescaleCell> MajorCells => _majorCells;
+
+    /// <summary>Whether the task is a parent (renders as an Oracle summary bar; test hook).</summary>
+    internal bool IsSummaryTask(GanttTask task) => _parentIds.Contains(task.Id);
+
+    /// <summary>
+    /// Applies a discrete zoom step (wheel path; test hook): positive zooms OUT
+    /// (Day→Week→Month), negative zooms IN. Raises <see cref="ZoomStepRequested"/> for the
+    /// owning view (the zoom unit is its dependency property).
+    /// </summary>
+    internal void RequestZoom(int steps) => ZoomStepRequested?.Invoke(this, steps);
+
+    /// <summary>Pans the chart horizontally by a pixel increment (drag-pan path; test hook).</summary>
+    internal void PanBy(double pixelIncrement) => PanRequested?.Invoke(this, pixelIncrement);
+
+    /// <summary>The resize/move/pan cursor for a chart point (hover path; test hook).</summary>
+    internal System.Windows.Input.Cursor? CursorForZone(Point point)
+    {
+        var (index, mode) = TaskZoneAt(point);
+        return mode switch
+        {
+            DragMode.ResizeStart or DragMode.ResizeFinish => System.Windows.Input.Cursors.SizeWE,
+            DragMode.Move => System.Windows.Input.Cursors.SizeAll,
+            _ when index < 0 && point.Y >= HeaderHeight => System.Windows.Input.Cursors.Hand,
+            _ => null,
+        };
+    }
+
     /// <summary>The rendered bar of a task (test hook).</summary>
     internal Rect? BarOf(GanttTask task)
     {
@@ -262,6 +295,42 @@ public sealed class GanttTimelinePanel : FrameworkElement
 
     /// <summary>Raised after the user drew a link from one bar to another.</summary>
     public event EventHandler<(GanttTask Predecessor, GanttTask Successor, GanttLinkType Type)>? LinkCreated;
+
+    /// <summary>Raised when the wheel (or <see cref="RequestZoom"/>) asks to change the zoom unit.</summary>
+    public event EventHandler<int>? ZoomStepRequested;
+
+    /// <summary>Raised while the user pans the chart by dragging empty space (<see cref="PanBy"/>).</summary>
+    public event EventHandler<double>? PanRequested;
+
+    /// <summary>Whether the legend strip renders pinned to the bottom of the viewport.</summary>
+    public bool ShowLegend
+    {
+        get => _showLegend;
+        set
+        {
+            _showLegend = value;
+            InvalidateMeasure(); // the extent includes the legend strip
+            InvalidateVisual();
+        }
+    }
+
+    private bool _showLegend = true;
+
+    /// <summary>The legend strip height.</summary>
+    public double LegendHeight { get; set; } = 22d;
+
+    /// <summary>Whether task names render as labels after the bars (Oracle: default off).</summary>
+    public bool ShowBarLabels
+    {
+        get => _showBarLabels;
+        set
+        {
+            _showBarLabels = value;
+            InvalidateVisual();
+        }
+    }
+
+    private bool _showBarLabels;
 
     /// <summary>What the pointer is dragging.</summary>
     public enum DragMode
@@ -371,6 +440,8 @@ public sealed class GanttTimelinePanel : FrameworkElement
         }
 
         _cells = GanttEngine.BuildTimescale(_rangeStart, _rangeEnd.AddDays(-1), Unit, CultureInfo.CurrentCulture);
+        _majorCells = GanttEngine.BuildMajorTimescale(_rangeStart, _rangeEnd.AddDays(-1), Unit, CultureInfo.CurrentCulture);
+        _parentIds = new HashSet<string>(Tasks.Where(t => t.ParentId is not null).Select(t => t.ParentId!), StringComparer.Ordinal);
         _nonWorkingDays = new List<DateTime>();
         if (_calendar is { } calendar)
         {
@@ -384,6 +455,19 @@ public sealed class GanttTimelinePanel : FrameworkElement
         }
 
         InvalidateMeasure(); // the extent follows the task count and the range
+    }
+
+    /// <summary>The bottom edge of the row area (the legend strip is below it).</summary>
+    private double RowsBottom => HeaderHeight + Tasks.Count * RowHeight;
+
+    /// <summary>The y of the pinned legend strip (clamped to the content bottom).</summary>
+    private double LegendY
+    {
+        get
+        {
+            var viewport = _viewportHeight > 0 ? _viewportHeight : RenderSize.Height;
+            return Math.Min(VerticalSyncOffset + viewport - LegendHeight, Height - LegendHeight);
+        }
     }
 
     private double TotalWidth => Math.Max((_rangeEnd - _rangeStart).TotalDays * DayWidth, 100);
@@ -416,11 +500,32 @@ public sealed class GanttTimelinePanel : FrameworkElement
 
         drawingContext.DrawRectangle(surface, null, new Rect(0, 0, RenderSize.Width, RenderSize.Height));
 
-        // Header background + separator.
+        // Two-level header (Oracle/Fiori): the MAJOR row (months/years) above the MINOR row
+        // (the zoom unit cells), a separator between them, minor ticks down the whole chart.
+        var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        var majorRowBottom = HeaderHeight - 14;
         drawingContext.DrawRectangle(surface, new Pen(border, 1), new Rect(0, 0, RenderSize.Width, HeaderHeight));
 
-        // Timescale cells.
         var typeface = new Typeface(SystemFonts.MessageFontFamily, FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
+        foreach (var cell in _majorCells)
+        {
+            var x = XOf(cell.Start);
+            var w = (cell.End - cell.Start).TotalDays * DayWidth;
+            if (x + w < 0 || x > RenderSize.Width)
+            {
+                continue;
+            }
+
+            drawingContext.DrawText(new FormattedText(
+                cell.Caption, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, 10, textBrush, dpi)
+            {
+                MaxTextWidth = Math.Max(w - 6, 1),
+            }, new Point(x + 4, 1));
+            drawingContext.DrawLine(new Pen(border, 1), new Point(x, 0), new Point(x, majorRowBottom));
+        }
+
+        drawingContext.DrawLine(new Pen(border, 1), new Point(0, majorRowBottom), new Point(RenderSize.Width, majorRowBottom));
+
         foreach (var cell in _cells)
         {
             var x = XOf(cell.Start);
@@ -435,10 +540,10 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 typeface,
-                11,
+                10,
                 textBrush,
-                VisualTreeHelper.GetDpi(this).PixelsPerDip), new Point(x + 4, 6));
-            drawingContext.DrawLine(new Pen(border, 1), new Point(x, 0), new Point(x, RenderSize.Height));
+                dpi), new Point(x + 3, majorRowBottom + 2));
+            drawingContext.DrawLine(new Pen(border, 1), new Point(x, majorRowBottom), new Point(x, RenderSize.Height));
         }
 
         drawingContext.DrawLine(new Pen(border, 1), new Point(0, HeaderHeight), new Point(RenderSize.Width, HeaderHeight));
@@ -503,7 +608,35 @@ public sealed class GanttTimelinePanel : FrameworkElement
             }
 
             var critical = criticalSet.Contains(task.Id);
-            drawingContext.DrawRectangle(Brushes.LightGray, new Pen(critical ? accent : Brushes.Gray, critical ? 1.6 : 0.8), rect);
+            var fill = task.BarBrush ?? Brushes.LightGray;
+
+            if (_parentIds.Contains(task.Id))
+            {
+                // Oracle SUMMARY bar: a thin band with end caps carrying the rollup
+                // completion of all descendants (not the parent's own number).
+                var centerY = rect.Y + rect.Height / 2;
+                var band = new Rect(rect.X, centerY - 3, rect.Width, 6);
+                var capHeight = 12;
+                drawingContext.DrawRectangle(fill, new Pen(critical ? accent : Brushes.Gray, critical ? 1.6 : 0.8), band);
+                drawingContext.DrawRectangle(fill, null, new Rect(rect.X, centerY - capHeight / 2, 2.5, capHeight));
+                drawingContext.DrawRectangle(fill, null, new Rect(rect.Right - 2.5, centerY - capHeight / 2, 2.5, capHeight));
+
+                var summaryCompletion = GanttEngine.SummaryCompletion(task, Tasks);
+                var summaryWidth = rect.Width * Math.Clamp(summaryCompletion, 0, 100) / 100.0;
+                if (summaryWidth > 0)
+                {
+                    drawingContext.DrawRectangle(accent, null, new Rect(rect.X, band.Y, Math.Min(summaryWidth, rect.Width), band.Height));
+                }
+
+                if (i == _hoverIndex)
+                {
+                    drawingContext.DrawRectangle(null, new Pen(accent, 1.5), rect);
+                }
+
+                continue;
+            }
+
+            drawingContext.DrawRectangle(fill, new Pen(critical ? accent : Brushes.Gray, critical ? 1.6 : 0.8), rect);
 
             var completionWidth = rect.Width * Math.Clamp(task.Completion, 0, 100) / 100.0;
             if (completionWidth > 0)
@@ -514,6 +647,17 @@ public sealed class GanttTimelinePanel : FrameworkElement
             if (i == _hoverIndex)
             {
                 drawingContext.DrawRectangle(null, new Pen(accent, 1.5), rect);
+            }
+
+            // Oracle taskbar label: after the bar, clipped to the chart width, toggleable.
+            if (ShowBarLabels)
+            {
+                var label = new FormattedText(
+                    task.Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, 10, textBrush, dpi)
+                {
+                    MaxTextWidth = Math.Max(RenderSize.Width - rect.Right - 8, 1),
+                };
+                drawingContext.DrawText(label, new Point(rect.Right + 4, rect.Y + (rect.Height - label.Height) / 2));
             }
         }
 
@@ -541,6 +685,102 @@ public sealed class GanttTimelinePanel : FrameworkElement
             {
                 DrawLink(drawingContext, link, accent);
             }
+        }
+
+        // Legend strip pinned to the viewport bottom (Oracle information/legend panel,
+        // compressed to one row): sample glyph + localized caption per chart shape.
+        if (_showLegend)
+        {
+            var legendY = LegendY;
+            drawingContext.DrawRectangle(surface, new Pen(border, 1), new Rect(0, legendY, RenderSize.Width, LegendHeight));
+            var captionTypeface = new Typeface(SystemFonts.MessageFontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+            var x = 8d;
+            foreach (var item in ComputeLegendItems())
+            {
+                var glyphWidth = item.Key switch
+                {
+                    "milestone" => 10,
+                    "baseline" => 14,
+                    "nonworking" => 10,
+                    _ => 16,
+                };
+                DrawLegendGlyph(drawingContext, item.Key, x, legendY + LegendHeight / 2, glyphWidth, accent);
+                var caption = new FormattedText(
+                    item.Caption, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, captionTypeface, 10, textBrush, dpi)
+                {
+                    MaxTextWidth = Math.Max(RenderSize.Width - x - glyphWidth - 8, 1),
+                };
+                drawingContext.DrawText(caption, new Point(x + glyphWidth + 4, legendY + (LegendHeight - caption.Height) / 2));
+                x += glyphWidth + 8 + caption.Width + 16;
+                if (x > RenderSize.Width - 60)
+                {
+                    break; // clipped gracefully
+                }
+            }
+        }
+    }
+
+    /// <summary>The legend entries the current chart state shows (render + test hook).</summary>
+    internal IReadOnlyList<(string Key, string Caption)> ComputeLegendItems()
+    {
+        var items = new List<(string, string)>
+        {
+            ("task", Localization.GridStrings.GanttLegendTask),
+        };
+
+        if (Tasks.Any(t => _parentIds.Contains(t.Id)))
+        {
+            items.Add(("summary", Localization.GridStrings.GanttLegendSummary));
+        }
+
+        if (Tasks.Any(t => t.IsMilestone))
+        {
+            items.Add(("milestone", Localization.GridStrings.GanttLegendMilestone));
+        }
+
+        if (CriticalTaskIds.Count > 0)
+        {
+            items.Add(("critical", Localization.GridStrings.GanttLegendCritical));
+        }
+
+        if (_showBaseline && Tasks.Any(t => t.BaselineStart is not null))
+        {
+            items.Add(("baseline", Localization.GridStrings.GanttLegendBaseline));
+        }
+
+        if (_calendar is not null)
+        {
+            items.Add(("nonworking", Localization.GridStrings.GanttLegendNonWorking));
+        }
+
+        return items;
+    }
+
+    private static void DrawLegendGlyph(DrawingContext drawingContext, string key, double x, double centerY, double width, Brush accent)
+    {
+        switch (key)
+        {
+            case "milestone":
+                drawingContext.DrawGeometry(Brushes.DimGray, new Pen(Brushes.Black, 0.8), CreateDiamond(new Point(x + width / 2, centerY), 5));
+                break;
+            case "critical":
+                drawingContext.DrawRectangle(null, new Pen(accent, 1.6), new Rect(x, centerY - 4, width, 8));
+                break;
+            case "baseline":
+                drawingContext.DrawRectangle(BaselineFill, new Pen(Brushes.DimGray, 0.6), new Rect(x, centerY - 2, width, 4));
+                break;
+            case "nonworking":
+                drawingContext.DrawRectangle(NonWorkingTint, new Pen(Brushes.DimGray, 0.6), new Rect(x, centerY - 4, width, 8));
+                break;
+            case "summary":
+                drawingContext.DrawRectangle(Brushes.LightGray, null, new Rect(x, centerY - 3, width, 6));
+                drawingContext.DrawRectangle(Brushes.LightGray, null, new Rect(x, centerY - 6, 2, 12));
+                drawingContext.DrawRectangle(Brushes.LightGray, null, new Rect(x + width - 2, centerY - 6, 2, 12));
+                break;
+            default:
+                drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Gray, 0.8), new Rect(x, centerY - 4, width, 8));
+                drawingContext.DrawRectangle(accent, null, new Rect(x, centerY - 4, width * 0.55, 8));
+                break;
         }
     }
 
@@ -641,19 +881,35 @@ public sealed class GanttTimelinePanel : FrameworkElement
     {
         base.OnMouseLeftButtonDown(e);
         Focus();
-        var (index, mode) = TaskZoneAt(e.GetPosition(this));
+        var point = e.GetPosition(this);
+        var (index, mode) = TaskZoneAt(point);
         DetectDoubleClick(index);
         if (index >= 0 && mode != DragMode.None)
         {
             _dragTask = Tasks[index];
             _dragMode = mode;
-            _dragOrigin = e.GetPosition(this);
+            _dragOrigin = point;
             _dragStartOrigin = _dragTask.Start;
             _dragFinishOrigin = _dragTask.Finish;
             _linkCurrent = _dragOrigin;
             CaptureMouse();
         }
+        else if (point.Y >= HeaderHeight && point.Y < RowsBottom)
+        {
+            // Fiori/Oracle pan: dragging empty chart space scrolls the timeline.
+            _panning = true;
+            _lastPanX = point.X;
+            CaptureMouse();
+        }
 
+        e.Handled = true;
+    }
+
+    /// <inheritdoc />
+    protected override void OnMouseWheel(MouseWheelEventArgs e)
+    {
+        base.OnMouseWheel(e);
+        RequestZoom(e.Delta > 0 ? -1 : 1); // wheel up = zoom in (towards Day)
         e.Handled = true;
     }
 
@@ -662,11 +918,25 @@ public sealed class GanttTimelinePanel : FrameworkElement
     {
         base.OnMouseMove(e);
         var point = e.GetPosition(this);
+
+        if (_panning && IsMouseCaptured)
+        {
+            // Incremental deltas: dragging left moves the content left (scroll right).
+            PanBy(_lastPanX - point.X);
+            _lastPanX = point.X;
+            return;
+        }
+
         var hover = TaskAt(point);
         if (hover != _hoverIndex && _dragMode == DragMode.None)
         {
             _hoverIndex = hover;
             InvalidateVisual();
+        }
+
+        if (_dragMode == DragMode.None)
+        {
+            Cursor = CursorForZone(point); // Fiori: resize/move cursor feedback over zones
         }
 
         if (hover >= 0 && _dragMode == DragMode.None)
@@ -720,6 +990,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
 
         _dragMode = DragMode.None;
         _dragTask = null;
+        _panning = false;
         ReleaseMouseCapture();
         InvalidateVisual();
         e.Handled = true;

@@ -16,6 +16,12 @@
             <CheckBox Content="Baseline"
                       IsChecked="{Binding ShowBaseline}"
                       Margin="0,0,12,0" VerticalAlignment="Center" />
+            <CheckBox Content="Legend"
+                      IsChecked="{Binding ShowLegend}"
+                      Margin="0,0,12,0" VerticalAlignment="Center" />
+            <CheckBox Content="Bar labels"
+                      IsChecked="{Binding ShowBarLabels}"
+                      Margin="0,0,12,0" VerticalAlignment="Center" />
             <ComboBox ItemsSource="{Binding Units}"
                       SelectedItem="{Binding TimescaleUnit}"
                       Width="90" VerticalAlignment="Center" />
@@ -32,6 +38,8 @@
                          ShowCriticalPath="{Binding ShowCriticalPath}"
                          Calendar="{Binding Calendar}"
                          ShowBaseline="{Binding ShowBaseline}"
+                         ShowLegend="{Binding ShowLegend}"
+                         ShowBarLabels="{Binding ShowBarLabels}"
                          TimescaleUnit="{Binding TimescaleUnit}"
                          TaskEdited="OnTaskEdited"
                          LinkCreated="OnLinkCreated" />

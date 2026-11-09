@@ -268,6 +268,73 @@ public static class GanttEngine
         return cells;
     }
 
+    /// <summary>
+    /// The MAJOR (upper) timescale row above the minor row of <see cref="BuildTimescale"/>:
+    /// months for Day/Week minor units, years for a Month minor unit (Oracle/Fiori two-level
+    /// time axes). Cells tile [rangeStart, rangeEnd] aligned to calendar bounds.
+    /// </summary>
+    public static List<GanttTimescaleCell> BuildMajorTimescale(DateTime rangeStart, DateTime rangeEnd, GanttTimescaleUnit unit, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentCulture;
+        var cells = new List<GanttTimescaleCell>();
+        var start = rangeStart.Date;
+        var end = rangeEnd.Date;
+        if (end < start)
+        {
+            return cells;
+        }
+
+        if (unit == GanttTimescaleUnit.Month)
+        {
+            var year = new DateTime(start.Year, 1, 1);
+            while (year <= end)
+            {
+                var next = year.AddYears(1);
+                cells.Add(new GanttTimescaleCell(year, next, year.ToString("yyyy", culture)));
+                year = next;
+            }
+
+            return cells;
+        }
+
+        var month = new DateTime(start.Year, start.Month, 1);
+        while (month <= end)
+        {
+            var next = month.AddMonths(1);
+            cells.Add(new GanttTimescaleCell(month, next, month.ToString("MMMM yyyy", culture)));
+            month = next;
+        }
+
+        return cells;
+    }
+
+    /// <summary>
+    /// The duration-weighted completion of a summary (parent) task over ALL its descendants
+    /// (Oracle: the summary bar shows the total progress of the sub-tasks).
+    /// </summary>
+    public static int SummaryCompletion(GanttTask summary, IEnumerable<GanttTask> tasks)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+        ArgumentNullException.ThrowIfNull(tasks);
+
+        var byId = tasks.ToDictionary(t => t.Id, t => t);
+        var totalWeight = 0d;
+        var weighted = 0d;
+        void Walk(string id)
+        {
+            foreach (var child in byId.Values.Where(t => t.ParentId == id))
+            {
+                var weight = Math.Max(child.DurationDays, 1); // milestones weigh one day
+                totalWeight += weight;
+                weighted += child.Completion * weight;
+                Walk(child.Id);
+            }
+        }
+
+        Walk(summary.Id);
+        return totalWeight <= 0 ? 0 : (int)Math.Round(weighted / totalWeight);
+    }
+
     /// <summary>Aligns the date down to the week start of the culture.</summary>
     public static DateTime AlignToWeek(DateTime date, DayOfWeek firstDayOfWeek)
     {
