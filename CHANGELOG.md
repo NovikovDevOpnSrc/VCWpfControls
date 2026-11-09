@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — diverse testing campaign (adversarial, invariant, culture matrix, churn)
+
+- `EngineEdgeCaseTests` (Core): degenerate/hostile inputs for Scheduler (inverted ranges,
+  zero/negative recurrence intervals, Count 0, past Until, far-future dates), Gantt
+  (unknown link ids, self-link cycles, empty charts, month timescale across a year
+  boundary), Pivot (empty source, fully filtered-out fields), Condition parser garbage
+  and clipboard-unconvertible inputs.
+- `EngineInvariantTests` (Core): seeded randomized property tests — AutoSchedule on 50
+  random acyclic graphs (every link satisfied afterwards, durations preserved, no
+  inversions), LayoutOverlaps lane consistency vs an INDEPENDENT union-find clustering
+  (exactly-once placement, lane bounds, overlapping pairs never share a lane, no wasted
+  lanes per cluster), Pivot totals equal the source sum three ways, condition
+  Format→Parse fixed-point after normalization.
+- `CultureMatrixTests` (Core): the same weekly expansion yields byte-identical dates
+  under ru-RU/en-US/zh-CN/de-DE/ar-SA/Invariant; clipboard numeric/date round-trips per
+  culture; timescale captions non-empty everywhere; Week view always spans 7 days.
+- `StressChurnTests` (STA): a 300-mutation storm under active sort+grouping converges to
+  the exact live item set; a 20-wave sort/filter/group settings storm keeps the grid
+  alive with a non-empty view.
+- **Fixed (found by the campaign)**: `SchedulerEngine.OccurrencesOf` now guards the model
+  contract — appointments with `End <= Start` (zero/negative length) contribute NO
+  occurrences (previously they leaked garbage occurrences into Expand/LayoutOverlaps/
+  FindConflicts). The regression test was observed red before the guard.
+
 ## [0.5.0] — 2026-11-09
 
 The Scheduler/Calendar flagship (UI-free engine + control + interactions), Gantt

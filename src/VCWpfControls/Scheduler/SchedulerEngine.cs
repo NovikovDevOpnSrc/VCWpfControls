@@ -48,6 +48,13 @@ public static class SchedulerEngine
     public static IEnumerable<SchedulerOccurrence> OccurrencesOf(SchedulerAppointment appointment, DateTime rangeStart, DateTime rangeEnd)
     {
         ArgumentNullException.ThrowIfNull(appointment);
+        // The model contract says End is later than Start; degenerate intervals are
+        // hostile input — they contribute NOTHING (never a garbage occurrence).
+        if (appointment.End <= appointment.Start)
+        {
+            yield break;
+        }
+
         if (appointment.Recurrence is not { } rule)
         {
             if (Overlaps(appointment.Start, appointment.End, rangeStart, rangeEnd))
