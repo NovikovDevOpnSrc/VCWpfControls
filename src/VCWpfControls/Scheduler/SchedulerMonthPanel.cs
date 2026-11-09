@@ -326,7 +326,7 @@ public sealed class SchedulerMonthPanel : FrameworkElement
 
                 var isSelected = ReferenceEquals(list[c], _selected);
                 drawingContext.DrawRoundedRectangle(ChipFill,
-                    new Pen(isSelected ? accent : Brushes.Gray, isSelected ? 1.6 : 0.6), chip, 2, 2);
+                    new Pen(isSelected ? accent : Brushes.Gray, isSelected ? 1.6 : 0.6), chip, 4, 4);
                 DrawChipText(drawingContext, list[c].Subject, chip, Brushes.Black, textTypeface, dpi);
             }
 

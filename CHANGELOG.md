@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — default themes aligned with Fluent 2
+
+The Light/Dark palettes now follow the Fluent 2 foundations: brand `#0F6CBD`/`#479EF5`,
+the tinted neutral ramp, brand-tinted selection, neutral hovers. New foundation tokens on
+`GridResources`: `FontFamilyKey` (Segoe UI Variable with fallback, applied to the grid),
+the 12/14/16/20 type ramp (`FontSizeCaption/Body/Subtitle/Title`), and the 2px rounded
+accent `FocusVisualKey` focus ring (grid + column headers). Corner radii follow the
+Fluent 4/8 convention (blocks/chips 4, cards 8). Any token stays overridable through the
+usual keys; chart internals keep deliberately denser sizes. 4 STA tests pin the tokens
+and both palettes (accent injection-validated). One pixel test's darkness detector
+learned to exclude accent-colored glyphs (the new brand blue is darker than the old one
+and the sort arrow started reading as "text bleed"; BGRA channel order honored).
+
 ### Added — Gantt UX-guideline compliance round (Oracle FusionFX / SAP Fiori / Smartsheet)
 
 Audited the chart against the three guidelines and closed every gap (the four misses plus

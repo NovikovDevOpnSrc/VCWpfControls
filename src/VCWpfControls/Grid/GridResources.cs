@@ -40,4 +40,22 @@ public static class GridResources
 
     /// <summary>Accent text color (headers when pressed, links).</summary>
     public static readonly ComponentResourceKey AccentTextKey = new(typeof(GridResources), "AccentText");
+
+    /// <summary>The Fluent 2 type ramp font (Segoe UI Variable with fallbacks).</summary>
+    public static readonly ComponentResourceKey FontFamilyKey = new(typeof(GridResources), "FontFamily");
+
+    /// <summary>Fluent 2 ramp: Caption (12).</summary>
+    public static readonly ComponentResourceKey FontSizeCaptionKey = new(typeof(GridResources), "FontSizeCaption");
+
+    /// <summary>Fluent 2 ramp: Body (14) — the default control text size.</summary>
+    public static readonly ComponentResourceKey FontSizeBodyKey = new(typeof(GridResources), "FontSizeBody");
+
+    /// <summary>Fluent 2 ramp: Subtitle (16).</summary>
+    public static readonly ComponentResourceKey FontSizeSubtitleKey = new(typeof(GridResources), "FontSizeSubtitle");
+
+    /// <summary>Fluent 2 ramp: Title (20).</summary>
+    public static readonly ComponentResourceKey FontSizeTitleKey = new(typeof(GridResources), "FontSizeTitle");
+
+    /// <summary>The Fluent 2 focus ring style (2px accent, rounded).</summary>
+    public static readonly ComponentResourceKey FocusVisualKey = new(typeof(GridResources), "FocusVisual");
 }

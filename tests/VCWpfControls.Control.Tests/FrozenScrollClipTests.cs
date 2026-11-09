@@ -77,9 +77,10 @@ public class FrozenScrollClipTests
     private static int BandY(GridControl grid, FrameworkElement band)
         => (int)Math.Floor(band.TranslatePoint(new Point(0, 0), grid).Y) + 12;
 
-    /// <summary>Renders the grid offscreen at 96 DPI (VisualBrush capture — see ColumnSeparatorTests) and returns the dark (text) pixel columns in [from..to].</summary>
+    /// <summary>Renders the grid offscreen at 96 DPI (VisualBrush capture — see ColumnSeparatorTests) and returns the dark (text) pixel columns in [from..to]. Accent-colored pixels are EXCLUDED — the header's own sort/funnel glyphs draw in the accent, whose brightness differs per palette (Fluent #0F6CBD is darker than the old #2563EB) and must not read as text bleed.</summary>
     private static List<int> DarkColumns(GridControl grid, int y, int from, int to)
     {
+        var accentColor = (grid.TryFindResource(GridResources.AccentKey) as SolidColorBrush)?.Color ?? Colors.Transparent;
         var width = (int)Math.Ceiling(grid.ActualWidth);
         var height = (int)Math.Ceiling(grid.ActualHeight);
         var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
@@ -97,7 +98,12 @@ public class FrozenScrollClipTests
         for (var px = from; px <= Math.Min(to, width - 1); px++)
         {
             var i = (y * width + px) * 4;
-            if ((pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3 < 110)
+            // CopyPixels byte order is BGRA.
+            var b = pixels[i];
+            var g = pixels[i + 1];
+            var r = pixels[i + 2];
+            var isAccent = Math.Abs(r - accentColor.R) + Math.Abs(g - accentColor.G) + Math.Abs(b - accentColor.B) < 120;
+            if (!isAccent && (r + g + b) / 3 < 110)
             {
                 dark.Add(px);
             }

@@ -11,7 +11,8 @@
     xmlns:wizard="clr-namespace:VCWpfControls.Wizard"
     xmlns:gantt="clr-namespace:VCWpfControls.Gantt"
     xmlns:scheduler="clr-namespace:VCWpfControls.Scheduler"
-    xmlns:treeList="clr-namespace:VCWpfControls.TreeList">
+    xmlns:treeList="clr-namespace:VCWpfControls.TreeList"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- ============ Theme palette (override these keys to re-theme the grid) ============ -->
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FFFFFFFF" />
@@ -21,8 +22,30 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="#FFCFE3F5" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="#FF2563EB" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="#FFE5E7EB" />
-    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF0F6CBD" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="#FF1D4ED8" />
+
+    <!-- Fluent 2 foundations: the type ramp (Segoe UI Variable with fallbacks), the 4/8
+         radius convention (controls 4, cards 8) and the 2px accent focus ring. -->
+    <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <sys:Double x:Key="{x:Static grid:GridResources.FontSizeCaptionKey}">12</sys:Double>
+    <sys:Double x:Key="{x:Static grid:GridResources.FontSizeBodyKey}">14</sys:Double>
+    <sys:Double x:Key="{x:Static grid:GridResources.FontSizeSubtitleKey}">16</sys:Double>
+    <sys:Double x:Key="{x:Static grid:GridResources.FontSizeTitleKey}">20</sys:Double>
+    <Style x:Key="{x:Static grid:GridResources.FocusVisualKey}" TargetType="Control">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Control">
+                    <Rectangle
+                        Margin="2"
+                        RadiusX="4"
+                        RadiusY="4"
+                        Stroke="{DynamicResource {x:Static grid:GridResources.AccentKey}}"
+                        StrokeThickness="2" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="#FFEDF2F9" />
 
     <SolidColorBrush x:Key="{x:Static grid:GridResources.TextBrushKey}" Color="#FF1F2937" />
@@ -30,7 +53,9 @@
     <!-- ============ GridControl ============ -->
     <Style TargetType="{x:Type grid:GridControl}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="{DynamicResource {x:Static grid:GridResources.FontFamilyKey}}" />
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static grid:GridResources.FontSizeBodyKey}}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static grid:GridResources.FocusVisualKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="GridLinesBrush" Value="{DynamicResource {x:Static grid:GridResources.GridLineKey}}" />
@@ -291,6 +316,7 @@
 
     <!-- ============ GridColumnHeader ============ -->
     <Style TargetType="{x:Type primitives:GridColumnHeader}">
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static grid:GridResources.FocusVisualKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.HeaderForegroundKey}}" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -702,7 +728,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="6"
+                        CornerRadius="8"
                         Padding="12">
                         <DockPanel>
                             <Border

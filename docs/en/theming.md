@@ -5,6 +5,23 @@ description: GridControl default theme, the GridResources ComponentResourceKey r
 
 # Theming
 
+## Fluent 2 alignment
+
+The default Light/Dark palettes follow the **Fluent 2** foundations (Microsoft's design
+system): brand primary `#0F6CBD` (light) / `#479EF5` (dark), the tinted neutral ramp
+(`#242424`/`#FFFFFF` text, `#FAFAFA`/`#1F1F1F` surfaces, `#E0E0E0`/`#3D3D3D` strokes),
+brand-tinted selection (`#EBF3FC`/`#115EA3`) and neutral hovers. On top of the palette
+brushes, themes expose Fluent foundation tokens:
+
+- `GridResources.FontFamilyKey` — "Segoe UI Variable Text" with a Segoe UI fallback;
+- the type ramp — `FontSizeCaptionKey` (12) / `FontSizeBodyKey` (14, the control default) /
+  `FontSizeSubtitleKey` (16) / `FontSizeTitleKey` (20);
+- `GridResources.FocusVisualKey` — the 2px rounded accent focus ring (grid + headers);
+- corner radii follow the Fluent 4/8 convention (controls 4, cards 8).
+
+Applications override any token through the same keys; data-dense chart internals keep
+deliberately smaller sizes.
+
 ## Default theme
 
 The default (light) theme lives in `Themes/Generic.xaml` inside the library and is applied

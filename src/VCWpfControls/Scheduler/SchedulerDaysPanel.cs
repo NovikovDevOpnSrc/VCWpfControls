@@ -804,7 +804,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
             && _dragMode is DragMode.Move or DragMode.ResizeStart or DragMode.ResizeEnd
             && PreviewRectOf(dragged, Mouse.GetPosition(this)) is { } ghost)
         {
-            drawingContext.DrawRoundedRectangle(PreviewFill, new Pen(accent, 1.2), ghost, 3, 3);
+            drawingContext.DrawRoundedRectangle(PreviewFill, new Pen(accent, 1.2), ghost, 4, 4);
             DrawBlockText(drawingContext, dragged.Subject, ghost, textBrush, textTypeface, dpi);
         }
 
@@ -880,7 +880,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
 
             var isSelected = ReferenceEquals(slot.Occurrence, _selected);
             drawingContext.DrawRoundedRectangle(ChipFill,
-                new Pen(isSelected ? accent : Brushes.Gray, isSelected ? 1.6 : 0.8), chip, 3, 3);
+                new Pen(isSelected ? accent : Brushes.Gray, isSelected ? 1.6 : 0.8), chip, 4, 4);
             DrawBlockText(drawingContext, slot.Occurrence.Subject, chip, textBrush, textTypeface, dpi);
         }
 
@@ -892,7 +892,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         var isSelected = ReferenceEquals(occurrence, _selected);
         var isHover = ReferenceEquals(occurrence, _hover);
         drawingContext.DrawRoundedRectangle(BlockFill,
-            new Pen(isSelected || isHover ? accent : Brushes.Gray, isSelected ? 1.6 : 0.8), rect, 3, 3);
+            new Pen(isSelected || isHover ? accent : Brushes.Gray, isSelected ? 1.6 : 0.8), rect, 4, 4);
         DrawBlockText(drawingContext, occurrence.Subject, rect, textBrush, typeface, dpi);
     }
 
