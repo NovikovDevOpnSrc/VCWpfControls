@@ -82,6 +82,9 @@ public static class GridStrings
     /// <summary>The pivot totals caption.</summary>
     public static string PivotTotal => Get("PivotTotal");
 
+    /// <summary>The default subject of a scheduler appointment created by a drag.</summary>
+    public static string SchedulerNewAppointment => Get("SchedulerNewAppointment");
+
     /// <summary>The wizard "Next" button caption.</summary>
     public static string WizardNext => Get("WizardNext");
 

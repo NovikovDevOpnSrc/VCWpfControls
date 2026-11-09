@@ -26,6 +26,8 @@
                                  ViewType="{Binding ViewType}"
                                  DayStartHour="8"
                                  DayEndHour="20"
-                                 OccurrenceDoubleClicked="OnOccurrenceDoubleClicked" />
+                                 OccurrenceDoubleClicked="OnOccurrenceDoubleClicked"
+                                 AppointmentEdited="OnAppointmentEdited"
+                                 AppointmentCreated="OnAppointmentCreated" />
     </DockPanel>
 </UserControl>

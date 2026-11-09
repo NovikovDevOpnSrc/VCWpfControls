@@ -24,4 +24,12 @@ public partial class SchedulerSampleView : UserControl
     private void OnOccurrenceDoubleClicked(object sender, SchedulerOccurrence occurrence)
         => ((SchedulerSampleViewModel)DataContext).LastAction =
             $"Double-clicked '{occurrence.Subject}' ({occurrence.Start:g} \u2013 {occurrence.End:g})";
+
+    private void OnAppointmentEdited(object sender, SchedulerAppointment appointment)
+        => ((SchedulerSampleViewModel)DataContext).LastAction =
+            $"Moved/resized '{appointment.Subject}' → {appointment.Start:g} \u2013 {appointment.End:g}";
+
+    private void OnAppointmentCreated(object sender, SchedulerAppointment appointment)
+        => ((SchedulerSampleViewModel)DataContext).LastAction =
+            $"Created '{appointment.Subject}' {appointment.Start:g} \u2013 {appointment.End:g} (double-click to rename)";
 }

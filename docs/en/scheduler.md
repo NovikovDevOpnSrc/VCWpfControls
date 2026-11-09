@@ -33,6 +33,25 @@ and the control (stage 2). Drag/resize interactions are on the roadmap (stage 3)
 - Click selects (`SelectedOccurrence`, two-way bindable); double-click raises
   `OccurrenceDoubleClicked` for editor integration.
 
+## Interactions
+
+Day/work-week/week views are editable (the month view is read-only for now):
+
+- **Move** — drag a block: time shifts vertically (snapped), days shift horizontally.
+  All-day band chips drag by whole days only.
+- **Resize** — drag a block's top/bottom edge; at least one snap of duration is kept.
+- **Create** — drag out a range on empty space: an appointment is added to `Appointments`
+  with the localized "New appointment" subject; `AppointmentCreated` fires so an editor
+  can open (double-click is the natural follow-up).
+- Everything snaps to `SnapMinutes` (default 15; set 1 for minute precision).
+- Recurring series are **not** drag-editable (the recurrence rule owns the times) —
+  drags on series occurrences are ignored; edit the rule itself instead.
+
+```csharp
+view.AppointmentEdited += (_, appointment) => Persist(appointment);   // drag/resize
+view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
+```
+
 ## Navigation
 
 ```csharp

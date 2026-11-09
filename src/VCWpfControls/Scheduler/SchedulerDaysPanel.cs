@@ -36,6 +36,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
     private static readonly Brush ChipFill = Frozen(Color.FromArgb(90, 30, 120, 255));
     private static readonly Brush TodayTint = Frozen(Color.FromArgb(14, 30, 120, 255));
     private static readonly Brush HalfHourTick = Frozen(Color.FromArgb(90, 160, 160, 160));
+    private static readonly Brush PreviewFill = Frozen(Color.FromArgb(40, 30, 120, 255));
 
     private static Brush Frozen(Color color)
     {
@@ -352,9 +353,157 @@ public sealed class SchedulerDaysPanel : FrameworkElement
     /// <summary>Raised after a click selected an occurrence (the view mirrors it into its DP).</summary>
     internal event EventHandler<SchedulerOccurrence>? OccurrenceSelected;
 
-    private int IndexOfDay(DateTime date)
+    /// <summary>Raised after a drag/resize committed (dates already on the appointment).</summary>
+    public event EventHandler<SchedulerAppointment>? AppointmentEdited;
+
+    /// <summary>Raised when the user dragged out an empty range to create an appointment.</summary>
+    public event EventHandler<(DateTime Start, DateTime End)>? RangeSelected;
+
+    /// <summary>What the pointer is dragging.</summary>
+    public enum DragMode
     {
-        for (var i = 0; i < _days.Count; i++)
+        /// <summary>Not dragging.</summary>
+        None = 0,
+
+        /// <summary>Moving the whole occurrence.</summary>
+        Move = 1,
+
+        /// <summary>Resizing the start (top) edge.</summary>
+        ResizeStart = 2,
+
+        /// <summary>Resizing the end (bottom) edge.</summary>
+        ResizeEnd = 3,
+
+        /// <summary>Dragging out a new-appointment range on empty space.</summary>
+        Create = 4,
+    }
+
+    private DragMode _dragMode = DragMode.None;
+    private SchedulerOccurrence? _dragOccurrence;
+    private Point _dragOrigin;
+    private DateTime _createAnchor;
+    private int _snapMinutes = 15;
+
+    /// <summary>The drag/resize time quantum in minutes (1 = minute-precision).</summary>
+    internal int SnapMinutes
+    {
+        get => _snapMinutes;
+        set
+        {
+            _snapMinutes = Math.Max(1, value);
+            InvalidateVisual();
+        }
+    }
+
+    /// <summary>
+    /// Test seam for synthesized mouse events (which carry no position of their own):
+    /// when set, pointer queries resolve to this instead of the real device position.
+    /// </summary>
+    internal Func<Point>? NextPositionForTest { get; set; }
+
+    private Point PositionOf(MouseEventArgs e) => NextPositionForTest is { } next ? next() : e.GetPosition(this);
+
+    /// <summary>
+    /// Applies a whole move to a non-recurring occurrence's master (drag-move path; test
+    /// hook): the time delta is snapped to <see cref="SnapMinutes"/>; all-day occurrences
+    /// shift by days only. Recurring series are not editable (no-op).
+    /// </summary>
+    internal void MoveOccurrence(SchedulerOccurrence occurrence, int deltaDays, TimeSpan deltaTime)
+    {
+        var appointment = occurrence.Appointment;
+        if (appointment.Recurrence is not null)
+        {
+            return;
+        }
+
+        if (appointment.IsAllDay)
+        {
+            appointment.Start = appointment.Start.AddDays(deltaDays);
+            appointment.End = appointment.End.AddDays(deltaDays);
+        }
+        else
+        {
+            var shift = TimeSpan.FromDays(deltaDays) + Snap(deltaTime);
+            appointment.Start += shift;
+            appointment.End += shift;
+        }
+
+        AppointmentEdited?.Invoke(this, appointment);
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Moves the start edge of a non-recurring occurrence's master (drag-resize path; test
+    /// hook): snapped, clamped to keep at least one snap of duration. Recurring/all-day = no-op.
+    /// </summary>
+    internal void ResizeOccurrenceStart(SchedulerOccurrence occurrence, TimeSpan deltaTime)
+    {
+        var appointment = occurrence.Appointment;
+        if (appointment.Recurrence is not null || appointment.IsAllDay)
+        {
+            return;
+        }
+
+        var newStart = appointment.Start + Snap(deltaTime);
+        if (newStart > appointment.End.AddMinutes(-_snapMinutes))
+        {
+            newStart = appointment.End.AddMinutes(-_snapMinutes);
+        }
+
+        appointment.Start = newStart;
+        AppointmentEdited?.Invoke(this, appointment);
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Moves the end edge of a non-recurring occurrence's master (drag-resize path; test
+    /// hook): snapped, clamped to keep at least one snap of duration. Recurring/all-day = no-op.
+    /// </summary>
+    internal void ResizeOccurrenceEnd(SchedulerOccurrence occurrence, TimeSpan deltaTime)
+    {
+        var appointment = occurrence.Appointment;
+        if (appointment.Recurrence is not null || appointment.IsAllDay)
+        {
+            return;
+        }
+
+        var newEnd = appointment.End + Snap(deltaTime);
+        if (newEnd < appointment.Start.AddMinutes(_snapMinutes))
+        {
+            newEnd = appointment.Start.AddMinutes(_snapMinutes);
+        }
+
+        appointment.End = newEnd;
+        AppointmentEdited?.Invoke(this, appointment);
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Requests a new appointment for a dragged-out range (empty-space drag path; test
+    /// hook): the range is ordered and stretched to at least one snap. The VIEW creates the
+    /// appointment and adds it to its collection.
+    /// </summary>
+    internal void CreateFromRange(DateTime start, DateTime end)
+    {
+        if (end < start)
+        {
+            (start, end) = (end, start);
+        }
+
+        if (end == start)
+        {
+            end = start.AddMinutes(_snapMinutes);
+        }
+
+        RangeSelected?.Invoke(this, (start, end));
+    }
+
+    /// <summary>Snaps a time delta to whole <see cref="SnapMinutes"/> increments.</summary>
+    internal TimeSpan Snap(TimeSpan value)
+        => TimeSpan.FromMinutes(Math.Round(value.TotalMinutes / _snapMinutes, MidpointRounding.AwayFromZero) * _snapMinutes);
+
+    private int IndexOfDay(DateTime date)
+    {        for (var i = 0; i < _days.Count; i++)
         {
             if (_days[i] == date.Date)
             {
@@ -376,13 +525,130 @@ public sealed class SchedulerDaysPanel : FrameworkElement
     protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
         => new PointHitTestResult(this, hitTestParameters.HitPoint);
 
+    /// <summary>The occurrence under the point and what dragging it would do (band chips move; block edges resize; empty space creates).</summary>
+    private (SchedulerOccurrence? Occurrence, DragMode Mode) ZoneAt(Point point)
+    {
+        // The pinned all-day band: chips are movable by whole days.
+        if (point.Y >= _verticalOffset + _dayHeaderHeight
+            && point.Y < _verticalOffset + _dayHeaderHeight + AllDayBandRows * _allDayRowHeight)
+        {
+            foreach (var slot in _allDaySlots)
+            {
+                if (slot.Lane < AllDayBandRows && AllDayChipOf(slot.Occurrence) is { } chip && chip.Contains(point))
+                {
+                    return (slot.Occurrence, DragMode.Move);
+                }
+            }
+
+            return (null, DragMode.None);
+        }
+
+        if (point.Y < ContentTop || point.X < _timeRulerWidth)
+        {
+            return (null, DragMode.None);
+        }
+
+        for (var i = 0; i < _timedByDay.Count; i++)
+        {
+            var entry = _timedByDay[i];
+            if (entry.DayIndex >= _days.Count
+                || BlockOf(entry.Slot.Occurrence, _days[entry.DayIndex]) is not { } block
+                || !block.Contains(point))
+            {
+                continue;
+            }
+
+            if (point.Y <= block.Top + 4)
+            {
+                return (entry.Slot.Occurrence, DragMode.ResizeStart);
+            }
+
+            if (point.Y >= block.Bottom - 4)
+            {
+                return (entry.Slot.Occurrence, DragMode.ResizeEnd);
+            }
+
+            return (entry.Slot.Occurrence, DragMode.Move);
+        }
+
+        return (null, DragMode.Create);
+    }
+
+    /// <summary>The snapped date+time at a point, clamped to the day columns and the hour window.</summary>
+    private DateTime TimeAt(Point point)
+    {
+        if (_days.Count == 0)
+        {
+            return DateTime.Today;
+        }
+
+        var dayIndex = (int)Math.Clamp((point.X - _timeRulerWidth) / _dayWidth, 0, _days.Count - 1);
+        var hours = Math.Clamp((point.Y - ContentTop) / _hourHeight + _dayStartHour, _dayStartHour, _dayEndHour);
+        return SnapToGrid(_days[dayIndex].AddHours(hours));
+    }
+
+    private DateTime SnapToGrid(DateTime time)
+        => time.Date + Snap(time - time.Date);
+
+    /// <summary>The block/chip rect of the dragged occurrence ghost-shifted to the pointer (the drop preview).</summary>
+    private Rect? PreviewRectOf(SchedulerOccurrence occurrence, Point point)
+    {
+        if (occurrence.Appointment.IsAllDay)
+        {
+            return AllDayChipOf(occurrence) is { } chip
+                ? new Rect(chip.X + DayDeltaOf(point) * _dayWidth, chip.Y, chip.Width, chip.Height)
+                : null;
+        }
+
+        for (var i = 0; i < _timedByDay.Count; i++)
+        {
+            var entry = _timedByDay[i];
+            if (!ReferenceEquals(entry.Slot.Occurrence, occurrence)
+                || entry.DayIndex >= _days.Count
+                || BlockOf(occurrence, _days[entry.DayIndex]) is not { } block)
+            {
+                continue;
+            }
+
+            var dy = Snap(TimeSpan.FromHours((point.Y - _dragOrigin.Y) / _hourHeight)).TotalHours * _hourHeight;
+            return _dragMode switch
+            {
+                DragMode.Move => new Rect(block.X + DayDeltaOf(point) * _dayWidth, block.Y + dy, block.Width, block.Height),
+                DragMode.ResizeStart => new Rect(block.X, block.Y + dy, block.Width, Math.Max(block.Height - dy, 2)),
+                DragMode.ResizeEnd => new Rect(block.X, block.Y, block.Width, Math.Max(block.Height + dy, 2)),
+                _ => block,
+            };
+        }
+
+        return null;
+    }
+
+    private int DayDeltaOf(Point point)
+        => (int)Math.Round((point.X - _dragOrigin.X) / _dayWidth, MidpointRounding.AwayFromZero);
+
     /// <inheritdoc />
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
         base.OnMouseLeftButtonDown(e);
-        if (HitTest(e.GetPosition(this)) is { } occurrence)
+        var point = PositionOf(e);
+        var (occurrence, mode) = ZoneAt(point);
+        if (occurrence is not null)
         {
             ClickOccurrence(occurrence);
+            if (occurrence.Appointment.Recurrence is null && mode != DragMode.None)
+            {
+                _dragOccurrence = occurrence;
+                _dragMode = mode;
+                _dragOrigin = point;
+                CaptureMouse();
+            }
+        }
+        else if (mode == DragMode.Create)
+        {
+            _dragMode = DragMode.Create;
+            _dragOrigin = point;
+            _createAnchor = TimeAt(point);
+            CaptureMouse();
         }
 
         e.Handled = true;
@@ -392,17 +658,72 @@ public sealed class SchedulerDaysPanel : FrameworkElement
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
-        var occurrence = HitTest(e.GetPosition(this));
-        if (!ReferenceEquals(occurrence, _hover))
+        var point = PositionOf(e);
+        if (_dragMode == DragMode.None)
         {
+            var occurrence = HitTest(point);
+            var hoverChanged = !ReferenceEquals(occurrence, _hover);
             _hover = occurrence;
-            InvalidateVisual();
+
+            var (_, mode) = ZoneAt(point);
+            Cursor = mode switch
+            {
+                DragMode.ResizeStart or DragMode.ResizeEnd => Cursors.SizeNS,
+                DragMode.Move => Cursors.SizeAll,
+                DragMode.Create => Cursors.Cross,
+                _ => null,
+            };
+
+            if (occurrence is { } hovered)
+            {
+                ToolTip = $"{hovered.Subject}: {hovered.Start:t} \u2013 {hovered.End:t}";
+            }
+
+            if (hoverChanged)
+            {
+                InvalidateVisual();
+            }
+
+            return;
         }
 
-        if (occurrence is { } hovered)
+        InvalidateVisual(); // the drag/create preview follows the pointer
+    }
+
+    /// <inheritdoc />
+    protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonUp(e);
+        var point = PositionOf(e);
+        switch (_dragMode)
         {
-            ToolTip = $"{hovered.Subject}: {hovered.Start:t} \u2013 {hovered.End:t}";
+            case DragMode.Move when _dragOccurrence is { } dragged:
+            {
+                var delta = dragged.Appointment.IsAllDay
+                    ? TimeSpan.Zero
+                    : TimeSpan.FromHours((point.Y - _dragOrigin.Y) / _hourHeight);
+                MoveOccurrence(dragged, DayDeltaOf(point), delta);
+                break;
+            }
+
+            case DragMode.ResizeStart when _dragOccurrence is { } dragged:
+                ResizeOccurrenceStart(dragged, TimeSpan.FromHours((point.Y - _dragOrigin.Y) / _hourHeight));
+                break;
+
+            case DragMode.ResizeEnd when _dragOccurrence is { } dragged:
+                ResizeOccurrenceEnd(dragged, TimeSpan.FromHours((point.Y - _dragOrigin.Y) / _hourHeight));
+                break;
+
+            case DragMode.Create:
+                CreateFromRange(_createAnchor, TimeAt(point));
+                break;
         }
+
+        _dragMode = DragMode.None;
+        _dragOccurrence = null;
+        ReleaseMouseCapture();
+        InvalidateVisual();
+        e.Handled = true;
     }
 
     /// <inheritdoc />
@@ -468,7 +789,41 @@ public sealed class SchedulerDaysPanel : FrameworkElement
                 continue;
             }
 
+            if (_dragMode is DragMode.Move or DragMode.ResizeStart or DragMode.ResizeEnd
+                && ReferenceEquals(entry.Slot.Occurrence, _dragOccurrence))
+            {
+                continue; // the drag preview below replaces it while dragging
+            }
+
             DrawBlock(drawingContext, rect, entry.Slot.Occurrence, accent, textBrush, textTypeface, dpi);
+        }
+
+        // Drag preview: the occurrence's ghost at the snapped drop position.
+        if (_dragOccurrence is { } dragged
+            && _dragMode is DragMode.Move or DragMode.ResizeStart or DragMode.ResizeEnd
+            && PreviewRectOf(dragged, Mouse.GetPosition(this)) is { } ghost)
+        {
+            drawingContext.DrawRoundedRectangle(PreviewFill, new Pen(accent, 1.2), ghost, 3, 3);
+            DrawBlockText(drawingContext, dragged.Subject, ghost, textBrush, textTypeface, dpi);
+        }
+
+        // Create preview: the dragged-out range in the anchor day's column.
+        if (_dragMode == DragMode.Create)
+        {
+            var current = TimeAt(Mouse.GetPosition(this));
+            var start = _createAnchor <= current ? _createAnchor : current;
+            var end = _createAnchor <= current ? current : _createAnchor;
+            var day = _createAnchor.Date;
+            var dayIndex = IndexOfDay(day);
+            if (dayIndex >= 0)
+            {
+                var top = Math.Max(YInDay(start, day), ContentTop);
+                var bottom = Math.Min(YInDay(end, day), ContentTop + VisibleHourCount * _hourHeight);
+                if (bottom > top)
+                {
+                    drawingContext.DrawRoundedRectangle(PreviewFill, new Pen(accent, 1), new Rect(ColumnX(dayIndex) + 1, top, _dayWidth - 2, bottom - top), 3, 3);
+                }
+            }
         }
 
         // Now line (only when today's column is visible and inside the hour window).

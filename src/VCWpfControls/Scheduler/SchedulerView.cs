@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using VCWpfControls.Localization;
 
 namespace VCWpfControls.Scheduler;
 
@@ -49,6 +50,11 @@ public class SchedulerView : Control
     public static readonly DependencyProperty HourHeightProperty = DependencyProperty.Register(
         nameof(HourHeight), typeof(double), typeof(SchedulerView),
         new PropertyMetadata(40d, OnLayoutPropertyChanged));
+
+    /// <summary>Identifies the <see cref="SnapMinutes"/> dependency property.</summary>
+    public static readonly DependencyProperty SnapMinutesProperty = DependencyProperty.Register(
+        nameof(SnapMinutes), typeof(int), typeof(SchedulerView),
+        new PropertyMetadata(15, OnLayoutPropertyChanged));
 
     /// <summary>Identifies the <see cref="SelectedOccurrence"/> dependency property.</summary>
     public static readonly DependencyProperty SelectedOccurrenceProperty = DependencyProperty.Register(
@@ -122,6 +128,15 @@ public class SchedulerView : Control
         set => SetValue(HourHeightProperty, value);
     }
 
+    /// <summary>
+    /// The drag/resize time quantum in minutes (day/work-week/week views; 1 = minute precision).
+    /// </summary>
+    public int SnapMinutes
+    {
+        get => (int)GetValue(SnapMinutesProperty);
+        set => SetValue(SnapMinutesProperty, value);
+    }
+
     /// <summary>The occurrence clicked last (bindable two-way; null = none).</summary>
     public SchedulerOccurrence? SelectedOccurrence
     {
@@ -131,6 +146,12 @@ public class SchedulerView : Control
 
     /// <summary>Raised when the user double-clicks an occurrence (open an editor here).</summary>
     public event EventHandler<SchedulerOccurrence>? OccurrenceDoubleClicked;
+
+    /// <summary>Raised after a drag/resize committed (dates already on the appointment).</summary>
+    public event EventHandler<SchedulerAppointment>? AppointmentEdited;
+
+    /// <summary>Raised after a drag-created appointment was added to <see cref="Appointments"/>.</summary>
+    public event EventHandler<SchedulerAppointment>? AppointmentCreated;
 
     /// <summary>The effective anchor (an unset anchor falls back to today).</summary>
     internal DateTime EffectiveAnchor => AnchorDate == default(DateTime) ? DateTime.Today : AnchorDate;
@@ -226,6 +247,7 @@ public class SchedulerView : Control
             _daysPanel.DayEndHour = Math.Clamp(DayEndHour, Math.Clamp(DayStartHour, 0, 23) + 1, 24);
             _daysPanel.DayWidth = Math.Max(DayWidth, 20);
             _daysPanel.HourHeight = Math.Max(HourHeight, 8);
+            _daysPanel.SnapMinutes = Math.Max(1, SnapMinutes);
             _daysPanel.SelectedOccurrence = SelectedOccurrence;
             VisibleOccurrences = occurrences;
         }
@@ -272,6 +294,8 @@ public class SchedulerView : Control
         {
             _daysPanel.OccurrenceSelected += OnPanelOccurrenceSelected;
             _daysPanel.OccurrenceDoubleClicked += OnPanelDoubleClicked;
+            _daysPanel.AppointmentEdited += OnPanelAppointmentEdited;
+            _daysPanel.RangeSelected += OnPanelRangeSelected;
         }
 
         if (_monthPanel is not null)
@@ -289,6 +313,29 @@ public class SchedulerView : Control
 
     private void OnPanelDoubleClicked(object? sender, SchedulerOccurrence occurrence)
         => OccurrenceDoubleClicked?.Invoke(this, occurrence);
+
+    private void OnPanelAppointmentEdited(object? sender, SchedulerAppointment appointment)
+    {
+        Rebuild(); // occurrences are immutable — fresh ones carry the new times
+        AppointmentEdited?.Invoke(this, appointment);
+    }
+
+    private void OnPanelRangeSelected(object? sender, (DateTime Start, DateTime End) range)
+    {
+        var appointments = Appointments;
+        if (appointments is null)
+        {
+            return;
+        }
+
+        var appointment = new SchedulerAppointment(
+            Guid.NewGuid().ToString("N"),
+            GridStrings.SchedulerNewAppointment,
+            range.Start,
+            range.End);
+        appointments.Add(appointment); // CollectionChanged rebuilds the views
+        AppointmentCreated?.Invoke(this, appointment);
+    }
 
     private (DateTime Start, DateTime End) MonthRange()
     {

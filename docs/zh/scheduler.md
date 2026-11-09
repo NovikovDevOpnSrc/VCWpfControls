@@ -31,6 +31,24 @@ description: SchedulerView — 在重复日程之上提供日/工作周/周/月�
 - 单击选中（`SelectedOccurrence`，支持双向绑定）；双击触发
   `OccurrenceDoubleClicked` 以接入编辑器。
 
+## 交互
+
+日类视图支持编辑（月视图暂为只读）：
+
+- **移动** — 拖动色块：垂直方向按吸附改变时间，水平方向改变日期。
+  全天条带的色签只能按整天拖动。
+- **调整** — 拖动色块的上/下边缘；至少保留一个吸附步长的时长。
+- **新建** — 在空白处拖出一个范围：日程以本地化的「新日程」主题加入
+  `Appointments`；触发 `AppointmentCreated` 以便打开编辑器（随后双击即可改名）。
+- 所有操作吸附到 `SnapMinutes` 网格（默认 15；设为 1 可精确到分钟）。
+- 重复系列**不可**拖拽编辑（时间由重复规则决定）——对系列实例的拖动会被忽略，
+  请修改规则本身。
+
+```csharp
+view.AppointmentEdited += (_, appointment) => Persist(appointment);   // 拖动/调整
+view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
+```
+
 ## 导航
 
 ```csharp

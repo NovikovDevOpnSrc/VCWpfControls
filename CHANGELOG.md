@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Scheduler stage 3 (interactions)
+
+- Day/work-week/week views are editable (month stays read-only for now): drag a block to
+  move (vertical = snapped time, horizontal = whole days; all-day band chips by days
+  only), drag its top/bottom edge to resize (at least one snap of duration is kept), and
+  drag out a range on empty space to create — a localized "New appointment" is added to
+  `Appointments` and `AppointmentCreated` fires. Everything snaps to the new
+  `SnapMinutes` DP (default 15). Live drag previews ghost the drop position; cursors
+  (SizeNS/SizeAll/Cross) hint the zones. `AppointmentEdited` fires after a commit and the
+  views rebuild. Recurring series are not drag-editable (the rule owns the times).
+- 9 STA tests (`SchedulerInteractionsTests`), incl. one through the real
+  down/move/up mouse path; the recurring guard and the minimum-duration clamp are
+  injection-validated regressions. New `SchedulerNewAppointment` string ×3.
+- Demo "Scheduler" page reports moves/resizes/creates in the action log.
+
 ### Added — Scheduler stage 2 (the control)
 
 - `SchedulerView`: Day / WorkWeek / Week / Month views over the stage-1 engine
