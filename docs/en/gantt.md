@@ -27,6 +27,15 @@ The forum research called Gantt the biggest open-source gap in WPF; VCWpfControl
   outlines critical bars/links in the accent brush. Double-click a bar → `BarDoubleClicked`
   (on the `GanttTimelinePanel`) for editor integration.
 
+## Baselines & inline editing
+
+- **Baseline** — set `BaselineStart`/`BaselineFinish` on tasks: a thin gray band renders
+  under the actual bar (toggle with `ShowBaseline`); the bar tooltip shows the baseline
+  range and the start variance in days.
+- **Inline editing** — the tree columns (Name/Start/Finish/%) edit the task directly
+  (write-through): committing a date re-runs auto-scheduling and the critical path and
+  raises `TaskEdited`, exactly like a bar drag.
+
 ## Non-working days
 
 `Calendar` (a `GanttCalendar`: weekend weekdays + explicit holiday dates) switches the chart to working time:

@@ -62,6 +62,48 @@ public sealed class GanttTimelinePanel : FrameworkElement
         set => SetValue(VerticalSyncOffsetProperty, value);
     }
 
+    /// <summary>The scroll viewport height (rows outside [offset, offset+viewport) don't render).</summary>
+    internal double ViewportHeight
+    {
+        get => _viewportHeight;
+        set
+        {
+            _viewportHeight = value;
+            InvalidateVisual();
+        }
+    }
+
+    private double _viewportHeight;
+
+    /// <summary>The first row index the last render pass drew (test hook).</summary>
+    internal int FirstRenderedRow { get; private set; }
+
+    /// <summary>The last row index the last render pass drew (test hook).</summary>
+    internal int LastRenderedRow { get; private set; }
+
+    /// <summary>The visible row window of the current viewport (culling band).</summary>
+    private (int First, int Last) VisibleRowRange
+    {
+        get
+        {
+            if (Tasks.Count == 0)
+            {
+                return (0, -1);
+            }
+
+            var viewport = _viewportHeight > 0 ? _viewportHeight : RenderSize.Height;
+            var top = VerticalSyncOffset;
+            var bottom = top + viewport + RowHeight; // one row of grace on both ends
+            var first = Math.Max(0, (int)Math.Floor((top - HeaderHeight - RowHeight) / RowHeight));
+            var last = Math.Min(Tasks.Count - 1, (int)Math.Ceiling((bottom - HeaderHeight) / RowHeight));
+            return (first, Math.Max(first, last));
+        }
+    }
+
+    /// <inheritdoc />
+    protected override Size MeasureOverride(Size availableSize)
+        => new(TotalWidth, HeaderHeight + Tasks.Count * RowHeight);
+
     /// <summary>Identifies the <see cref="DayWidth"/> dependency property.</summary>
     public static readonly DependencyProperty DayWidthProperty = DependencyProperty.Register(
         nameof(DayWidth), typeof(double), typeof(GanttTimelinePanel),
@@ -73,6 +115,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
     private DateTime _rangeEnd = DateTime.Today;
     private int _hoverIndex = -1;
     private static readonly System.Windows.Media.Brush NonWorkingTint = Frozen(56, 128, 128, 128);
+    private static readonly System.Windows.Media.Brush BaselineFill = Frozen(110, 105, 105, 105);
 
     private static System.Windows.Media.Brush Frozen(byte alpha, byte r, byte g, byte b)
     {
@@ -175,6 +218,40 @@ public sealed class GanttTimelinePanel : FrameworkElement
         }
 
         return null;
+    }
+
+    /// <summary>Whether baseline bars render under the main bars (when a task carries a baseline).</summary>
+    public bool ShowBaseline
+    {
+        get => _showBaseline;
+        set
+        {
+            _showBaseline = value;
+            InvalidateVisual();
+        }
+    }
+
+    private bool _showBaseline = true;
+
+    /// <summary>
+    /// The thin baseline bar of a task (test hook): spanning the baseline dates at the top
+    /// of the row band; null when the task has no baseline or baselines are hidden.
+    /// </summary>
+    internal Rect? BaselineBarOf(GanttTask task)
+    {
+        if (!_showBaseline || task.BaselineStart is not { } start || task.BaselineFinish is not { } finish)
+        {
+            return null;
+        }
+
+        var index = IndexOfReference(task);
+        if (index < 0)
+        {
+            return null;
+        }
+
+        var width = Math.Max(DayWidth * 0.5, (finish.Date - start.Date).TotalDays * DayWidth);
+        return new Rect(XOf(start) + 1, HeaderHeight + index * RowHeight + 1, width, 5);
     }
 
     /// <summary>Raised when the user double-clicks a task bar.</summary>
@@ -306,7 +383,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
             }
         }
 
-        Width = TotalWidth;
+        InvalidateMeasure(); // the extent follows the task count and the range
     }
 
     private double TotalWidth => Math.Max((_rangeEnd - _rangeStart).TotalDays * DayWidth, 100);
@@ -373,9 +450,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
             drawingContext.DrawLine(new Pen(Brushes.OrangeRed, 1) { DashStyle = DashStyles.Dash }, new Point(todayX, 0), new Point(todayX, RenderSize.Height));
         }
 
-        // Row separators.
-        var rowCount = Tasks.Count;
-        for (var i = 0; i <= rowCount; i++)
+        // Row separators (only the visible band — culling).
+        var (firstRow, lastRow) = VisibleRowRange;
+        FirstRenderedRow = firstRow;
+        LastRenderedRow = lastRow;
+        for (var i = firstRow; i <= lastRow + 1; i++)
         {
             var y = HeaderHeight + i * RowHeight;
             drawingContext.DrawLine(new Pen(new SolidColorBrush(Color.FromArgb(128, 160, 160, 160)), 0.5), new Point(0, y), new Point(RenderSize.Width, y));
@@ -391,8 +470,22 @@ public sealed class GanttTimelinePanel : FrameworkElement
             }
         }
 
-        // Bars / milestones.
-        for (var i = 0; i < Tasks.Count; i++)
+        // Baseline bars (the thin planned band under the actual bar; visible band only).
+        if (_showBaseline)
+        {
+            for (var i = firstRow; i <= lastRow; i++)
+            {
+                if (BaselineBarOf(Tasks[i]) is not { } baseline)
+                {
+                    continue;
+                }
+
+                drawingContext.DrawRectangle(BaselineFill, new Pen(Brushes.DimGray, 0.6), baseline);
+            }
+        }
+
+        // Bars / milestones (visible band only — culling).
+        for (var i = firstRow; i <= lastRow; i++)
         {
             var task = Tasks[i];
             var rect = BarRect(task, i);
@@ -400,7 +493,6 @@ public sealed class GanttTimelinePanel : FrameworkElement
             {
                 continue;
             }
-
             if (task.IsMilestone)
             {
                 var center = new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
@@ -581,6 +673,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
         {
             var hovered = Tasks[hover];
             ToolTip = $"{hovered.Name}: {hovered.Start:d} \u2013 {hovered.Finish:d} ({hovered.Completion}%)";
+            if (hovered.BaselineStart is { } baselineStart && hovered.BaselineFinish is { } baselineFinish)
+            {
+                var variance = (hovered.Start.Date - baselineStart.Date).Days;
+                ToolTip += $" | base {baselineStart:d} \u2013 {baselineFinish:d} ({variance:+#;-#;0}d)";
+            }
         }
 
         if (_dragMode != DragMode.None && _dragTask is { } task && IsMouseCaptured)

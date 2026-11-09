@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt baselines, inline editing, timeline virtualization
+
+- **Baselines**: `GanttTask.BaselineStart`/`BaselineFinish` render as a thin gray band
+  under the actual bar (`GanttView.ShowBaseline`, default on); the bar tooltip shows the
+  baseline range and the start variance in days.
+- **Inline editing**: the tree columns write THROUGH to the task (`GanttTaskNode`
+  properties got setters); committing a Start/Finish/% edit re-runs auto-scheduling and
+  the critical path and raises `TaskEdited` — the same semantics as a bar drag.
+- **Timeline virtualization** (also fixes a latent extent bug): the timeline panel now
+  reports its true size (`MeasureOverride` = header + rows × row height) so the vertical
+  scroll reaches every row, the timeline ScrollViewer shows its scrollbar (Auto) and
+  stays in lock-step with the tree, and rendering culls to the visible viewport band —
+  300 tasks draw ~17 rows' worth of bars instead of all of them.
+- Demo "Gantt": baseline data on build/test (slipped vs plan) + a "Baseline" toggle.
+  Docs gantt.md ×3. 7 STA tests; regressions injection-validated (baseline reading the
+  actual dates, edit-wiring removal, culling bypass).
+
 ### Added — Gantt non-working days
 
 - `GanttCalendar` (UI-free): weekend weekdays (Sat/Sun by default) + explicit holiday

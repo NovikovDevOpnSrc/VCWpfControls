@@ -294,6 +294,10 @@ public partial class GanttSampleViewModel : SampleViewModelBase
     [ObservableProperty]
     private bool _skipWeekends;
 
+    /// <summary>Whether baseline bars render under the actual bars.</summary>
+    [ObservableProperty]
+    private bool _showBaseline = true;
+
     /// <summary>The working-time calendar (null = every day works).</summary>
     public GanttCalendar? Calendar => SkipWeekends ? WeekendCalendar : null;
 
@@ -329,7 +333,7 @@ public partial class GanttSampleViewModel : SampleViewModelBase
         GanttTask T(string id, string name, int start, int duration, string? parent = null, bool milestone = false)
             => new(id, name, Nov9.AddDays(start), Nov9.AddDays(start + duration), 0, milestone, parent);
 
-        return new[]
+        var tasks = new[]
         {
             T("rel", "Release 1.0", 0, 32),
             T("plan", "Planning", 0, 3, "rel"),
@@ -340,6 +344,13 @@ public partial class GanttSampleViewModel : SampleViewModelBase
             T("docs", "Documentation", 3, 8, "rel"),
             T("ship", "Ship it!", 32, 0, "rel", milestone: true),
         };
+
+        // Baselines: the original plan — build and test have slipped against it.
+        tasks[4].BaselineStart = Nov9.AddDays(14);
+        tasks[4].BaselineFinish = Nov9.AddDays(23);
+        tasks[5].BaselineStart = Nov9.AddDays(24);
+        tasks[5].BaselineFinish = Nov9.AddDays(30);
+        return tasks;
     }
 }
 

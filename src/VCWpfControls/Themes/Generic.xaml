@@ -776,7 +776,7 @@
                             <ScrollViewer
                                 x:Name="PART_TimelineScroll"
                                 Grid.Column="2"
-                                VerticalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Auto"
                                 HorizontalScrollBarVisibility="Auto">
                                 <gantt:GanttTimelinePanel x:Name="PART_Timeline" />
                             </ScrollViewer>

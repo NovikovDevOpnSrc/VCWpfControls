@@ -13,6 +13,9 @@
             <CheckBox Content="Skip weekends"
                       IsChecked="{Binding SkipWeekends}"
                       Margin="0,0,12,0" VerticalAlignment="Center" />
+            <CheckBox Content="Baseline"
+                      IsChecked="{Binding ShowBaseline}"
+                      Margin="0,0,12,0" VerticalAlignment="Center" />
             <ComboBox ItemsSource="{Binding Units}"
                       SelectedItem="{Binding TimescaleUnit}"
                       Width="90" VerticalAlignment="Center" />
@@ -28,6 +31,7 @@
                          AutoSchedule="{Binding AutoSchedule}"
                          ShowCriticalPath="{Binding ShowCriticalPath}"
                          Calendar="{Binding Calendar}"
+                         ShowBaseline="{Binding ShowBaseline}"
                          TimescaleUnit="{Binding TimescaleUnit}"
                          TaskEdited="OnTaskEdited"
                          LinkCreated="OnLinkCreated" />

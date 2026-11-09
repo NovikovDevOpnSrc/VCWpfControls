@@ -40,6 +40,11 @@ public class GanttView : Control
         nameof(Calendar), typeof(GanttCalendar), typeof(GanttView),
         new PropertyMetadata(null, OnDataChanged));
 
+    /// <summary>Identifies the <see cref="ShowBaseline"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowBaselineProperty = DependencyProperty.Register(
+        nameof(ShowBaseline), typeof(bool), typeof(GanttView),
+        new PropertyMetadata(Boxes.True, OnDataChanged));
+
     /// <summary>Identifies the <see cref="TimescaleUnit"/> dependency property.</summary>
     public static readonly DependencyProperty TimescaleUnitProperty = DependencyProperty.Register(
         nameof(TimescaleUnit), typeof(GanttTimescaleUnit), typeof(GanttView),
@@ -111,6 +116,13 @@ public class GanttView : Control
         set => SetValue(CalendarProperty, value);
     }
 
+    /// <summary>Whether baseline bars render under the actual bars (tasks with a baseline).</summary>
+    public bool ShowBaseline
+    {
+        get => (bool)GetValue(ShowBaselineProperty);
+        set => SetValue(ShowBaselineProperty, value);
+    }
+
     /// <summary>The timeline zoom unit.</summary>
     public GanttTimescaleUnit TimescaleUnit
     {
@@ -170,6 +182,8 @@ public class GanttView : Control
                 if (_timeline is not null)
                 {
                     _timeline.HorizontalOffset = e.HorizontalOffset;
+                    _timeline.VerticalSyncOffset = e.VerticalOffset;
+                    _timeline.ViewportHeight = e.ViewportHeight;
                 }
 
                 if (_treeScroll is not null && Math.Abs(_treeScroll.VerticalOffset - e.VerticalOffset) > 0.5)
@@ -182,6 +196,7 @@ public class GanttView : Control
         if (_tree is not null)
         {
             _tree.RowHeight = TaskRowHeight;
+            _tree.CellEditEnded += OnTreeCellEditEnded;
             _treesCrollHook();
         }
 
@@ -206,6 +221,24 @@ public class GanttView : Control
     {
         RefreshAfterEdit();
         TaskEdited?.Invoke(this, task);
+    }
+
+    private void OnTreeCellEditEnded(object? sender, GridCellEditEventArgs e)
+    {
+        if (e.CancelEdit || e.Row is not GanttTaskNode node)
+        {
+            return;
+        }
+
+        if (e.Column.FieldName is not ("Start" or "Finish" or "Completion"))
+        {
+            return; // name edits don't touch the schedule
+        }
+
+        // The write-through node already updated the task; rebuild so the timeline,
+        // auto-schedule and the critical path see the new dates.
+        RefreshAfterEdit();
+        TaskEdited?.Invoke(this, node.Task);
     }
 
     private void OnTimelineLinkCreated(object? sender, (GanttTask Predecessor, GanttTask Successor, GanttLinkType Type) link)
@@ -291,6 +324,7 @@ public class GanttView : Control
         _timeline.Dependencies = links;
         _timeline.CriticalTaskIds = _criticalIds;
         _timeline.Calendar = Calendar;
+        _timeline.ShowBaseline = ShowBaseline;
     }
 
     /// <summary>Wraps the flat tasks into hierarchy view-models for the tree grid.</summary>
@@ -332,7 +366,8 @@ public class GanttView : Control
     }
 }
 
-/// <summary>The tree-grid row of one task: the task itself plus child rows.</summary>
+/// <summary>The tree-grid row of one task: the task itself plus child rows. The bound
+/// columns write THROUGH to the wrapped task, so inline tree editing reschedules the chart.</summary>
 public sealed class GanttTaskNode
 {
     /// <summary>Creates the node.</summary>
@@ -344,17 +379,33 @@ public sealed class GanttTaskNode
     /// <summary>The wrapped task.</summary>
     public GanttTask Task { get; }
 
-    /// <summary>The display name (bound column).</summary>
-    public string Name => Task.Name;
+    /// <summary>The display name (bound column; writes through).</summary>
+    public string Name
+    {
+        get => Task.Name;
+        set => Task.Name = value;
+    }
 
-    /// <summary>The start (bound column).</summary>
-    public DateTime Start => Task.Start;
+    /// <summary>The start (bound column; writes through).</summary>
+    public DateTime Start
+    {
+        get => Task.Start;
+        set => Task.Start = value;
+    }
 
-    /// <summary>The finish (bound column).</summary>
-    public DateTime Finish => Task.Finish;
+    /// <summary>The finish (bound column; writes through).</summary>
+    public DateTime Finish
+    {
+        get => Task.Finish;
+        set => Task.Finish = value;
+    }
 
-    /// <summary>The completion percent (bound column).</summary>
-    public int Completion => Task.Completion;
+    /// <summary>The completion percent (bound column; writes through).</summary>
+    public int Completion
+    {
+        get => Task.Completion;
+        set => Task.Completion = value;
+    }
 
     /// <summary>The child rows.</summary>
     public List<GanttTaskNode> Children { get; } = new();

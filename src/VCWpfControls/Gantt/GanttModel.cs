@@ -56,6 +56,12 @@ public sealed class GanttTask
     /// <summary>The parent task id (null = root) — left tree of the chart.</summary>
     public string? ParentId { get; set; }
 
+    /// <summary>The baseline (planned) start; null = no baseline for the task.</summary>
+    public DateTime? BaselineStart { get; set; }
+
+    /// <summary>The baseline (planned) finish; null = no baseline for the task.</summary>
+    public DateTime? BaselineFinish { get; set; }
+
     /// <summary>The task duration in whole days (0 for milestones).</summary>
     public int DurationDays => IsMilestone ? 0 : Math.Max(0, (int)Math.Ceiling((Finish.Date - Start.Date).TotalDays));
 }

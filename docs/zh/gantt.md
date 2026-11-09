@@ -25,6 +25,13 @@ description: GanttView —— 任务树 + 时间线条形图、依赖箭头、�
 - `AutoSchedule` 在加载/变更时运行引擎（违反约束的后续任务前移）；`ShowCriticalPath`
   用强调色描出关键条形与连线。双击条形 → `BarDoubleClicked`（在 `GanttTimelinePanel` 上）。
 
+## 基线与就地编辑
+
+- **基线** — 在任务上设置 `BaselineStart`/`BaselineFinish`：实际色块下方绘制一条
+  细灰色基线带（用 `ShowBaseline` 切换）；色块提示显示基线区间与起始偏差天数。
+- **就地编辑** — 树形列（Name/Start/Finish/%）直接写回任务：提交日期会重新运行
+  自动排程与关键路径，并触发 `TaskEdited` — 与拖动色块完全一致。
+
 ## 非工作日
 
 `Calendar`（`GanttCalendar` 类：周末星期 + 显式节假日日期）让图表切换到工作时间：
