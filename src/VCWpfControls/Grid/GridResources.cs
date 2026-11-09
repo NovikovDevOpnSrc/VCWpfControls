@@ -58,4 +58,7 @@ public static class GridResources
 
     /// <summary>The Fluent 2 focus ring style (2px accent, rounded).</summary>
     public static readonly ComponentResourceKey FocusVisualKey = new(typeof(GridResources), "FocusVisual");
+
+    /// <summary>Background of alternating (odd) rows; theme-aware, one step above the surface.</summary>
+    public static readonly ComponentResourceKey AlternatingRowBackgroundKey = new(typeof(GridResources), "AlternatingRowBackground");
 }

@@ -42,6 +42,18 @@ public class FluentAlignmentTests
     }
 
     [StaFact]
+    public void AlternatingRowBackground_IsThemeAware()
+    {
+        // Regression (user report): demo pages used a hardcoded near-white alternation,
+        // producing white rows with white text in dark theme. The palette token must be
+        // near-white in Light and DARK in Dark.
+        var light = Assert.IsType<SolidColorBrush>(Resolve("Light", GridResources.AlternatingRowBackgroundKey));
+        var dark = Assert.IsType<SolidColorBrush>(Resolve("Dark", GridResources.AlternatingRowBackgroundKey));
+        Assert.True(light.Color.R > 200, $"light alternation must be near-white, got #{light.Color}");
+        Assert.True(dark.Color.R < 100, $"dark alternation must be dark, got #{dark.Color}");
+    }
+
+    [StaFact]
     public void FocusRingToken_ResolvesAStyle()
     {
         Assert.NotNull(Assert.IsType<Style>(Resolve("Generic", GridResources.FocusVisualKey)));

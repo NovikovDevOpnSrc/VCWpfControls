@@ -27,7 +27,9 @@
 
     <!-- Fluent 2 foundations: the type ramp (Segoe UI Variable with fallbacks), the 4/8
          radius convention (controls 4, cards 8) and the 2px accent focus ring. -->
-    <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
+        <SolidColorBrush x:Key="{x:Static grid:GridResources.AlternatingRowBackgroundKey}" Color="#FFFAFAFA" />
+
+<FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
     <sys:Double x:Key="{x:Static grid:GridResources.FontSizeCaptionKey}">12</sys:Double>
     <sys:Double x:Key="{x:Static grid:GridResources.FontSizeBodyKey}">14</sys:Double>
     <sys:Double x:Key="{x:Static grid:GridResources.FontSizeSubtitleKey}">16</sys:Double>

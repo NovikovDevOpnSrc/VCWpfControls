@@ -15,10 +15,10 @@
                       SelectionMode="Extended"
                       RowHeight="28"
                       RowDetailsVisibilityMode="VisibleWhenSelected"
-                      AlternatingRowBackground="#FFFAFBFC">
+                      AlternatingRowBackground="{DynamicResource {x:Static grid:GridResources.AlternatingRowBackgroundKey}}">
         <grid:GridControl.RowDetailsTemplate>
             <DataTemplate>
-                <Border Margin="12,4,12,8" Padding="10" Background="#FFEFF6FF" CornerRadius="6">
+                <Border Margin="12,4,12,8" Padding="10" Background="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" CornerRadius="6">
                     <StackPanel>
                         <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">

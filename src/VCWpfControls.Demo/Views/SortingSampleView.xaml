@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
     <DockPanel>
-        <Border DockPanel.Dock="Top" Margin="0,0,0,8" Padding="8" Background="#FFEFF6FF" CornerRadius="4">
+        <Border DockPanel.Dock="Top" Margin="0,0,0,8" Padding="8" Background="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" CornerRadius="4">
             <TextBlock Text="{Binding SortInfo, Mode=OneWay}" />
         </Border>
         <grid:GridControl x:Name="Grid"

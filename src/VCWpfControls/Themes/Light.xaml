@@ -15,4 +15,5 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="#FF115EA3" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="#FFF5F5F5" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.TextBrushKey}" Color="#FF242424" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AlternatingRowBackgroundKey}" Color="#FFFAFAFA" />
 </ResourceDictionary>

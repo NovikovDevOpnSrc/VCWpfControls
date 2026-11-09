@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — dark theme: invisible settings labels and white alternating rows (user report)
+
+- New palette token `GridResources.AlternatingRowBackgroundKey` (#FAFAFA light / #2F2F2F
+  dark); the demo's Basic/Selection pages used a hardcoded near-white alternation that
+  stayed white in dark theme (white rows + white text). All hardcoded demo colors audited
+  away: info callouts → SelectionBackground, the PropertyGrid splitter → HeaderBorder.
+- The settings flyout labels/radio texts now follow TextBrush (default black-on-dark made
+  them invisible).
+
 ### Added — demo application settings (theme, accent, language)
 
 Settings live in a FLYOUT under the navigation (the gear button, VS Code/Fiori pattern),

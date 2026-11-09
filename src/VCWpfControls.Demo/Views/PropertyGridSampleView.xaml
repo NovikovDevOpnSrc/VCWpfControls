@@ -17,7 +17,7 @@
                           AutoGenerateColumns="True"
                           RowHeight="28" />
 
-        <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#FFD1D5DB" />
+        <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
 
         <propertyGrid:PropertyGrid Grid.Column="2"
                                    SelectedObject="{Binding SelectedItem, ElementName=Grid}"
