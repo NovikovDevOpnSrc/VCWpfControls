@@ -196,6 +196,63 @@ public class GanttBacklogTests
     }
 
     [StaFact]
+    public void TreeScroll_MirrorsIntoTheTimelineViewer()
+    {
+        var tasks = new ObservableCollection<GanttTask>();
+        for (var i = 0; i < 300; i++)
+        {
+            tasks.Add(new GanttTask($"t{i}", $"Task {i}", Nov9.AddDays(i), Nov9.AddDays(i + 2)));
+        }
+
+        var view = Create(out var window, tasks, autoSchedule: false);
+        try
+        {
+            var panel = view.Timeline!;
+            var treeScroll = FindScrollViewer(view.Tree!);
+            Assert.NotNull(treeScroll);
+
+            // The tree scrolls in ITEM units (its virtualizing panel), the timeline in pixels.
+            treeScroll!.ScrollToVerticalOffset(100); // 100 rows down
+            TestWindowHost.Pump();
+
+            // The timeline's OWN viewer must scroll (not just the culling band): the band
+            // following while the content stays at 0 leaves a blank timeline.
+            Assert.Equal(100 * panel.RowHeight, view.TimelineScroll!.VerticalOffset, 1);
+            Assert.True(Math.Abs(panel.VerticalSyncOffset - view.TimelineScroll.VerticalOffset) < 1,
+                "the culling band must match the actually scrolled position");
+            Assert.InRange(panel.FirstRenderedRow, 94, 100);
+
+            // The reverse direction converts pixels back to the tree's item units.
+            view.TimelineScroll!.ScrollToVerticalOffset(50 * panel.RowHeight);
+            TestWindowHost.Pump();
+            Assert.Equal(50, treeScroll.VerticalOffset, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static System.Windows.Controls.ScrollViewer? FindScrollViewer(System.Windows.DependencyObject root)
+    {
+        if (root is System.Windows.Controls.ScrollViewer viewer)
+        {
+            return viewer;
+        }
+
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            if (FindScrollViewer(System.Windows.Media.VisualTreeHelper.GetChild(root, i)) is { } nested)
+            {
+                return nested;
+            }
+        }
+
+        return null;
+    }
+
+    [StaFact]
     public void Render_WindowFollowsTheScrollOffset()
     {
         var tasks = new ObservableCollection<GanttTask>();

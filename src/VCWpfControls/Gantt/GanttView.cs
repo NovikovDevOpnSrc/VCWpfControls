@@ -58,6 +58,7 @@ public class GanttView : Control
     private TreeListView? _tree;
     private GanttTimelinePanel? _timeline;
     private ScrollViewer? _treeScroll;
+    private ScrollViewer? _timelineScroll;
     private IReadOnlyList<string> _criticalIds = Array.Empty<string>();
 
     private static class Boxes
@@ -143,6 +144,9 @@ public class GanttView : Control
     /// <summary>The right timeline (test hook).</summary>
     internal GanttTimelinePanel? Timeline => _timeline;
 
+    /// <summary>The timeline's scroll viewer (test hook).</summary>
+    internal ScrollViewer? TimelineScroll => _timelineScroll;
+
     private static void OnDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         => ((GanttView)d).Rebuild();
 
@@ -175,9 +179,10 @@ public class GanttView : Control
         base.OnApplyTemplate();
         _tree = GetTemplateChild("PART_Tree") as TreeListView;
         _timeline = GetTemplateChild("PART_Timeline") as GanttTimelinePanel;
-        if (GetTemplateChild("PART_TimelineScroll") is ScrollViewer timelineScroll && _timeline is not null)
+        _timelineScroll = GetTemplateChild("PART_TimelineScroll") as ScrollViewer;
+        if (_timelineScroll is not null && _timeline is not null)
         {
-            timelineScroll.ScrollChanged += (_, e) =>
+            _timelineScroll.ScrollChanged += (_, e) =>
             {
                 if (_timeline is not null)
                 {
@@ -186,9 +191,15 @@ public class GanttView : Control
                     _timeline.ViewportHeight = e.ViewportHeight;
                 }
 
-                if (_treeScroll is not null && Math.Abs(_treeScroll.VerticalOffset - e.VerticalOffset) > 0.5)
+                if (_treeScroll is not null && _timeline is not null)
                 {
-                    _treeScroll.ScrollToVerticalOffset(e.VerticalOffset);
+                    // The tree scrolls in ITEM units (virtualizing panel), the timeline in
+                    // pixels — convert, or a pixel offset clamps the tree to its last item.
+                    var itemOffset = Math.Round(e.VerticalOffset / _timeline.RowHeight);
+                    if (Math.Abs(_treeScroll.VerticalOffset - itemOffset) > 0.5)
+                    {
+                        _treeScroll.ScrollToVerticalOffset(itemOffset);
+                    }
                 }
             };
         }
@@ -257,19 +268,45 @@ public class GanttView : Control
     /// </summary>
     internal void RefreshAfterEdit() => Rebuild();
 
+    private bool _treeScrollHooked;
+
     private void _treesCrollHook()
     {
+        // The tree's OWN template (with its ScrollViewer) applies during its measure pass —
+        // NOT yet at the owner's OnApplyTemplate. Find the viewer deferred, after layout.
+        if (_treeScrollHooked)
+        {
+            return;
+        }
+
+        _treeScrollHooked = true;
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(HookTreeScroll));
+    }
+
+    private void HookTreeScroll()
+    {
+        _treeScrollHooked = false;
         // Find the tree's internal ScrollViewer to mirror the vertical offset.
         _treeScroll = _tree is null ? null : FindScroll(_tree);
         if (_treeScroll is not null)
         {
             _treeScroll.ScrollChanged += (_, e) =>
             {
-                if (_timeline is not null && _treeScroll is not null
-                    && Math.Abs(_timeline.VerticalSyncOffset - e.VerticalOffset) > 0.5)
+                if (_timeline is null || TaskRowHeight <= 0)
                 {
-                    _timeline.VerticalSyncOffset = e.VerticalOffset;
+                    return;
                 }
+
+                // The tree scrolls in ITEM units — convert to the timeline's pixels and
+                // scroll its own viewer: the culling band alone would draw the scrolled-to
+                // rows while the content stays at offset 0 (a blank timeline).
+                var pixelOffset = e.VerticalOffset * TaskRowHeight;
+                if (_timelineScroll is not null && Math.Abs(_timelineScroll.VerticalOffset - pixelOffset) > 0.5)
+                {
+                    _timelineScroll.ScrollToVerticalOffset(pixelOffset);
+                }
+
+                _timeline.VerticalSyncOffset = pixelOffset;
             };
         }
     }

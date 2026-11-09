@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cell Value pattern reads and writes through the real shell.
 - 5 STA tests; template-wiring and value-write regressions injection-validated.
 
+### Fixed — Gantt tree/timeline scroll sync (found in review)
+
+The tree→timeline vertical mirror was dead on arrival: the hook searched the tree's
+ScrollViewer at the owner's `OnApplyTemplate`, before the tree's own template (with
+that viewer) applies — so nothing subscribed. Additionally the two halves scroll in
+different units (the tree in items, the timeline in pixels), so both directions passed
+raw offsets around (clamping to the end / never moving). Now the hook attaches deferred
+at Loaded priority and both directions convert through the row height. Regression test
+covers both directions on a 300-task chart (injection-validated).
+
 ### Added — Gantt baselines, inline editing, timeline virtualization
 
 - **Baselines**: `GanttTask.BaselineStart`/`BaselineFinish` render as a thin gray band

@@ -503,7 +503,8 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         => TimeSpan.FromMinutes(Math.Round(value.TotalMinutes / _snapMinutes, MidpointRounding.AwayFromZero) * _snapMinutes);
 
     private int IndexOfDay(DateTime date)
-    {        for (var i = 0; i < _days.Count; i++)
+    {
+        for (var i = 0; i < _days.Count; i++)
         {
             if (_days[i] == date.Date)
             {
