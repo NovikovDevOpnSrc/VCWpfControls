@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Wizard gate ignored programmatic/UIA changes (found by the UI stress round)
+
+Two broken links kept the Next button disabled forever when CanLeave changed without USER
+INPUT (bindings, the UIA Toggle pattern — the same class as the earlier funnel a11y bug):
+(1) page propagation relied on the page's logical `Parent` being the Wizard — null for
+code-built pages; the Wizard now subscribes to every page's CanLeave through a dependency
+property descriptor when pages enter/leave the collection. (2) the buttons carry commands
+whose CanExecuteChanged rides `CommandManager.RequerySuggested` (input-driven only), so
+`IsEnabledCore` kept the stale disabled verdict and overrode the direct IsEnabled set —
+`RefreshNavigation` now ends with `CommandManager.InvalidateRequerySuggested()`.
+STA regression (programmatic gate enablement) + UIA e2e (gate toggle → Next → Finish),
+injection-validated (requery skipped → red).
+
+### Added — UI stress round (pattern-only e2e through the real shell)
+
+`UiStressTests`: sorting through header Invoke (ascending → descending → cycling every
+column), cell validation through the Value pattern (valid input persists, garbage is
+rejected keeping the previous value), the full Wizard gate/finish flow through Toggle and
+Invoke, three rapid no-wait navigation sweeps and Scheduler/Gantt view-switch churn loops.
+
 ### Added — diverse testing campaign (adversarial, invariant, culture matrix, churn)
 
 - `EngineEdgeCaseTests` (Core): degenerate/hostile inputs for Scheduler (inverted ranges,

@@ -56,11 +56,39 @@ public class Wizard : Control
             new FrameworkPropertyMetadata(typeof(Wizard)));
     }
 
+    private static readonly System.ComponentModel.DependencyPropertyDescriptor CanLeaveDescriptor =
+        System.ComponentModel.DependencyPropertyDescriptor.FromProperty(WizardPage.CanLeaveProperty, typeof(WizardPage));
+
     /// <summary>Creates the wizard.</summary>
     public Wizard()
     {
-        Pages.CollectionChanged += (_, _) => CoerceAndRefresh();
+        Pages.CollectionChanged += OnPagesChanged;
     }
+
+    private void OnPagesChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        // Track CanLeave of EVERY page directly — relying on the page's logical Parent
+        // misses code-built pages (Parent == null) and any non-standard hosting.
+        if (e.OldItems is not null)
+        {
+            foreach (WizardPage page in e.OldItems)
+            {
+                CanLeaveDescriptor.RemoveValueChanged(page, OnAnyPageCanLeaveChanged);
+            }
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (WizardPage page in e.NewItems)
+            {
+                CanLeaveDescriptor.AddValueChanged(page, OnAnyPageCanLeaveChanged);
+            }
+        }
+
+        CoerceAndRefresh();
+    }
+
+    private void OnAnyPageCanLeaveChanged(object? sender, EventArgs e) => RefreshNavigation();
 
     /// <summary>The wizard pages, in order.</summary>
     public ObservableCollection<WizardPage> Pages { get; } = new();
@@ -249,6 +277,13 @@ public class Wizard : Control
         }
 
         RaiseEvent(new RoutedEventArgs(NextButtonStateChangedEvent, this));
+
+        // The buttons carry commands whose CanExecuteChanged rides
+        // CommandManager.RequerySuggested (fired by USER INPUT only). A programmatic
+        // CanLeave change (a binding, a UIA Toggle) raises no input — without this
+        // invalidation IsEnabledCore keeps the stale disabled verdict and overrides
+        // the direct IsEnabled sets above.
+        System.Windows.Input.CommandManager.InvalidateRequerySuggested();
     }
 
     /// <summary>Raised after navigation states changed (bind button states in custom templates).</summary>
