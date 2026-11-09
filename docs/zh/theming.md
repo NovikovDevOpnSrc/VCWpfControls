@@ -5,6 +5,21 @@ description: GridControl 默认主题、GridResources 的 ComponentResourceKey �
 
 # 主题样式
 
+## Fluent 2 对齐
+
+默认 Light/Dark 调色板遵循 **Fluent 2** 基础（微软设计系统）：品牌主色
+`#0F6CBD`（亮）/ `#479EF5`（暗）、带色调的中性梯度（文字 `#242424`/`#FFFFFF`、表面
+`#FAFAFA`/`#1F1F1F`、描边 `#E0E0E0`/`#3D3D3D`）、品牌色调选中态（`#EBF3FC`/`#115EA3`）
+与中性悬停。调色板之上暴露 Fluent 基础令牌：
+
+- `GridResources.FontFamilyKey` — 「Segoe UI Variable Text」，回退 Segoe UI；
+- 字号梯度 — `FontSizeCaptionKey`（12）/ `FontSizeBodyKey`（14，控件默认）/
+  `FontSizeSubtitleKey`（16）/ `FontSizeTitleKey`（20）；
+- `GridResources.FocusVisualKey` — 2px 圆角强调色焦点环（表格与列头）；
+- 圆角遵循 Fluent 4/8 约定（控件 4，卡片 8）。
+
+应用可通过相同键覆盖任意令牌；高密度图表内部刻意保留更小字号。
+
 ## 默认主题
 
 默认（浅色）主题位于库内的 `Themes/Generic.xaml`，自动生效 —— 无需合并任何字典。
