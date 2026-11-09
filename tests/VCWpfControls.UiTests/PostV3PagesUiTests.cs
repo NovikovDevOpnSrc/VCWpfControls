@@ -172,6 +172,29 @@ public sealed class PostV3PagesUiTests : IDisposable
     }
 
     [Fact]
+    public void BasicGrid_CellValuePattern_ReadsAndWrites()
+    {
+        Navigate("Basic binding");
+        var grid = GridOf(Page("BasicGrid"));
+
+        var table = grid.Patterns.Table.Pattern;
+        var headers = table.ColumnHeaders.Value
+            .Select(h => h.Properties.Name.ValueOrDefault ?? string.Empty)
+            .ToArray();
+        var nameColumn = Array.IndexOf(headers, "Name");
+        Assert.True(nameColumn >= 0, "the Name column was not found");
+
+        var cell = grid.Patterns.Grid.Pattern.GetItem(0, nameColumn);
+        var value = cell.Patterns.Value;
+        Assert.True(value.IsSupported, "cells must expose the UIA Value pattern");
+        var before = value.Pattern.Value;
+        Assert.False(string.IsNullOrEmpty(before), "the value must read the formatted cell text");
+
+        value.Pattern.SetValue("UIA-Edited");
+        Assert.Equal("UIA-Edited", value.Pattern.Value); // wrote through the model and back
+    }
+
+    [Fact]
     public void Scheduler_Page_SwitchesViewsAndNavigates()
     {
         Navigate("Scheduler");

@@ -167,6 +167,33 @@ Each `GridGroup` provides:
 - `TotalItems` — total number of data rows under the group;
 - `IsExpanded` — expansion state, **persisted across data refreshes**.
 
+### Custom group headers
+
+Set `GroupHeaderTemplate` (a `DataTemplate`) to replace the default caption on every
+group row. The data context is a `GridGroupHeaderInfo`:
+
+| Property | Meaning |
+|---|---|
+| `Key` | the group key (the grouped cell value or its converted form) |
+| `ItemCount` | data items in the group (all descendants) |
+| `Level` | nesting level (0 = outermost) |
+| `ColumnName` | the grouped column's header text |
+| `Caption` | the default localized caption (handy as a fallback) |
+
+```xml
+<grid:GridControl.GroupHeaderTemplate>
+    <DataTemplate>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding ColumnName}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Key}" Margin="8,0,0,0" />
+            <TextBlock Text="{Binding ItemCount, StringFormat='({0} items)'}" Margin="8,0,0,0" Opacity="0.7" />
+        </StackPanel>
+    </DataTemplate>
+</grid:GridControl.GroupHeaderTemplate>
+```
+
+Runtime changes to the template re-apply to all rendered group rows immediately.
+
 ### Expand and collapse
 
 Collapse or expand a group programmatically through the engine — the state survives

@@ -247,6 +247,7 @@
                                         </ToggleButton.Template>
                                     </ToggleButton>
                                     <TextBlock x:Name="PART_GroupText" Margin="6,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    <ContentPresenter x:Name="PART_GroupHeaderContent" Margin="6,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" />
                                 </StackPanel>
                             </Border>
                             </Grid>

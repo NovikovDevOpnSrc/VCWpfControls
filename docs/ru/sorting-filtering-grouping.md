@@ -170,6 +170,33 @@ grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Employee.Office)));
 - `TotalItems` — общее число строк данных под группой;
 - `IsExpanded` — состояние развёрнутости, **сохраняемое между обновлениями данных**.
 
+### Свой шаблон заголовка группы
+
+Задайте `GroupHeaderTemplate` (`DataTemplate`), чтобы заменить стандартную подпись у всех
+групповых строк. Контекст данных — `GridGroupHeaderInfo`:
+
+| Свойство | Значение |
+|---|---|
+| `Key` | ключ группы (значение ячейки или его сконвертированная форма) |
+| `ItemCount` | сколько элементов в группе (все потомки) |
+| `Level` | уровень вложенности (0 = внешняя) |
+| `ColumnName` | заголовок группируемой колонки |
+| `Caption` | стандартная локализованная подпись (удобно как fallback) |
+
+```xml
+<grid:GridControl.GroupHeaderTemplate>
+    <DataTemplate>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding ColumnName}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Key}" Margin="8,0,0,0" />
+            <TextBlock Text="{Binding ItemCount, StringFormat='({0})'}" Margin="8,0,0,0" Opacity="0.7" />
+        </StackPanel>
+    </DataTemplate>
+</grid:GridControl.GroupHeaderTemplate>
+```
+
+Смена шаблона в рантайме немедленно применяется ко всем отрисованным групповым строкам.
+
 ### Сворачивание и разворачивание
 
 Сворачивайте группы программно через движок — состояние переживёт последующие вызовы

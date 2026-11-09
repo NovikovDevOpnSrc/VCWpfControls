@@ -10,7 +10,7 @@ namespace VCWpfControls.Grid.Automation;
 /// <c>GridPattern.GetItem(row, column)</c> and as a child of the row's DataItem.
 /// The name is the formatted cell value (StringFormat and NullText honored).
 /// </summary>
-public sealed class GridCellAutomationPeer : AutomationPeer
+public sealed class GridCellAutomationPeer : AutomationPeer, IValueProvider, IGridItemProvider
 {
     private readonly GridRowAutomationPeer _rowPeer;
     private readonly GridControl _grid;
@@ -266,8 +266,64 @@ public sealed class GridCellAutomationPeer : AutomationPeer
     /// <inheritdoc />
     protected override bool IsPasswordCore() => false;
 
-    /// <inheritdoc />
-    public override object? GetPattern(PatternInterface patternInterface) => null;
+    /// <summary>Exposes the Value pattern (read/write the cell value) and the GridItem pattern (row/column coordinates).</summary>
+    public override object? GetPattern(PatternInterface patternInterface)
+        => patternInterface is PatternInterface.Value or PatternInterface.GridItem ? this : null;
+
+    /// <summary>The formatted cell value (read through the UIA Value pattern).</summary>
+    string IValueProvider.Value => GetNameCore();
+
+    /// <summary>Whether the cell rejects edits (the column or the whole grid is read-only).</summary>
+    bool IValueProvider.IsReadOnly => _column.ReadOnly || _grid.IsReadOnly;
+
+    /// <summary>
+    /// Writes a value through the paste conversion path (<c>TrySetCellText</c>: culture-aware
+    /// parsing, read-only columns reject).
+    /// </summary>
+    void IValueProvider.SetValue(string? value)
+    {
+        if (((IValueProvider)this).IsReadOnly)
+        {
+            throw new InvalidOperationException("The cell is read-only.");
+        }
+
+        if (_rowPeer.RowOwner.DataItem is not { } item)
+        {
+            return;
+        }
+
+        _column.TrySetCellText(item, value);
+    }
+
+    /// <summary>The row's flat index in the grid view.</summary>
+    int IGridItemProvider.Row => _rowPeer.RowOwner.RowInfo?.FlatIndex ?? -1;
+
+    /// <summary>The column's visible index.</summary>
+    int IGridItemProvider.Column
+    {
+        get
+        {
+            for (var i = 0; i < _grid.VisibleColumns.Count; i++)
+            {
+                if (ReferenceEquals(_grid.VisibleColumns[i], _column))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+    }
+
+    /// <summary>The row span (always 1 — cells never merge).</summary>
+    int IGridItemProvider.RowSpan => 1;
+
+    /// <summary>The column span (always 1 — cells never merge).</summary>
+    int IGridItemProvider.ColumnSpan => 1;
+
+    /// <summary>The containing grid, as a raw UIA provider.</summary>
+    System.Windows.Automation.Provider.IRawElementProviderSimple IGridItemProvider.ContainingGrid
+        => ProviderFromPeer(UIElementAutomationPeer.FromElement(_grid) ?? new FrameworkElementAutomationPeer(_grid));
 
     /// <inheritdoc />
     protected override bool HasKeyboardFocusCore() => false;

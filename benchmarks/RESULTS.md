@@ -9,6 +9,26 @@ Run: `dotnet run -c Release --project benchmarks/VCWpfControls.Benchmarks -- --f
 > runnables) and must not pin `[SimpleJob(RuntimeMoniker.*)]` in a `net8.0-windows` project
 > (the generated project TFM must match — NU1201).
 
+## Engine benchmarks (2026-11-09, `EngineBenchmarks`)
+
+Baseline for the post-v0.3 engines (same machine/job as above). Notes: the Gantt
+auto-schedule case rebuilds its 1000-task chain per invocation (the task construction is
+part of the allocation); the scheduler expansion is 100 endless DAILY series over
+2026-01-01..2028-12-31 (~110k occurrences, incl. the final sort).
+
+| Method                             | Mean        | Error     | Allocated |
+|----------------------------------- |------------:|----------:|----------:|
+| Pivot_100k                         |  50.85 ms   | 1.00 ms   |  38.1 MB  |
+| Condition_MatchesAll_100k          |  85.84 ms   | 0.72 ms   |  67.8 MB  |
+| Gantt_AutoSchedule_1000chain       |   5.19 ms   | 0.08 ms   |   0.6 MB  |
+| Gantt_CriticalPath_1000chain       |  14.43 ms   | 0.25 ms   |   1.3 MB  |
+| Scheduler_Expand_3years            |  18.76 ms   | 0.32 ms   |   6.2 MB  |
+| Scheduler_LayoutOverlaps_1000dense |   0.071 ms  | 0.001 ms  |   0.1 MB  |
+
+> Optimization candidates: `ConditionEvaluator` is allocation-dominated (~680 B/item —
+> PropertyAccessor reflection per evaluation; a cached accessor path or compiled delegates
+> would cut both time and GC); Pivot is dominated by dictionary/boxing churn on composite keys.
+
 ## Results (default job, after the 2026-11-03 sort optimization)
 
 | Method             | Mean      | Error    | StdDev   | Allocated |

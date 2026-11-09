@@ -161,6 +161,33 @@ grid.GroupDescriptions.Add(new GridGroupDescription(nameof(Employee.Office)));
 - `TotalItems` —— 该分组下的数据行总数；
 - `IsExpanded` —— 展开状态，**在数据刷新后保留**。
 
+### 分组标题模板
+
+设置 `GroupHeaderTemplate`（`DataTemplate`）可替换所有分组行的默认标题。
+数据上下文是 `GridGroupHeaderInfo`：
+
+| 属性 | 含义 |
+|---|---|
+| `Key` | 分组键（单元格值或其转换结果） |
+| `ItemCount` | 组内数据项数量（含全部后代） |
+| `Level` | 嵌套层级（0 = 最外层） |
+| `ColumnName` | 被分组列的标题文本 |
+| `Caption` | 默认本地化标题（可作回退） |
+
+```xml
+<grid:GridControl.GroupHeaderTemplate>
+    <DataTemplate>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding ColumnName}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Key}" Margin="8,0,0,0" />
+            <TextBlock Text="{Binding ItemCount, StringFormat='({0})'}" Margin="8,0,0,0" Opacity="0.7" />
+        </StackPanel>
+    </DataTemplate>
+</grid:GridControl.GroupHeaderTemplate>
+```
+
+运行时更换模板会立即应用到所有已渲染的分组行。
+
 ### 展开与折叠
 
 通过引擎以编程方式展开或折叠分组 —— 状态会保留到之后的 `Refresh()` 调用：

@@ -47,8 +47,10 @@
 - ~~Gantt follow-ups: non-working days/weekends, baseline comparison, inline date
   editing in the task tree, timeline virtualization for large task lists~~ — ✅ all
   shipped (`b1f5773` calendar, `676cf92` baselines + inline editing + virtualization).
-- Grid: per-cell UIA polish, `GroupHeaderTemplate`.
-- Benchmarks for the new engines (Pivot, Conditions, Gantt, Scheduler).
+- ~~Grid: per-cell UIA polish, `GroupHeaderTemplate`~~ — ✅ shipped (`GroupHeaderTemplate`
+  + cell Value/GridItem UIA patterns).
+- ~~Benchmarks for the new engines (Pivot, Conditions, Gantt, Scheduler)~~ — ✅ shipped
+  (`EngineBenchmarks`, results in `benchmarks/RESULTS.md`).
 
 ### On hold
 - MDI — tabbed docking covers most scenarios; low community demand.

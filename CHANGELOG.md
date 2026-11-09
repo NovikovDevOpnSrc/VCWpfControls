@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — GroupHeaderTemplate, cell UIA patterns, engine benchmarks
+
+- `GridControl.GroupHeaderTemplate` (DataTemplate): replaces the default caption on every
+  group row; the context is a `GridGroupHeaderInfo` (Key / ItemCount / Level / ColumnName /
+  Caption). Runtime template changes re-apply to rendered group rows. `PART_GroupHeaderContent`.
+- Cell UIA polish: `GridCellAutomationPeer` now exposes the **Value pattern** (reads the
+  formatted cell value; writes go through the paste conversion path `TrySetCellText`,
+  read-only columns reject with the UIA contract exception) and the **GridItem pattern**
+  (row/column coordinates, spans, containing grid) — assistive tech and UIA clients can
+  read and edit cells directly.
+- `EngineBenchmarks` (BenchmarkDotNet): Pivot 100k×5×8 with totals, an And/Or condition
+  tree over 100k items, Gantt auto-schedule/critical path on a 1000-task chain, Scheduler
+  100 daily series × 3 years expansion and a dense 1000-occurrence lane layout. Results in
+  `benchmarks/RESULTS.md`.
+- Docs: sorting-filtering-grouping ×3 (custom group headers). UIA e2e: the Basic page's
+  cell Value pattern reads and writes through the real shell.
+- 5 STA tests; template-wiring and value-write regressions injection-validated.
+
 ### Added — Gantt baselines, inline editing, timeline virtualization
 
 - **Baselines**: `GanttTask.BaselineStart`/`BaselineFinish` render as a thin gray band

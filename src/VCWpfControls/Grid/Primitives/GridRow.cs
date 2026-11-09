@@ -124,6 +124,7 @@ public class GridRow : Control
     private GridGroupRow? _groupRow;
     private ToggleButton? _groupToggle;
     private TextBlock? _groupText;
+    private ContentPresenter? _groupContent;
     private Border? _groupHost;
     private ContentPresenter? _rowDetails;
     private ToggleButton? _treeToggle;
@@ -188,15 +189,7 @@ public class GridRow : Control
 
         _groupHost.Visibility = Visibility.Visible;
         _groupHost.Margin = new Thickness(8 + groupRow.Level * 16, 0, 0, 0);
-
-        var caption = ResolveGroupCaption(owner, groupRow);
-        if (_groupText is not null)
-        {
-            _groupText.Text = caption;
-        }
-
-        // Expose the group caption as the row's UIA name (screen readers, UIA clients).
-        System.Windows.Automation.AutomationProperties.SetName(this, caption);
+        ApplyGroupHeader(owner, groupRow);
 
         if (_groupToggle is not null)
         {
@@ -262,6 +255,61 @@ public class GridRow : Control
     }
 
     /// <summary>Group caption: HeaderStringFormat of the description when set, localized default otherwise.</summary>
+    /// <summary>Re-applies the group header (after the grid's template changed at runtime).</summary>
+    internal void UpdateGroupHeader()
+    {
+        if (_groupRow is not null && Owner is not null)
+        {
+            ApplyGroupHeader(Owner, _groupRow);
+        }
+    }
+
+    private void ApplyGroupHeader(GridControl owner, GridGroupRow groupRow)
+    {
+        var caption = ResolveGroupCaption(owner, groupRow);
+
+        if (_groupContent is not null && owner.GroupHeaderTemplate is { } template)
+        {
+            _groupContent.Visibility = Visibility.Visible;
+            _groupContent.ContentTemplate = template;
+            _groupContent.Content = new GridGroupHeaderInfo(
+                groupRow.Group.Key,
+                groupRow.Group.TotalItems,
+                groupRow.Level,
+                ColumnNameOf(owner, groupRow),
+                caption);
+            if (_groupText is not null)
+            {
+                _groupText.Visibility = Visibility.Collapsed;
+            }
+        }
+        else
+        {
+            if (_groupContent is not null)
+            {
+                _groupContent.Visibility = Visibility.Collapsed;
+            }
+
+            if (_groupText is not null)
+            {
+                _groupText.Visibility = Visibility.Visible;
+                _groupText.Text = caption;
+            }
+        }
+
+        // Expose the group caption as the row's UIA name (screen readers, UIA clients).
+        System.Windows.Automation.AutomationProperties.SetName(this, caption);
+    }
+
+    private static string ColumnNameOf(GridControl owner, GridGroupRow groupRow)
+    {
+        var fieldPath = FieldPathOf(owner, groupRow);
+        return owner.Columns
+            .Where(c => string.Equals(c.EffectiveSortPath, fieldPath, StringComparison.OrdinalIgnoreCase))
+            .Select(c => Columns.GridColumnBase.HeaderText(c.Header))
+            .FirstOrDefault() ?? fieldPath;
+    }
+
     private static string ResolveGroupCaption(GridControl owner, GridGroupRow groupRow)
     {
         var group = groupRow.Group;
@@ -312,6 +360,7 @@ public class GridRow : Control
         _groupHost = GetTemplateChild("PART_GroupHost") as Border;
         _groupToggle = GetTemplateChild("PART_GroupToggle") as ToggleButton;
         _groupText = GetTemplateChild("PART_GroupText") as TextBlock;
+        _groupContent = GetTemplateChild("PART_GroupHeaderContent") as ContentPresenter;
         _rowDetails = GetTemplateChild("PART_RowDetails") as ContentPresenter;
         _treeToggle = GetTemplateChild("PART_TreeToggle") as ToggleButton;
         if (GetTemplateChild("PART_NodeCheckBox") is System.Windows.Controls.CheckBox nodeCheckBox)

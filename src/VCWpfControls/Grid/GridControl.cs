@@ -172,6 +172,11 @@ public partial class GridControl : ItemsControl
         nameof(RowDetailsTemplate), typeof(DataTemplate), typeof(GridControl),
         new PropertyMetadata(null, OnRowDetailsChanged));
 
+    /// <summary>Identifies the <see cref="GroupHeaderTemplate"/> dependency property.</summary>
+    public static readonly DependencyProperty GroupHeaderTemplateProperty = DependencyProperty.Register(
+        nameof(GroupHeaderTemplate), typeof(DataTemplate), typeof(GridControl),
+        new PropertyMetadata(null, OnGroupHeaderTemplateChanged));
+
     /// <summary>Identifies the <see cref="RowDetailsVisibilityMode"/> dependency property.</summary>
     public static readonly DependencyProperty RowDetailsVisibilityModeProperty = DependencyProperty.Register(
         nameof(RowDetailsVisibilityMode), typeof(GridRowDetailsVisibilityMode), typeof(GridControl),
@@ -571,6 +576,17 @@ public partial class GridControl : ItemsControl
     {
         get => (DataTemplate?)GetValue(RowDetailsTemplateProperty);
         set => SetValue(RowDetailsTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// A custom group header template (all group rows). Its data context is a
+    /// <see cref="GridGroupHeaderInfo"/> (Key/ItemCount/Level/ColumnName/Caption);
+    /// null = the default localized caption text.
+    /// </summary>
+    public DataTemplate? GroupHeaderTemplate
+    {
+        get => (DataTemplate?)GetValue(GroupHeaderTemplateProperty);
+        set => SetValue(GroupHeaderTemplateProperty, value);
     }
 
     /// <summary>When the row details are displayed.</summary>
@@ -1299,6 +1315,15 @@ public partial class GridControl : ItemsControl
         foreach (var row in grid._rowRegistry)
         {
             row.UpdateRowDetails();
+        }
+    }
+
+    private static void OnGroupHeaderTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var grid = (GridControl)d;
+        foreach (var row in grid._rowRegistry)
+        {
+            row.UpdateGroupHeader();
         }
     }
 
