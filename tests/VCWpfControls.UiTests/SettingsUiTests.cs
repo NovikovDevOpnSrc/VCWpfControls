@@ -7,10 +7,10 @@ using Xunit;
 namespace VCWpfControls.UiTests;
 
 /// <summary>
-/// The demo Settings page: theme/accent/language switch through the real shell. The
-/// language switch observably flips LOCALIZED LIBRARY STRINGS (the wizard's Next button).
-/// Runs in the "UiSerial" collection so language persistence cannot race the wizard
-/// stress test; always restores en-US/Light/Default in finally.
+/// The demo Settings FLYOUT (the gear button under the nav list): theme/accent/language
+/// switch through the real shell. The language switch observably flips LOCALIZED LIBRARY
+/// STRINGS (the wizard's Next button). Runs in the "UiSerial" collection so language
+/// persistence cannot race the wizard stress test; always restores defaults in finally.
 /// </summary>
 [Collection("UiSerial")]
 public sealed class SettingsUiTests : IDisposable
@@ -39,45 +39,74 @@ public sealed class SettingsUiTests : IDisposable
         Assert.False(_app.HasExited, $"application crashed on '{navItemText}'");
     }
 
-    private AutomationElement Page(string automationId)
-        => _window.FindFirstDescendant(cf => cf.ByAutomationId(automationId))
-            ?? throw new InvalidOperationException($"page '{automationId}' not found");
+    /// <summary>Opens the settings flyout and returns its popup element (a top-level HWND).</summary>
+    private FlaUI.Core.AutomationElements.AutomationElement OpenSettings()
+    {
+        var button = _window.FindFirstDescendant(cf => cf.ByAutomationId("SettingsMenuButton"))
+            ?? throw new InvalidOperationException("settings menu button not found");
+        button.Patterns.Invoke.Pattern.Invoke();
+
+        // WPF popups are top-level windows — find the one carrying the settings content.
+        var desktop = _automation.GetDesktop();
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            foreach (var top in desktop.FindAllChildren())
+            {
+                if (top.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeDarkRadio")) is not null)
+                {
+                    System.Threading.Thread.Sleep(200); // let it settle
+                    return top;
+                }
+            }
+
+            System.Threading.Thread.Sleep(100);
+        }
+
+        throw new InvalidOperationException("settings flyout did not appear");
+    }
+
+    private void CloseSettings()
+    {
+        var button = _window.FindFirstDescendant(cf => cf.ByAutomationId("SettingsMenuButton"));
+        button?.Patterns.Invoke.Pattern.Invoke(); // toggles the StaysOpen=False popup closed
+        System.Threading.Thread.Sleep(150);
+    }
 
     [Fact]
-    public void Settings_ThemeAccentLanguage_ApplyAndPersist()
+    public void SettingsFlyout_ThemeAccentLanguage_ApplyAndPersist()
     {
         try
         {
-            Navigate("Settings");
-            var page = Page("SettingsSample");
+            var flyout = OpenSettings();
 
             // Theme: the Dark radio selects and sticks.
-            var dark = page.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeDarkRadio"))
+            var dark = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeDarkRadio"))
                 ?? throw new InvalidOperationException("dark radio not found");
             dark.Patterns.SelectionItem.Pattern.Select();
             _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
             Assert.True(dark.Patterns.SelectionItem.Pattern.IsSelected, "the dark radio must stay selected");
 
             // Accent preset switches without crashing.
-            var accent = page.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))!.AsComboBox();
+            var accent = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))!.AsComboBox();
             accent.Select("Purple");
             _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
 
-            // Language: ru-RU observably flips the LOCALIZED wizard buttons («Далее»).
-            var language = page.FindFirstDescendant(cf => cf.ByAutomationId("SettingsLanguageCombo"))!.AsComboBox();
+            // Language: ru-RU observably flips the LOCALIZED wizard buttons (Далее).
+            var language = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsLanguageCombo"))!.AsComboBox();
             language.Select("Русский (ru-RU)");
             _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
+            CloseSettings();
+
             Navigate("Wizard");
-            var wizardPage = Page("WizardSample");
+            var wizardPage = _window.FindFirstDescendant(cf => cf.ByAutomationId("WizardSample"))
+                ?? throw new InvalidOperationException("wizard page not found");
             var next = wizardPage.FindAllDescendants(cf => cf.ByControlType(ControlType.Button))
                 .FirstOrDefault(b => (b.Properties.Name.ValueOrDefault ?? "") == "Далее");
             Assert.NotNull(next); // GridStrings.WizardNext in Russian — the setting reached the library
 
-            // Settings survive a page round-trip (the VM persisted them). FlaUI caches
-            // per element — re-find the page after navigation.
-            Navigate("Settings");
-            var settingsAgain = Page("SettingsSample");
-            Assert.Equal("Purple", settingsAgain.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))!.AsComboBox().SelectedItem?.Text);
+            // Settings survive a flyout round-trip (the VM persisted them).
+            var reopened = OpenSettings();
+            Assert.Equal("Purple", reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))!.AsComboBox().SelectedItem?.Text);
             Assert.False(_app.HasExited, "application crashed during settings churn");
         }
         finally
@@ -85,8 +114,8 @@ public sealed class SettingsUiTests : IDisposable
             // Restore the shared defaults for other tests.
             try
             {
-                Navigate("Settings");
-                Page("SettingsSample").FindFirstDescendant(cf => cf.ByAutomationId("SettingsResetButton"))!
+                var flyout = OpenSettings();
+                flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsResetButton"))!
                     .Patterns.Invoke.Pattern.Invoke();
                 _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
             }

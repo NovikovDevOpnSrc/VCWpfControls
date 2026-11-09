@@ -71,20 +71,84 @@
         </Grid.ColumnDefinitions>
 
         <!-- The shell follows the library palette so the global Light/Dark theme
-             repaints the navigation sidebar as well (DynamicResource). -->
+             repaints the navigation sidebar as well (DynamicResource). The nav ListBox is
+             made transparent with theme-aware item states — its default white background
+             and system selection previously painted over the dark sidebar. -->
         <Border Grid.Column="0"
                 Background="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}"
                 BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
                 BorderThickness="0,0,1,0">
-            <ListBox x:Name="NavList"
-                     Margin="8"
-                     SelectedIndex="0"
-                     ItemsSource="{Binding Samples}"
-                     SelectedItem="{Binding SelectedSample, Mode=TwoWay}"
-                     DisplayMemberPath="Title" />
+            <DockPanel>
+                <Button x:Name="SettingsButton"
+                        DockPanel.Dock="Bottom"
+                        Margin="8"
+                        Padding="10,6"
+                        HorizontalAlignment="Stretch"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
+                        Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                        Click="OnSettingsClick"
+                        AutomationProperties.Name="Settings"
+                        AutomationProperties.AutomationId="SettingsMenuButton">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#x2699;" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Settings" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <ListBox x:Name="NavList"
+                         Margin="8,8,8,0"
+                         SelectedIndex="0"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                         ItemsSource="{Binding Samples}"
+                         SelectedItem="{Binding SelectedSample, Mode=TwoWay}"
+                         DisplayMemberPath="Title">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Padding" Value="8,6" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+
+                <Popup x:Name="SettingsPopup"
+                       PlacementTarget="{Binding ElementName=SettingsButton}"
+                       Placement="Top"
+                       HorizontalOffset="-6"
+                       VerticalOffset="-6"
+                       StaysOpen="False"
+                       AllowsTransparency="True">
+                    <Border MinWidth="300" MaxWidth="380" Padding="14"
+                            Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}"
+                            BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
+                            BorderThickness="1" CornerRadius="8">
+                        <views:SettingsSampleView x:Name="SettingsFlyout" />
+                    </Border>
+                </Popup>
+            </DockPanel>
         </Border>
 
-        <Grid Grid.Column="1" Margin="16">
+        <Grid Grid.Column="1" Margin="16"
+              Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -93,9 +157,11 @@
 
             <TextBlock Grid.Row="0"
                        FontSize="22" FontWeight="SemiBold"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                        Text="{Binding SelectedSample.Title}" />
             <TextBlock Grid.Row="1"
                        Margin="0,4,0,12" Opacity="0.7"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                        Text="{Binding SelectedSample.Description}" />
 
             <ContentControl Grid.Row="2"

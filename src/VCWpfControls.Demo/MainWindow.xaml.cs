@@ -21,7 +21,6 @@ public partial class MainWindow : Window
             new SelectionSampleViewModel(),
             new EditingSampleViewModel(),
             new VirtualizationSampleViewModel(),
-            new SettingsSampleViewModel(),
             new AnalyticsSampleViewModel(),
             new PropertyGridSampleViewModel(),
             new TreeListSampleViewModel(),
@@ -35,7 +34,14 @@ public partial class MainWindow : Window
             new IntegrationSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
+
+        // The settings flyout keeps its own view model (loads and applies the persisted
+        // settings — the same values App.OnStartup applied at boot).
+        SettingsFlyout.DataContext = new SettingsSampleViewModel();
     }
+
+    private void OnSettingsClick(object sender, System.Windows.RoutedEventArgs e)
+        => SettingsPopup.IsOpen = !SettingsPopup.IsOpen;
 }
 
 /// <summary>Holds the sample list and the selected sample (raises change notifications).</summary>

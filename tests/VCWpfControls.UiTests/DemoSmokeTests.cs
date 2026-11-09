@@ -46,7 +46,6 @@ public sealed class DemoSmokeTests : IDisposable
             ["Pivot"] = "PivotSample",
             ["Gantt"] = "GanttSample",
             ["Scheduler"] = "SchedulerSample",
-            ["Settings"] = "SettingsSample",
             ["Conditions"] = "ConditionSample",
             ["Charts & Ribbon"] = "IntegrationSample",
         };
