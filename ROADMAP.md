@@ -40,17 +40,15 @@
   bug-prone zone, and these pages are covered by STA tests only).
 
 ### Flagship
-- **Scheduler / Calendar** — the remaining LOB-ladder gap (DevExpress/Syncfusion ship it,
-  OSS WPF doesn't). Same three-stage shape as Gantt: UI-free engine (occurrences,
-  recurrence-rule subset, conflicts) → control (day/week/month views, appointment
-  drag/resize) → integration + demo + docs ×3.
+- **Scheduler / Calendar** — ✅ shipped (three stages: UI-free engine `b1b6638`,
+  control `00046c2`, interactions `eaae35e`).
 
 ### Increments
-- Gantt follow-ups: non-working days/weekends (rendering + scheduling awareness),
-  baseline comparison, inline date editing in the task tree, timeline virtualization
-  for large task lists.
+- ~~Gantt follow-ups: non-working days/weekends, baseline comparison, inline date
+  editing in the task tree, timeline virtualization for large task lists~~ — ✅ all
+  shipped (`b1f5773` calendar, `676cf92` baselines + inline editing + virtualization).
 - Grid: per-cell UIA polish, `GroupHeaderTemplate`.
-- Benchmarks for the new engines (Pivot, Conditions, Gantt).
+- Benchmarks for the new engines (Pivot, Conditions, Gantt, Scheduler).
 
 ### On hold
 - MDI — tabbed docking covers most scenarios; low community demand.
