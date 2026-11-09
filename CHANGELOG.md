@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Scheduler stage 2 (the control)
+
+- `SchedulerView`: Day / WorkWeek / Week / Month views over the stage-1 engine
+  (`ViewType`, `AnchorDate` — unset anchors to today, `Navigate`/`GoToToday`).
+  Day-family views: pinned time ruler + day headers, one column per day, the
+  `DayStartHour`/`DayEndHour` visible window (blocks outside clip away), side-by-side
+  lanes for overlapping occurrences, an all-day band (chips span their days, max 3 rows),
+  overnight occurrences as per-day clipped segments, today tint and a dashed now line.
+  Month view: the 42-day grid with weekday headers, neighbor-month dimming, today
+  highlight and 2 chips per cell + a "+N more" overflow row.
+  Click selects (`SelectedOccurrence`, two-way); double-click raises
+  `OccurrenceDoubleClicked` for editor integration. `Appointments` mutations refresh
+  the views.
+- Demo page "Scheduler" (recurring sample data anchored to today: standup, 1:1, planning,
+  retro, a 3-day all-day conference, overlapping reviews and an overnight on-call).
+- 12 STA tests (`SchedulerViewTests`); two regression injections validated (midnight
+  segment mapping, lane split). UIA e2e: view switching + navigation on the demo page.
+
 ### Added — Scheduler stage 1 (headless engine)
 
 - `VCWpfControls.Scheduler` engine + model (UI-free, no STA): `SchedulerAppointment`

@@ -43,6 +43,9 @@
         <DataTemplate DataType="{x:Type vm:GanttSampleViewModel}">
             <views:GanttSampleView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SchedulerSampleViewModel}">
+            <views:SchedulerSampleView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:WizardSampleViewModel}">
             <views:WizardSampleView />
         </DataTemplate>

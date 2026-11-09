@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VCWpfControls.Demo.Models;
 using VCWpfControls.Gantt;
+using VCWpfControls.Scheduler;
 
 namespace VCWpfControls.Demo.ViewModels;
 
@@ -320,5 +321,59 @@ public partial class GanttSampleViewModel : SampleViewModelBase
             T("docs", "Documentation", 3, 8, "rel"),
             T("ship", "Ship it!", 32, 0, "rel", milestone: true),
         };
+    }
+}
+
+/// <summary>Scheduler: day/work-week/week/month views of recurring appointments.</summary>
+public partial class SchedulerSampleViewModel : SampleViewModelBase
+{
+    private static readonly DateTime Today = DateTime.Today;
+
+    /// <inheritdoc />
+    public override string Title => "Scheduler";
+
+    /// <inheritdoc />
+    public override string Description => "Day / work week / week / month views with recurrence, overlap lanes, an all-day band and a now line; double-click an occurrence.";
+
+    /// <summary>The sample appointments (relative to today, so the views always have content).</summary>
+    public ObservableCollection<SchedulerAppointment> Appointments { get; } = new(CreateAppointments());
+
+    /// <summary>The available view types for the combo box.</summary>
+    public SchedulerViewType[] ViewTypes { get; } = Enum.GetValues<SchedulerViewType>();
+
+    /// <summary>The shown view granularity.</summary>
+    [ObservableProperty]
+    private SchedulerViewType _viewType = SchedulerViewType.WorkWeek;
+
+    /// <summary>Last interaction reported by the view.</summary>
+    [ObservableProperty]
+    private string _lastAction = "Switch views, navigate weeks, double-click an occurrence.";
+
+    private static IEnumerable<SchedulerAppointment> CreateAppointments()
+    {
+        var standup = new SchedulerAppointment("standup", "Daily standup", Today.AddHours(9.25), Today.AddHours(9.5))
+        {
+            Recurrence = new SchedulerRecurrence { Pattern = SchedulerRecurrencePattern.Daily },
+        };
+        var oneOnOne = new SchedulerAppointment("1to1", "1:1 with Alice", Today.AddDays(1).AddHours(11), Today.AddDays(1).AddHours(12))
+        {
+            Recurrence = new SchedulerRecurrence { Pattern = SchedulerRecurrencePattern.Weekly, DaysOfWeek = new[] { DayOfWeek.Monday, DayOfWeek.Wednesday } },
+        };
+        var planning = new SchedulerAppointment("planning", "Sprint planning", Today.AddDays(2).AddHours(14), Today.AddDays(2).AddHours(15.5))
+        {
+            Recurrence = new SchedulerRecurrence { Pattern = SchedulerRecurrencePattern.Weekly, DaysOfWeek = new[] { DayOfWeek.Friday } },
+        };
+        var retro = new SchedulerAppointment("retro", "Retrospective", Today.AddHours(16), Today.AddHours(17))
+        {
+            Recurrence = new SchedulerRecurrence { Pattern = SchedulerRecurrencePattern.Monthly, DayOfMonth = 28 },
+        };
+        yield return standup;
+        yield return oneOnOne;
+        yield return planning;
+        yield return retro;
+        yield return new SchedulerAppointment("review", "Design review", Today.AddHours(15), Today.AddHours(16.5));
+        yield return new SchedulerAppointment("budget", "Budget sync", Today.AddHours(15.5), Today.AddHours(16.5)); // overlaps the review → lanes
+        yield return new SchedulerAppointment("conference", "TechConf", Today.AddDays(1), Today.AddDays(4)) { IsAllDay = true }; // 3-day all-day band
+        yield return new SchedulerAppointment("oncall", "On-call handover", Today.AddHours(22), Today.AddHours(26)); // overnight
     }
 }

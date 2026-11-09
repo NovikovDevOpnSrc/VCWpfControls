@@ -171,6 +171,31 @@ public sealed class PostV3PagesUiTests : IDisposable
         Assert.NotNull(ribbon);
     }
 
+    [Fact]
+    public void Scheduler_Page_SwitchesViewsAndNavigates()
+    {
+        Navigate("Scheduler");
+        var page = Page("SchedulerSample");
+
+        // The scheduler's own chrome (combo + buttons) drives the control through the same
+        // paths a user takes; the panels are custom-drawn (no UIA children of their own).
+        var combo = page.FindFirstDescendant(cf => cf.ByAutomationId("SchedulerViewTypeCombo"))!.AsComboBox();
+        combo.Select("Month");
+        _app.WaitWhileBusy(TimeSpan.FromSeconds(10));
+        Assert.False(_app.HasExited, "crashed switching the scheduler to the month view");
+        Assert.Equal("Month", combo.SelectedItem.Text);
+
+        combo.Select("Day");
+        _app.WaitWhileBusy(TimeSpan.FromSeconds(10));
+        Assert.False(_app.HasExited, "crashed switching the scheduler to the day view");
+
+        page.FindFirstDescendant(cf => cf.ByAutomationId("SchedulerPrevButton"))!.AsButton().Invoke();
+        page.FindFirstDescendant(cf => cf.ByAutomationId("SchedulerNextButton"))!.AsButton().Invoke();
+        page.FindFirstDescendant(cf => cf.ByAutomationId("SchedulerTodayButton"))!.AsButton().Invoke();
+        _app.WaitWhileBusy(TimeSpan.FromSeconds(10));
+        Assert.False(_app.HasExited, "crashed navigating the scheduler");
+    }
+
     public void Dispose()
     {
         try

@@ -30,3 +30,5 @@
   href: integration.md
 - name: Gantt
   href: gantt.md
+- name: Scheduler
+  href: scheduler.md

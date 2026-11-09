@@ -1,0 +1,31 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.SchedulerSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:scheduler="clr-namespace:VCWpfControls.Scheduler;assembly=VCWpfControls">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
+            <ComboBox ItemsSource="{Binding ViewTypes}"
+                      SelectedItem="{Binding ViewType}"
+                      Width="100" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerViewTypeCombo" />
+            <Button Content="&#x2190; Prev"
+                    Click="OnPrev"
+                    Margin="12,0,0,0" Padding="10,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerPrevButton" />
+            <Button Content="Next &#x2192;"
+                    Click="OnNext"
+                    Margin="6,0,0,0" Padding="10,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerNextButton" />
+            <Button Content="Today"
+                    Click="OnToday"
+                    Margin="6,0,0,0" Padding="10,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerTodayButton" />
+            <TextBlock Text="{Binding LastAction}"
+                       VerticalAlignment="Center" Margin="16,0,0,0"
+                       Opacity="0.7" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <scheduler:SchedulerView x:Name="Scheduler"
+                                 Appointments="{Binding Appointments}"
+                                 ViewType="{Binding ViewType}"
+                                 DayStartHour="8"
+                                 DayEndHour="20"
+                                 OccurrenceDoubleClicked="OnOccurrenceDoubleClicked" />
+    </DockPanel>
+</UserControl>

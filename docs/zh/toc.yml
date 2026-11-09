@@ -30,3 +30,5 @@
   href: integration.md
 - name: 甘特图
   href: gantt.md
+- name: 日程控件
+  href: scheduler.md

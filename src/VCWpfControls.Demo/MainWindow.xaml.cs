@@ -29,6 +29,7 @@ public partial class MainWindow : Window
             new WizardSampleViewModel(),
             new PivotSampleViewModel(),
             new GanttSampleViewModel(),
+            new SchedulerSampleViewModel(),
             new ConditionSampleViewModel(),
             new IntegrationSampleViewModel(),
         };

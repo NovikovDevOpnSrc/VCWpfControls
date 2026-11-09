@@ -3,7 +3,7 @@
 [![CI](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Бесплатная библиотека LOB-контролов для WPF: **GridControl** (быстрая MVVM-таблица с функционалом не хуже бесплатных аналогов), **TreeListView**, **PropertyGrid**, **Pivot Grid**, **диаграмма Ганта**, редактор условий, **Wizard**, докинг и типизированные редакторы — всё под лицензией MIT, без зависимостей в библиотеке, локализация EN/RU/ZH.
+Бесплатная библиотека LOB-контролов для WPF: **GridControl** (быстрая MVVM-таблица с функционалом не хуже бесплатных аналогов), **TreeListView**, **PropertyGrid**, **Pivot Grid**, **диаграмма Ганта**, **планировщик** (календарь), редактор условий, **Wizard**, докинг и типизированные редакторы — всё под лицензией MIT, без зависимостей в библиотеке, локализация EN/RU/ZH.
 
 **Документация:** [English](README.md) | [Русский](README.ru.md) | [中文](README.zh-CN.md)
 

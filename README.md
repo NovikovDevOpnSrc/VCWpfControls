@@ -3,7 +3,7 @@
 [![CI](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml/badge.svg)](https://github.com/NovikovDevOpnSrc/VCWpfControls/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A free, open-source library of WPF line-of-business controls: **GridControl** (a fast, MVVM-friendly data grid that matches or beats freely available WPF grids), **TreeListView**, **PropertyGrid**, **Pivot Grid**, **Gantt chart**, a condition expression editor, **Wizard**, docking, and typed editors — all MIT, zero library dependencies, localized EN/RU/ZH.
+A free, open-source library of WPF line-of-business controls: **GridControl** (a fast, MVVM-friendly data grid that matches or beats freely available WPF grids), **TreeListView**, **PropertyGrid**, **Pivot Grid**, **Gantt chart**, **Scheduler** (calendar), a condition expression editor, **Wizard**, docking, and typed editors — all MIT, zero library dependencies, localized EN/RU/ZH.
 
 **Documentation:** [English](README.md) | [Русский](README.ru.md) | [中文](README.zh-CN.md)
 

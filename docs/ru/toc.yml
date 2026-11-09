@@ -30,3 +30,5 @@
   href: integration.md
 - name: Диаграмма Ганта
   href: gantt.md
+- name: Планировщик
+  href: scheduler.md

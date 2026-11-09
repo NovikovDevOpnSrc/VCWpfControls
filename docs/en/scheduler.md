@@ -1,0 +1,82 @@
+---
+title: Scheduler
+description: SchedulerView — day/work-week/week/month calendar views over recurring appointments, with a time ruler, overlap lanes, an all-day band and a month grid; powered by the UI-free SchedulerEngine.
+---
+
+# Scheduler
+
+The scheduler (Outlook-style calendar) ships in two layers: a UI-free engine (stage 1)
+and the control (stage 2). Drag/resize interactions are on the roadmap (stage 3).
+
+## The control
+
+```xml
+<scheduler:SchedulerView Appointments="{Binding Appointments}"
+                          ViewType="WorkWeek"
+                          DayStartHour="8"
+                          DayEndHour="20"
+                          OccurrenceDoubleClicked="OpenEditor" />
+```
+
+- **Day / WorkWeek / Week / Month** views (`ViewType`); `AnchorDate` picks the shown
+  day/week/month (the default anchors to today).
+- **Day-family views**: a pinned time ruler and day headers, one column per day.
+  `DayStartHour`/`DayEndHour` window the day (default 0–24); blocks outside clip away.
+  Overlapping occurrences split the column into side-by-side **lanes** (interval-graph
+  clustering per day); occurrences crossing midnight draw one clipped segment per day.
+- **All-day band**: `IsAllDay` appointments render as chips above the hour grid, one band
+  row per overlap lane (max 3, extra lanes clip away); a chip spans each of its days.
+- **Month view**: the six-week grid (42 cells, culture week start), weekday headers, day
+  numbers with neighbor-month dimming, today highlighted, up to 2 chips per cell plus a
+  "+N more" overflow row.
+- Today's column/month cell is tinted and a dashed **now line** crosses it.
+- Click selects (`SelectedOccurrence`, two-way bindable); double-click raises
+  `OccurrenceDoubleClicked` for editor integration.
+
+## Navigation
+
+```csharp
+view.Navigate(1);     // forward by one view step: day / week / month
+view.Navigate(-2);    // two steps back
+view.GoToToday();     // anchor back to today
+view.AnchorDate = new DateTime(2026, 11, 9);  // or bind it
+```
+
+`Appointments` mutations (`ObservableCollection` add/remove/replace) refresh the views.
+
+## The appointments
+
+Plain appointments are single bands. Recurring ones carry a `SchedulerRecurrence` rule —
+daily/weekly/monthly/yearly with `Interval`, `Count`/`Until` limits (RFC 5545 semantics:
+counted from the series start, deleted occurrences consume their slot) and per-date
+`Exceptions`:
+
+```csharp
+var standup = new SchedulerAppointment("s", "Daily standup",
+    today.AddHours(9.25), today.AddHours(9.5))
+{
+    Recurrence = new SchedulerRecurrence
+    {
+        Pattern = SchedulerRecurrencePattern.Daily,
+        Count = 50,
+    },
+};
+
+var oneOnOne = new SchedulerAppointment("1", "1:1 with Alice",
+    monday.AddHours(11), monday.AddHours(12))
+{
+    ResourceId = "alice",
+    Recurrence = new SchedulerRecurrence
+    {
+        Pattern = SchedulerRecurrencePattern.Weekly,
+        DaysOfWeek = new[] { DayOfWeek.Monday, DayOfWeek.Wednesday },
+    },
+};
+```
+
+## The engine (headless)
+
+`SchedulerEngine` is testable without STA: `Expand` materializes the occurrences of a range
+(resource-filterable), `LayoutOverlaps` assigns the side-by-side lanes, `FindConflicts`
+returns double bookings per resource, `ViewRange`/`MonthGrid` compute the view periods.
+See [the Gantt engine](gantt.md) for the sibling pattern.
