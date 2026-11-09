@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — accessibility names for unnamed buttons (found by the demo tour)
+
+Buttons whose content is a panel or a glyph read as UNNAMED to screen readers and UIA
+clients. Named: the demo's icon toolbar buttons (Analytics/Tree list/Docking, 14
+controls), the column-header filter funnels (`PART_FilterButton`, "Filter: <column>"),
+the NumericUpDown spin buttons (new localized strings NumericIncrease/NumericDecrease ×3)
+and the docking zone tab toggles + their close buttons ("Welcome"/"Close: Welcome").
+New FlaUI regression: every page's interactive buttons must carry a name (scrollbar
+system chrome excluded) — validated by injection (funnel name removed → red).
+
 ### Added — GroupHeaderTemplate, cell UIA patterns, engine benchmarks
 
 - `GridControl.GroupHeaderTemplate` (DataTemplate): replaces the default caption on every

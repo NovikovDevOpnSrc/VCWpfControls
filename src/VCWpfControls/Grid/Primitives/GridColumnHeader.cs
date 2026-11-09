@@ -145,6 +145,22 @@ public class GridColumnHeader : Control
             // Checked hook, assistive tech cannot open the filter menu at all).
             filterButton.Click += OnFilterButtonClick;
             filterButton.Checked += OnFilterButtonClick;
+
+            // The funnel glyph reads as an unnamed button to screen readers — name it
+            // after the column it filters.
+            var subject = Column is null
+                ? null
+                : Columns.GridColumnBase.HeaderText(Column.Header);
+            if (string.IsNullOrEmpty(subject) && Column is not null)
+            {
+                subject = Column.FieldName;
+            }
+
+            System.Windows.Automation.AutomationProperties.SetName(
+                filterButton,
+                string.IsNullOrEmpty(subject)
+                    ? Localization.GridStrings.FilterEllipsis
+                    : Localization.GridStrings.FilterEllipsis + ": " + subject);
         }
     }
 

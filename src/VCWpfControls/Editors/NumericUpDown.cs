@@ -142,6 +142,19 @@ public class NumericUpDown : Control
         }
 
         _textBox = GetTemplateChild(PartTextBox) as TextBox;
+
+        // Name the spin buttons for assistive technology (their template content is a
+        // glyph, which reads as an empty name to screen readers and UIA clients).
+        if (GetTemplateChild("PART_UpButton") is System.Windows.Controls.Primitives.RepeatButton spinUp)
+        {
+            System.Windows.Automation.AutomationProperties.SetName(spinUp, Localization.GridStrings.NumericIncrease);
+        }
+
+        if (GetTemplateChild("PART_DownButton") is System.Windows.Controls.Primitives.RepeatButton spinDown)
+        {
+            System.Windows.Automation.AutomationProperties.SetName(spinDown, Localization.GridStrings.NumericDecrease);
+        }
+
         if (_textBox is not null)
         {
             _textBox.KeyDown += OnTextBoxKeyDown;

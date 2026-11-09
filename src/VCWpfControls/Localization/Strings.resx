@@ -27,6 +27,8 @@
   <data name="BestFitAll" xml:space="preserve"><value>Fit all columns</value></data>
   <data name="BestFitAllFill" xml:space="preserve"><value>Fit all columns (fill width)</value></data>
   <data name="SchedulerNewAppointment" xml:space="preserve"><value>New appointment</value></data>
+  <data name="NumericIncrease" xml:space="preserve"><value>Increase value</value></data>
+  <data name="NumericDecrease" xml:space="preserve"><value>Decrease value</value></data>
   <data name="FreezeColumn" xml:space="preserve"><value>Freeze up to this column</value></data>
   <data name="GroupByColumn" xml:space="preserve"><value>Group by this column</value></data>
   <data name="FilterFrom" xml:space="preserve"><value>From</value></data>

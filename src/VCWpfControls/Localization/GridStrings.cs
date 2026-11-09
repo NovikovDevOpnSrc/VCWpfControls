@@ -85,6 +85,12 @@ public static class GridStrings
     /// <summary>The default subject of a scheduler appointment created by a drag.</summary>
     public static string SchedulerNewAppointment => Get("SchedulerNewAppointment");
 
+    /// <summary>The numeric up-down increase button name.</summary>
+    public static string NumericIncrease => Get("NumericIncrease");
+
+    /// <summary>The numeric up-down decrease button name.</summary>
+    public static string NumericDecrease => Get("NumericDecrease");
+
     /// <summary>The wizard "Next" button caption.</summary>
     public static string WizardNext => Get("WizardNext");
 

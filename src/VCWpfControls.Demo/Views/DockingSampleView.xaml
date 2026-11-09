@@ -5,25 +5,25 @@
              xmlns:docking="clr-namespace:VCWpfControls.Docking;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button x:Name="SaveLayout" Margin="0,0,8,0" Padding="10,4" Click="OnSaveLayout">
+            <Button x:Name="SaveLayout" AutomationProperties.Name="Save layout" Margin="0,0,8,0" Padding="10,4" Click="OnSaveLayout">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" />
                     <TextBlock Text="Save layout" Margin="6,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="RestoreLayout" Margin="0,0,8,0" Padding="10,4" Click="OnRestoreLayout">
+            <Button x:Name="RestoreLayout" AutomationProperties.Name="Restore layout" Margin="0,0,8,0" Padding="10,4" Click="OnRestoreLayout">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="ContentSaveSettingsOutline" Width="16" Height="16" VerticalAlignment="Center" />
                     <TextBlock Text="Restore layout" Margin="6,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="HideProperties" Margin="0,0,8,0" Padding="10,4" Click="OnHideProperties">
+            <Button x:Name="HideProperties" AutomationProperties.Name="Hide properties" Margin="0,0,8,0" Padding="10,4" Click="OnHideProperties">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="EyeOff" Width="16" Height="16" VerticalAlignment="Center" />
                     <TextBlock Text="Hide properties" Margin="6,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="FloatProperties" Padding="10,4" Click="OnFloatProperties">
+            <Button x:Name="FloatProperties" AutomationProperties.Name="Float properties" Padding="10,4" Click="OnFloatProperties">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="OpenInNew" Width="16" Height="16" VerticalAlignment="Center" />
                     <TextBlock Text="Float properties" Margin="6,0,0,0" />

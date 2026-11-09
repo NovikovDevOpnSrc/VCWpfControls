@@ -129,4 +129,43 @@ public sealed class DemoSmokeTests : IDisposable
             // best effort teardown
         }
     }
+
+    private static bool IsScrollBarChrome(FlaUI.Core.AutomationElements.AutomationElement element)
+    {
+        // WPF scrollbar repeat/page buttons are system chrome without names — standard
+        // for every WPF application, announced structurally by screen readers.
+        var current = element.Parent;
+        for (var i = 0; i < 4 && current is not null; i++)
+        {
+            if (current.Properties.ControlType.ValueOrDefault == FlaUI.Core.Definitions.ControlType.ScrollBar)
+            {
+                return true;
+            }
+
+            current = current.Parent;
+        }
+
+        return false;
+    }
+
+    [Fact]
+    public void AllPages_InteractiveButtonsHaveAccessibilityNames()
+    {
+        var navList = _window.FindFirstDescendant(cf => cf.ByAutomationId("NavList"))!.AsListBox();
+        foreach (var item in navList.Items)
+        {
+            item.Select();
+            _app.WaitWhileBusy(TimeSpan.FromSeconds(10));
+            System.Threading.Thread.Sleep(250);
+            Assert.False(_app.HasExited, $"application crashed on '{item.Text}'");
+
+            var unnamed = _window.FindAllDescendants(cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Button))
+                .Where(b => !IsScrollBarChrome(b))
+                .Where(b => string.IsNullOrWhiteSpace(b.Properties.Name.ValueOrDefault))
+                .Select(b => b.Properties.AutomationId.ValueOrDefault ?? "(no id)")
+                .ToList();
+            Assert.True(unnamed.Count == 0,
+                $"buttons without accessibility names on '{item.Text}': {string.Join(", ", unnamed)}");
+        }
+    }
 }

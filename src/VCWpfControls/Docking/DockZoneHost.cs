@@ -145,6 +145,11 @@ public sealed class DockZoneHost : ContentControl
                 Cursor = Cursors.Hand,
                 Tag = pane,
             };
+
+            // The glyph reads as an unnamed button to screen readers — name it after the pane.
+            System.Windows.Automation.AutomationProperties.SetName(
+                close,
+                string.IsNullOrEmpty(header.Text) ? Localization.GridStrings.Close : Localization.GridStrings.Close + ": " + header.Text);
             close.Click += OnCloseClick;
             panel.Children.Add(close);
         }
@@ -160,6 +165,7 @@ public sealed class DockZoneHost : ContentControl
         toggle.Checked += (_, _) => Select(pane);
         HookDrag(toggle, pane);
         _buttons[pane] = toggle;
+        System.Windows.Automation.AutomationProperties.SetName(toggle, header.Text); // composite content = no default UIA name
         return toggle;
     }
 
