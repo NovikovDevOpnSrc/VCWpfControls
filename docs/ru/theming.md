@@ -5,6 +5,28 @@ description: Тема GridControl по умолчанию, ключи ресур
 
 # Темы оформления
 
+## ThemeManager — централизованный переключатель
+
+Библиотека несёт менеджер уровня приложения в стиле DevExpress/Fiori (по рекомендации
+Microsoft — переопределять ресурсы темы на уровне приложения):
+
+```csharp
+using VCWpfControls.Themes;
+
+ThemeManager.Apply(GridTheme.Dark);                          // свап палитры на всё приложение
+ThemeManager.SetAccent(new("Purple", "#8B5CF6", "#B9A2F8")); // бренд-оверрайд для обеих тем
+ThemeManager.SetAccent(null);                                // вернуть бренд темы
+ThemeManager.ThemeChanged += (_, _) => RefreshIcons();       // перечитать закэшированные кисти
+```
+
+Все контролы резолвят кисти через ключи `GridResources` с `DynamicResource` — UI
+перекрашивается мгновенно, без перезагрузок и пер-контрольной обвязки. Для режима
+«System» (аналог `ThemeMode="System"` из .NET 9) читайте предпочтение ОС
+(`AppsUseLightTheme`) — страница Settings демо показывает ровно это, включая живой
+2-секундный watcher. `GridThemeManager.Apply(grid, theme)` остаётся для per-control
+opt-in. Полнота палитр охраняется тестом-контрактом: каждый словарь темы определяет
+каждый кистевой токен.
+
 ## Соответствие Fluent 2
 
 Палитры Light/Dark по умолчанию следуют фундаменту **Fluent 2** (дизайн-система

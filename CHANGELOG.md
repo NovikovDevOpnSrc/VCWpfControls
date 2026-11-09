@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — centralized ThemeManager, palette tokens for render code, System mode
+
+Theming round from the best-practices research (MS stylable-controls guidelines, .NET 9
+Fluent/ThemeMode, VS theming recipes, DevExpress application-themes model):
+
+- **`VCWpfControls.Themes.ThemeManager`**: application-level palette switch +
+  `SetAccent(AccentOverride)` brand overlay + `ThemeChanged` (the DevExpress/Fiori
+  centralized pattern; the MS-recommended app-level redefinition). The demo's theme layer
+  became a thin adapter over it; per-grid `GridThemeManager` remains for opt-ins.
+- **New palette tokens** `MutedTextKey` (hint/secondary text) and `BarFillKey` (opaque
+  body fills drawn by custom render code); remaining hardcoded colors tokenized:
+  NumericUpDown spin buttons (was #F3F4F6), the editor hint (was #9CA3AF), Gantt
+  bar/legend fills (were Brushes.LightGray — 6 sites).
+- **Palette completeness contract**: reflection test asserts every theme dictionary
+  defines every brush token (injection-validated: a token removed → red). Generic owns
+  typography/focus; Light/Dark own the brushes.
+- **Demo System mode**: third theme radio "System (follow Windows)" — resolves the OS
+  `AppsUseLightTheme` preference and follows it live via a 2-second watcher (a
+  stand-in for .NET 9's ThemeMode="System"). E2E asserts the wiring.
+- AGENTS.md gained the codified theming rules (no literal colors; SetResourceReference
+  for code-built elements; new theme = all tokens; grep for template-copy siblings).
+
 ### Fixed — filter row editors shifted right of their columns (user report)
 
 The filter row presenter carried a template `Margin="8"` while the headers/cells sit at

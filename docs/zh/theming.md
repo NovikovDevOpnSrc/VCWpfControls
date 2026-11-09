@@ -5,6 +5,26 @@ description: GridControl 默认主题、GridResources 的 ComponentResourceKey �
 
 # 主题样式
 
+## ThemeManager — 集中切换器
+
+库内置应用级主题管理器（DevExpress/Fiori 模式，遵循微软「在应用层重定义主题资源」
+的建议）：
+
+```csharp
+using VCWpfControls.Themes;
+
+ThemeManager.Apply(GridTheme.Dark);                          // 应用级调色板切换
+ThemeManager.SetAccent(new("Purple", "#8B5CF6", "#B9A2F8")); // 品牌覆盖，两种主题
+ThemeManager.SetAccent(null);                                // 恢复主题品牌色
+ThemeManager.ThemeChanged += (_, _) => RefreshIcons();       // 重新读取缓存的画笔
+```
+
+所有控件都通过 `GridResources` 键以 `DynamicResource` 解析画笔 — 整个 UI 即时
+跟随，无需重载或逐控件接线。配合读取系统偏好（`AppsUseLightTheme`）即可实现
+.NET 9 `ThemeMode="System"` 的等价物（演示的 Settings 页正是如此，还带 2 秒的
+系统主题监视器）。`GridThemeManager.Apply(grid, theme)` 保留用于单控件场景。
+调色板完备性由契约测试守护：每个主题字典定义每个画笔令牌。
+
 ## Fluent 2 对齐
 
 默认 Light/Dark 调色板遵循 **Fluent 2** 基础（微软设计系统）：品牌主色

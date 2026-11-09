@@ -608,7 +608,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
             }
 
             var critical = criticalSet.Contains(task.Id);
-            var fill = task.BarBrush ?? Brushes.LightGray;
+            var fill = task.BarBrush ?? (TryFindResource(GridResources.BarFillKey) as Brush ?? Brushes.LightGray);
 
             if (_parentIds.Contains(task.Id))
             {
@@ -704,7 +704,8 @@ public sealed class GanttTimelinePanel : FrameworkElement
                     "nonworking" => 10,
                     _ => 16,
                 };
-                DrawLegendGlyph(drawingContext, item.Key, x, legendY + LegendHeight / 2, glyphWidth, accent);
+                var barFill = TryFindResource(GridResources.BarFillKey) as Brush ?? Brushes.LightGray;
+                DrawLegendGlyph(drawingContext, item.Key, x, legendY + LegendHeight / 2, glyphWidth, accent, barFill);
                 var caption = new FormattedText(
                     item.Caption, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, captionTypeface, 10, textBrush, dpi)
                 {
@@ -756,7 +757,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
         return items;
     }
 
-    private static void DrawLegendGlyph(DrawingContext drawingContext, string key, double x, double centerY, double width, Brush accent)
+    private static void DrawLegendGlyph(DrawingContext drawingContext, string key, double x, double centerY, double width, Brush accent, Brush barFill)
     {
         switch (key)
         {
@@ -773,12 +774,12 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 drawingContext.DrawRectangle(NonWorkingTint, new Pen(Brushes.DimGray, 0.6), new Rect(x, centerY - 4, width, 8));
                 break;
             case "summary":
-                drawingContext.DrawRectangle(Brushes.LightGray, null, new Rect(x, centerY - 3, width, 6));
-                drawingContext.DrawRectangle(Brushes.LightGray, null, new Rect(x, centerY - 6, 2, 12));
-                drawingContext.DrawRectangle(Brushes.LightGray, null, new Rect(x + width - 2, centerY - 6, 2, 12));
+                drawingContext.DrawRectangle(barFill, null, new Rect(x, centerY - 3, width, 6));
+                drawingContext.DrawRectangle(barFill, null, new Rect(x, centerY - 6, 2, 12));
+                drawingContext.DrawRectangle(barFill, null, new Rect(x + width - 2, centerY - 6, 2, 12));
                 break;
             default:
-                drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Gray, 0.8), new Rect(x, centerY - 4, width, 8));
+                drawingContext.DrawRectangle(barFill, new Pen(Brushes.Gray, 0.8), new Rect(x, centerY - 4, width, 8));
                 drawingContext.DrawRectangle(accent, null, new Rect(x, centerY - 4, width * 0.55, 8));
                 break;
         }

@@ -5,6 +5,28 @@ description: GridControl default theme, the GridResources ComponentResourceKey r
 
 # Theming
 
+## ThemeManager — the centralized switch
+
+The library ships a DevExpress/Fiori-style application-level manager (per the Microsoft
+recommendation of redefining theme resources at the app level):
+
+```csharp
+using VCWpfControls.Themes;
+
+ThemeManager.Apply(GridTheme.Dark);                          // swap the palette app-wide
+ThemeManager.SetAccent(new("Purple", "#8B5CF6", "#B9A2F8")); // brand override, both themes
+ThemeManager.SetAccent(null);                                // restore the theme's brand
+ThemeManager.ThemeChanged += (_, _) => RefreshIcons();       // re-read brushes you cached
+```
+
+Every control resolves its brushes through the `GridResources` keys with
+`DynamicResource`, so the whole UI follows instantly — no reloads, no per-control wiring.
+Pair it with an OS-preference read (`AppsUseLightTheme`) for a .NET 9
+`ThemeMode="System"` equivalent (the demo's Settings page shows exactly that, including a
+live 2-second OS watcher). `GridThemeManager.Apply(grid, theme)` remains for per-control
+opt-ins. Palette completeness is contract-tested: every theme dictionary defines every
+brush token.
+
 ## Fluent 2 alignment
 
 The default Light/Dark palettes follow the **Fluent 2** foundations (Microsoft's design

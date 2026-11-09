@@ -1,5 +1,3 @@
-using System.Windows;
-using VCWpfControls.Grid;
 using VCWpfControls.Themes;
 
 namespace VCWpfControls.Demo.Services;
@@ -17,57 +15,22 @@ public sealed record DemoAccent(string Name, string LightHex, string DarkHex)
     };
 }
 
-/// <summary>Applies the demo-wide theme + accent override at the APPLICATION level.</summary>
+/// <summary>
+/// Demo-side theming: resolves the "System" mode to the actual OS preference and delegates
+/// to the LIBRARY <see cref="ThemeManager"/> (the centralized application-level switch).
+/// </summary>
 public static class DemoTheme
 {
-    private static readonly object ThemeKey = new();
-    private static readonly object AccentKey = new();
-
-    /// <summary>Applies the built-in Light/Dark palette and the accent preset app-wide.</summary>
-    public static void Apply(string themeName, string accentName)
+    /// <summary>Applies the theme mode (Light/Dark/System) and the accent preset.</summary>
+    public static void Apply(string themeMode, string accentName)
     {
-        var app = Application.Current;
-        if (app is null)
-        {
-            return;
-        }
-
-        var theme = themeName == "Dark" ? GridTheme.Dark : GridTheme.Light;
-        Swap(
-            app,
-            ThemeKey,
-            new ResourceDictionary
-            {
-                Source = new Uri(
-                    theme == GridTheme.Dark ? "/VCWpfControls;component/Themes/Dark.xaml" : "/VCWpfControls;component/Themes/Light.xaml",
-                    UriKind.Relative),
-            });
+        var theme = themeMode == "System"
+            ? (SystemThemeWatcher.IsLightPreferred() ? GridTheme.Light : GridTheme.Dark)
+            : themeMode == "Dark" ? GridTheme.Dark : GridTheme.Light;
 
         var accent = DemoAccent.All.FirstOrDefault(a => a.Name == accentName) ?? DemoAccent.All[0];
-        var dark = theme == GridTheme.Dark;
-
-        // The override dictionary re-defines the accent-carrying keys (ComponentResourceKey
-        // instances must be created in code to match the library's key objects).
-        var accentDictionary = new ResourceDictionary();
-        if (accent.Name != "Default")
-        {
-            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(dark ? accent.DarkHex : accent.LightHex);
-            var accentBrush = new System.Windows.Media.SolidColorBrush(color);
-            accentBrush.Freeze();
-            accentDictionary[GridResources.AccentKey] = accentBrush;
-            accentDictionary[GridResources.CurrentCellBorderBrushKey] = accentBrush;
-
-            // A readable text variant of the accent: lightened on dark themes, darkened on light.
-            var text = System.Windows.Media.Color.FromRgb(
-                dark ? (byte)Math.Min(color.R + 40, 255) : (byte)Math.Max(color.R - 25, 0),
-                dark ? (byte)Math.Min(color.G + 40, 255) : (byte)Math.Max(color.G - 25, 0),
-                dark ? (byte)Math.Min(color.B + 40, 255) : (byte)Math.Max(color.B - 40, 0));
-            var accentText = new System.Windows.Media.SolidColorBrush(text);
-            accentText.Freeze();
-            accentDictionary[GridResources.AccentTextKey] = accentText;
-        }
-
-        Swap(app, AccentKey, accentDictionary);
+        ThemeManager.SetAccent(accent.Name == "Default" ? null : new AccentOverride(accent.Name, accent.LightHex, accent.DarkHex));
+        ThemeManager.Apply(theme); // apply last so the accent overlay lands on the new palette
     }
 
     /// <summary>Sets the thread cultures for library string localization.</summary>
@@ -76,23 +39,5 @@ public static class DemoTheme
         var culture = System.Globalization.CultureInfo.GetCultureInfo(cultureName);
         System.Threading.Thread.CurrentThread.CurrentCulture = culture;
         System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
-    }
-
-    private static void Swap(Application app, object key, ResourceDictionary dictionary)
-    {
-        if (app.Resources[key] is ResourceDictionary old)
-        {
-            app.Resources.MergedDictionaries.Remove(old);
-        }
-
-        if (dictionary.Count > 0 || key == ThemeKey)
-        {
-            app.Resources.MergedDictionaries.Add(dictionary);
-            app.Resources[key] = dictionary;
-        }
-        else
-        {
-            app.Resources.Remove(key); // "Default" accent removes the override entirely
-        }
     }
 }

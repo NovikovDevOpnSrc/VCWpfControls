@@ -38,6 +38,17 @@ public partial class MainWindow : Window
         // The settings flyout keeps its own view model (loads and applies the persisted
         // settings — the same values App.OnStartup applied at boot).
         SettingsFlyout.DataContext = new SettingsSampleViewModel();
+
+        // System mode: follow the OS light/dark switch live (the VM re-applies only when
+        // its own values change; this covers the OS side).
+        Services.SystemThemeWatcher.Start();
+        Services.SystemThemeWatcher.LightChanged += (_, _) =>
+        {
+            if (SettingsFlyout.DataContext is ViewModels.SettingsSampleViewModel vm && vm.Theme == "System")
+            {
+                vm.ReapplyFromSystem();
+            }
+        };
     }
 
     private void OnSettingsClick(object sender, System.Windows.RoutedEventArgs e)

@@ -61,4 +61,10 @@ public static class GridResources
 
     /// <summary>Background of alternating (odd) rows; theme-aware, one step above the surface.</summary>
     public static readonly ComponentResourceKey AlternatingRowBackgroundKey = new(typeof(GridResources), "AlternatingRowBackground");
+
+    /// <summary>Secondary/hint text (Fluent neutralForeground3: #616161 / #ADADAD).</summary>
+    public static readonly ComponentResourceKey MutedTextKey = new(typeof(GridResources), "MutedText");
+
+    /// <summary>The opaque body fill of bars/chips/spin-buttons drawn by custom render code.</summary>
+    public static readonly ComponentResourceKey BarFillKey = new(typeof(GridResources), "BarFill");
 }

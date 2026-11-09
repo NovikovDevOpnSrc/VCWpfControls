@@ -18,6 +18,10 @@
                 <RadioButton Content="Dark" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=Dark}"
                              AutomationProperties.AutomationId="SettingsThemeDarkRadio" />
+                <RadioButton Content="System (follow Windows)"
+                             IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=System}"
+                             Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                             AutomationProperties.AutomationId="SettingsThemeSystemRadio" />
             </StackPanel>
 
             <TextBlock Text="Accent" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,18,0,6" />

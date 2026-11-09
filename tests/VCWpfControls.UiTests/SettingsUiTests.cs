@@ -86,6 +86,15 @@ public sealed class SettingsUiTests : IDisposable
             _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
             Assert.True(dark.Patterns.SelectionItem.Pattern.IsSelected, "the dark radio must stay selected");
 
+            // The System mode radio exists and selects without crashing (the OS preference
+            // itself can't be flipped from a test — only the wiring is asserted).
+            var system = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeSystemRadio"))
+                ?? throw new InvalidOperationException("system radio not found");
+            system.Patterns.SelectionItem.Pattern.Select();
+            _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
+            Assert.True(system.Patterns.SelectionItem.Pattern.IsSelected, "the system radio must stay selected");
+            dark.Patterns.SelectionItem.Pattern.Select(); // back to dark for the rest of the test
+
             // Accent preset switches without crashing.
             var accent = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))!.AsComboBox();
             accent.Select("Purple");

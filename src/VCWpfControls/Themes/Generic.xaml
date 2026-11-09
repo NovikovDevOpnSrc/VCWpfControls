@@ -28,6 +28,8 @@
     <!-- Fluent 2 foundations: the type ramp (Segoe UI Variable with fallbacks), the 4/8
          radius convention (controls 4, cards 8) and the 2px accent focus ring. -->
         <SolidColorBrush x:Key="{x:Static grid:GridResources.AlternatingRowBackgroundKey}" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.MutedTextKey}" Color="#FF616161" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BarFillKey}" Color="#FFE5E7EB" />
 
 <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
     <sys:Double x:Key="{x:Static grid:GridResources.FontSizeCaptionKey}">12</sys:Double>
@@ -356,7 +358,7 @@
                                     Height="20"
                                     Margin="4,0,0,0"
                                     Focusable="False"
-                                    Foreground="#FF9CA3AF"
+                                    Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
                                     ToolTip="{x:Static localization:GridStrings.FilterRowHint}"
                                     Visibility="Collapsed">
                                     <ToggleButton.Template>
@@ -522,7 +524,7 @@
                                 <RepeatButton x:Name="PART_UpButton" Content="▴" Width="22" Height="12" Focusable="False" Padding="0">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border x:Name="Bd" Background="#FFF3F4F6" CornerRadius="2,2,0,0">
+                                            <Border x:Name="Bd" Background="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" CornerRadius="2,2,0,0">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <ControlTemplate.Triggers>
@@ -536,7 +538,7 @@
                                 <RepeatButton x:Name="PART_DownButton" Content="▾" Width="22" Height="12" Focusable="False" Padding="0" Margin="0,1,0,0">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border x:Name="Bd" Background="#FFF3F4F6" CornerRadius="0,0,2,2">
+                                            <Border x:Name="Bd" Background="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" CornerRadius="0,0,2,2">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <ControlTemplate.Triggers>

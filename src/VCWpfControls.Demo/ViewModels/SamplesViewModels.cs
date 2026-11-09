@@ -453,7 +453,7 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
     private string _language = "en-US";
 
     /// <summary>The selectable options.</summary>
-    public string[] ThemeOptions { get; } = { "Light", "Dark" };
+    public string[] ThemeOptions { get; } = { "Light", "Dark", "System" };
 
     /// <summary>The selectable accent presets.</summary>
     public string[] AccentOptions { get; } = Services.DemoAccent.All.Select(a => a.Name).ToArray();
@@ -469,6 +469,9 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
         Language = "English (en-US)";
         Apply();
     }
+
+    /// <summary>Re-applies after the OS preference flipped (System mode only).</summary>
+    public void ReapplyFromSystem() => Apply();
 
     partial void OnThemeChanged(string value) => Apply();
     partial void OnAccentChanged(string value) => Apply();
