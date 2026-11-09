@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] — 2026-11-10
+
+Gantt UX-guideline compliance (two-level axis, summary bars, legend, labels, wheel zoom,
+drag-pan, cursor feedback, per-task BarBrush), Fluent 2-aligned default themes with the
+centralized `ThemeManager` (+ accent presets, palette tokens and a completeness
+contract), the demo application settings flyout (theme/accent/language with a System
+mode following Windows), diverse testing campaigns (adversarial, invariant, culture
+matrix, UI stress — three real bugs found and fixed), and five dark-theme/alignment
+fixes from user reports.
+
 ### Added — centralized ThemeManager, palette tokens for render code, System mode
 
 Theming round from the best-practices research (MS stylable-controls guidelines, .NET 9
