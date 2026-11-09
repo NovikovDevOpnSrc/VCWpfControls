@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added/Fixed — keyboard activation of template cells (#16)
+
+`GridTemplateColumn` cells with interactive content (e.g. a star Button with
+`Focusable=False`, deliberately out of the Tab chain) had no keyboard channel. **Space**
+on the current template cell now activates the first Invoke/Toggle child through its
+automation peer — the same channel assistive tech uses; checkbox columns keep their
+existing Space toggle, plain cells consume nothing. Regression tests drive the real
+KeyDown path (injection-validated). Also fixed a date-dependent GoToToday test that only
+held while tests ran on a Monday (WorkWeek range starts Monday; the assert now checks the
+alignment).
+
 ## [0.5.1] — 2026-11-10
 
 Gantt UX-guideline compliance (two-level axis, summary bars, legend, labels, wheel zoom,

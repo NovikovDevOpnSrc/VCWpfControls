@@ -299,7 +299,9 @@ public class SchedulerViewTests
         {
             view.GoToToday();
             Assert.Equal(DateTime.Today, view.AnchorDate);
-            Assert.Equal(DateTime.Today, view.CurrentRange.Start); // Day range of today
+            // WorkWeek always starts Monday: assert the ALIGNMENT, not "Start == Today"
+            // (the old form only held while tests ran on a Monday).
+            Assert.Equal(SchedulerEngine.AlignToWeek(DateTime.Today, DayOfWeek.Monday), view.CurrentRange.Start);
         }
         finally
         {

@@ -495,6 +495,13 @@ public partial class GridControl
                     ToggleCheckBox(CurrentItem, (GridCheckBoxColumn)CurrentColumn);
                     e.Handled = true;
                 }
+                else if (!IsEditing && ActivateTemplateContent(CurrentItem, CurrentColumn))
+                {
+                    // Space activated the interactive child of the current template cell
+                    // (a button/toggle inside CellTemplate that is kept out of the Tab
+                    // chain) — the keyboard channel for template cells (issue #16).
+                    e.Handled = true;
+                }
 
                 break;
             case Key.A when (modifiers & ModifierKeys.Control) == ModifierKeys.Control:
@@ -516,6 +523,75 @@ public partial class GridControl
                 }
 
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Activates the first interactive child (Invoke/Toggle pattern — a button or toggle
+    /// inside the cell's <c>CellTemplate</c>) of the current cell through its automation
+    /// peer — the SAME channel assistive tech uses. Returns false when the column has no
+    /// template or no activatable child (nothing is consumed).
+    /// </summary>
+    private bool ActivateTemplateContent(object? item, GridColumnBase? column)
+    {
+        if (item is null || column?.CellTemplate is null || column is GridCheckBoxColumn)
+        {
+            return false;
+        }
+
+        var row = _rowRegistry.FirstOrDefault(r => ReferenceEquals(r.DataItem, item));
+        var cellElement = row?.CellsPanel?.GetCellElement(column);
+        if (cellElement is null)
+        {
+            return false;
+        }
+
+        return TryInvoke(FindActivatable(cellElement));
+    }
+
+    private static System.Windows.Automation.Peers.AutomationPeer? FindActivatable(System.Windows.DependencyObject root)
+    {
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            if (System.Windows.Media.VisualTreeHelper.GetChild(root, i) is not System.Windows.UIElement child)
+            {
+                continue;
+            }
+
+            var peer = System.Windows.Automation.Peers.UIElementAutomationPeer.CreatePeerForElement(child);
+            if (peer is not null
+                && (peer.GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke) is not null
+                    || peer.GetPattern(System.Windows.Automation.Peers.PatternInterface.Toggle) is not null))
+            {
+                return peer;
+            }
+
+            if (FindActivatable(child) is { } nested)
+            {
+                return nested;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryInvoke(System.Windows.Automation.Peers.AutomationPeer? peer)
+    {
+        switch (peer?.GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke))
+        {
+            case System.Windows.Automation.Provider.IInvokeProvider invoke:
+                invoke.Invoke();
+                return true;
+            default:
+                switch (peer?.GetPattern(System.Windows.Automation.Peers.PatternInterface.Toggle))
+                {
+                    case System.Windows.Automation.Provider.IToggleProvider toggle:
+                        toggle.Toggle();
+                        return true;
+                    default:
+                        return false;
+                }
         }
     }
 
