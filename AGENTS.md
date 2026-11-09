@@ -14,7 +14,7 @@ MIT-лицензированная библиотека WPF-контролов +
 | `tests/VCWpfControls.Control.Tests/` | STA-тесты контролов (`[StaFact]`, `TestWindowHost`) |
 | `tests/VCWpfControls.UiTests/` | FlaUI-тесты демо-приложения |
 | `benchmarks/` | BenchmarkDotNet; история оптимизаций — `benchmarks/RESULTS.md` |
-| `docs/` | DocFX: `en/`, `ru/`, `zh/` (источники), `docs/_site/` — СГЕНЕРИРОВАН, не править руками |
+| `docs/` | DocFX: `en/`, `ru/`, `zh/` (источники), `docs/_site/` — СГЕНЕРИРОВАН, не править руками; `docs/ui-ux-requirements.md` — UI/UX-профиль |
 | `.github/workflows/` | `ci.yml`, `docs.yml`, `release.yml` (Trusted Publishing на nuget.org) |
 | `VCWpfControls.slnx` | решение в формате SDK 10 (XML) — не «чинить» на .sln |
 | `Directory.Packages.props` | Central Package Management — версии пакетов ТОЛЬКО здесь |
@@ -36,6 +36,17 @@ MIT-лицензированная библиотека WPF-контролов +
 - **Python для скриптов правок**: только heredoc `python - <<'PYEOF'` (бэктики в
   double-quoted `-c` съедаются bash), и НИКОГДА не передавать невалидный `newline=`
   в `io.open(..., "w")` — файл обнуляется ДО валидации аргументов.
+
+## UI/UX-требования
+
+Любая работа над пользовательским интерфейсом (новые контролы, шаблоны, взаимодействие,
+темы, доступность) ЧИТАЕТ `docs/ui-ux-requirements.md` (профиль «Windows Desktop UI and
+UX Requirements», MUST/SHOULD-требования с ID вида UX-xxx/A11Y-xxx) и применяет
+подходящие пункты к изменяемой поверхности; нарушения MUST — баг. Существующие контролы
+библиотеки сложились до профиля — расхождения исправляем по мере касания, отдельным
+аудитом (как rounds Oracle/Fiori/Fluent). Мастер-копия профиля живёт снаружи
+(`Z:\Work\VibeCoding\windows-ui-ux-requirements-for-ai.md`); обновил мастер —
+перенеси копию в `docs/`.
 
 ## Сборка и тесты
 
