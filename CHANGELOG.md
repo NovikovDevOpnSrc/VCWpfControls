@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] — 2026-11-10
+
+Keyboard activation of template cells (#16): Space invokes the first Invoke/Toggle child
+of the current `CellTemplate` cell through its automation peer; plus a date-dependent
+test fix.
+
 ### Added/Fixed — keyboard activation of template cells (#16)
 
 `GridTemplateColumn` cells with interactive content (e.g. a star Button with
