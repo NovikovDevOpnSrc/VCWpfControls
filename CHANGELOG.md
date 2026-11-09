@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — PropertyGrid property names black in dark theme (user report)
+
+The PropertyGrid's code-created texts (category headers, property names, expandable value
+texts, read-only editors) rendered BLACK on the dark surface: Foreground inheritance from
+the control's style does not reliably reach TextBlocks built in code. Every created text
+now binds to the `TextBrush` palette token explicitly (`SetResourceReference`). STA
+regression walks the rendered items under Dark and asserts light text on every TextBlock
+(injection-validated: binding dropped → red).
+
 ### Fixed — dark theme: invisible settings labels and white alternating rows (user report)
 
 - New palette token `GridResources.AlternatingRowBackgroundKey` (#FAFAFA light / #2F2F2F

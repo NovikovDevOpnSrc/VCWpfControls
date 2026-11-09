@@ -310,17 +310,27 @@ public class PropertyGrid : Control
     private static IEnumerable<IGrouping<string?, PropertyItem>> GroupByCategory(List<PropertyItem> items)
         => items.GroupBy(i => i.Category);
 
+    /// <summary>
+    /// Binds a code-created text to the theme text brush: Foreground inheritance from the
+    /// control does not reliably reach these (dark theme rendered black-on-dark names).
+    /// </summary>
+    private static TextBlock Themed(TextBlock block)
+    {
+        block.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, VCWpfControls.Grid.GridResources.TextBrushKey);
+        return block;
+    }
+
     private static object BuildCategoryHeader(string? category, int count)
-        => new TextBlock
+        => Themed(new TextBlock
         {
             Text = $"{category ?? GridStrings.CategoryMisc} ({count})",
             FontWeight = FontWeights.SemiBold,
-        };
+        });
 
     /// <summary>Builds one property row: label plus a typed editor.</summary>
     private Border BuildItemRow(PropertyItem item, int indentLevel)
     {
-        var label = new TextBlock
+        var label = Themed(new TextBlock
         {
             Text = item.DisplayName,
             VerticalAlignment = VerticalAlignment.Top,
@@ -329,7 +339,7 @@ public class PropertyGrid : Control
             ToolTip = string.IsNullOrEmpty(item.Description)
                 ? null
                 : item.Description,
-        };
+        });
 
         var editorHost = new PropertyItemEditor
         {
@@ -389,21 +399,21 @@ public class PropertyGrid : Control
             Margin = new Thickness(0, 3, 2, 0),
         };
 
-        var displayName = new TextBlock
+        var displayName = Themed(new TextBlock
         {
             Text = item.DisplayName,
             Margin = new Thickness(0, 5, 8, 0),
             TextTrimming = TextTrimming.CharacterEllipsis,
-        };
+        });
         System.Windows.Controls.Grid.SetColumn(displayName, 1);
 
-        var valueText = new TextBlock
+        var valueText = Themed(new TextBlock
         {
             Text = item.GetValueText(),
             Opacity = 0.7,
             Margin = new Thickness(0, 5, 0, 0),
             FontStyle = FontStyles.Italic,
-        };
+        });
         System.Windows.Controls.Grid.SetColumn(valueText, 2);
 
         headerGrid.Children.Add(toggle);

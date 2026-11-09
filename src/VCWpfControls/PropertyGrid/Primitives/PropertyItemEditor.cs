@@ -192,13 +192,17 @@ public sealed class PropertyItemEditor : ContentControl
     }
 
     private static TextBlock CreateReadOnlyEditor(PropertyItem item)
-        => new()
+    {
+        var block = new TextBlock
         {
             Text = item.GetValueText(),
             Opacity = 0.75,
             TextWrapping = TextWrapping.Wrap,
             VerticalAlignment = VerticalAlignment.Center,
         };
+        block.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, VCWpfControls.Grid.GridResources.TextBrushKey);
+        return block;
+    }
 
     /// <summary>Pushes a user edit through reflection and raises the routed event.</summary>
     private void Commit(FrameworkElement source, object? rawValue)
