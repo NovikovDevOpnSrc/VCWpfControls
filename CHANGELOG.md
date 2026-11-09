@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-11-09
+
+The Scheduler/Calendar flagship (UI-free engine + control + interactions), Gantt
+non-working-day scheduling, baselines, inline tree editing and timeline virtualization,
+`GroupHeaderTemplate`, per-cell Value/GridItem UIA patterns, engine benchmarks, plus the
+review fixes (tree/timeline scroll sync) and accessibility names for every unnamed button.
+
 ### Fixed — accessibility names for unnamed buttons (found by the demo tour)
 
 Buttons whose content is a panel or a glyph read as UNNAMED to screen readers and UIA
