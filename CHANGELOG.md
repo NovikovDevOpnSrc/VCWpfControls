@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt non-working days
+
+- `GanttCalendar` (UI-free): weekend weekdays (Sat/Sun by default) + explicit holiday
+  dates; `IsWorkingDay`, `AddWorkingDays` (positive/negative, throws on a calendar with
+  no working days), `NextWorkingDay`.
+- Calendar-aware `GanttEngine.AutoSchedule(tasks, links, calendar)` and `EarliestStart`
+  overload: durations and lags count in WORKING days and a moved task never starts on a
+  non-working day. Manual satisfying dates stay untouched; `CriticalPath` remains
+  calendar-day based; a null calendar keeps the historic math (the 2-argument overload
+  is unchanged).
+- `GanttView.Calendar` DP: the timeline tints non-working days under the grid and
+  auto-scheduling (when on) switches to working-day math; toggling re-runs both.
+- Demo "Gantt": a "Skip weekends" toggle (weekends + a sample holiday). Docs gantt.md ×3.
+- 12 Core + 4 STA tests; regressions injection-validated (engine snap bypass → red,
+  view wiring to null → red; the snap test needed a manual-Saturday-finish predecessor —
+  lag-based cases alone never exercise the snap).
+
 ### Added — Scheduler stage 3 (interactions)
 
 - Day/work-week/week views are editable (month stays read-only for now): drag a block to

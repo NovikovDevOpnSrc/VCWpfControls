@@ -68,9 +68,18 @@ public sealed class GanttTimelinePanel : FrameworkElement
         new PropertyMetadata(28d, OnLayoutChanged));
 
     private List<GanttTimescaleCell> _cells = new();
+    private List<DateTime> _nonWorkingDays = new();
     private DateTime _rangeStart = DateTime.Today;
     private DateTime _rangeEnd = DateTime.Today;
     private int _hoverIndex = -1;
+    private static readonly System.Windows.Media.Brush NonWorkingTint = Frozen(56, 128, 128, 128);
+
+    private static System.Windows.Media.Brush Frozen(byte alpha, byte r, byte g, byte b)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, r, g, b));
+        brush.Freeze();
+        return brush;
+    }
 
     static GanttTimelinePanel()
     {
@@ -136,6 +145,23 @@ public sealed class GanttTimelinePanel : FrameworkElement
 
     /// <summary>The timescale cells of the current range (test hook).</summary>
     public IReadOnlyList<GanttTimescaleCell> Cells => _cells;
+
+    /// <summary>The working-time calendar (weekends/holidays tint under the grid; null = none).</summary>
+    public GanttCalendar? Calendar
+    {
+        get => _calendar;
+        set
+        {
+            _calendar = value;
+            RebuildRange();
+            InvalidateVisual();
+        }
+    }
+
+    private GanttCalendar? _calendar;
+
+    /// <summary>The non-working days of the current range (test hook).</summary>
+    public IReadOnlyList<DateTime> NonWorkingDays => _nonWorkingDays;
 
     /// <summary>The rendered bar of a task (test hook).</summary>
     internal Rect? BarOf(GanttTask task)
@@ -268,6 +294,18 @@ public sealed class GanttTimelinePanel : FrameworkElement
         }
 
         _cells = GanttEngine.BuildTimescale(_rangeStart, _rangeEnd.AddDays(-1), Unit, CultureInfo.CurrentCulture);
+        _nonWorkingDays = new List<DateTime>();
+        if (_calendar is { } calendar)
+        {
+            for (var day = _rangeStart; day < _rangeEnd; day = day.AddDays(1))
+            {
+                if (!calendar.IsWorkingDay(day))
+                {
+                    _nonWorkingDays.Add(day);
+                }
+            }
+        }
+
         Width = TotalWidth;
     }
 
@@ -341,6 +379,16 @@ public sealed class GanttTimelinePanel : FrameworkElement
         {
             var y = HeaderHeight + i * RowHeight;
             drawingContext.DrawLine(new Pen(new SolidColorBrush(Color.FromArgb(128, 160, 160, 160)), 0.5), new Point(0, y), new Point(RenderSize.Width, y));
+        }
+
+        // Non-working day tint (weekends/holidays under the grid, beneath the bars).
+        foreach (var day in _nonWorkingDays)
+        {
+            var x = XOf(day);
+            if (x + DayWidth >= 0 && x <= RenderSize.Width)
+            {
+                drawingContext.DrawRectangle(NonWorkingTint, null, new Rect(x, HeaderHeight, DayWidth, RenderSize.Height - HeaderHeight));
+            }
         }
 
         // Bars / milestones.

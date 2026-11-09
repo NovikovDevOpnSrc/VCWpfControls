@@ -27,6 +27,23 @@ The forum research called Gantt the biggest open-source gap in WPF; VCWpfControl
   outlines critical bars/links in the accent brush. Double-click a bar → `BarDoubleClicked`
   (on the `GanttTimelinePanel`) for editor integration.
 
+## Non-working days
+
+`Calendar` (a `GanttCalendar`: weekend weekdays + explicit holiday dates) switches the chart to working time:
+
+- The timeline tints weekends/holidays under the grid.
+- With `AutoSchedule`, durations and lags count in **working** days and a moved task never
+  starts on a non-working day (`Fri + 1` is Monday, not Saturday). Manual dates that
+  already satisfy their links are kept as they are.
+- `CriticalPath` stays calendar-day based (relative floats).
+- `null` (the default) keeps plain calendar-day math — nothing changes for existing charts.
+
+```csharp
+var calendar = new GanttCalendar();                 // Sat/Sun weekends by default
+calendar.Holidays.Add(new DateTime(2026, 11, 20));  // a company day off
+view.Calendar = calendar;
+```
+
 ## Drag interactions
 
 All edits are day-snapped and fire events after the dates land on the task:

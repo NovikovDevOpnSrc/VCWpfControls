@@ -31,6 +31,14 @@ public static class GanttEngine
     /// circular dependencies.
     /// </summary>
     public static IReadOnlyList<GanttTask> AutoSchedule(IEnumerable<GanttTask> tasks, IEnumerable<GanttDependency> dependencies)
+        => AutoSchedule(tasks, dependencies, null);
+
+    /// <summary>
+    /// Auto-scheduling with a working-time calendar: lags and durations count in WORKING
+    /// days and a moved task never starts on a non-working day. Manual (already satisfying)
+    /// dates are kept as they are. A <c>null</c> calendar keeps plain calendar-day math.
+    /// </summary>
+    public static IReadOnlyList<GanttTask> AutoSchedule(IEnumerable<GanttTask> tasks, IEnumerable<GanttDependency> dependencies, GanttCalendar? calendar)
     {
         ArgumentNullException.ThrowIfNull(tasks);
         ArgumentNullException.ThrowIfNull(dependencies);
@@ -49,7 +57,7 @@ public static class GanttEngine
             {
                 var predecessor = byId[link.PredecessorId];
                 var successor = byId[link.SuccessorId];
-                var earliest = EarliestStart(predecessor, successor, link);
+                var earliest = EarliestStart(predecessor, successor, link, calendar);
                 if (earliest > successor.Start.Date)
                 {
                     // Capture the duration BEFORE moving the start: Finish-Start would
@@ -58,7 +66,7 @@ public static class GanttEngine
                     successor.Start = earliest;
                     successor.Finish = successor.IsMilestone || duration == 0
                         ? successor.Start
-                        : successor.Start.AddDays(duration);
+                        : AddDays(successor.Start, duration, calendar);
                     moved = true;
                 }
             }
@@ -75,16 +83,33 @@ public static class GanttEngine
     /// <summary>
     /// The earliest start a successor may have given the link: FS/SS constrain the start
     /// directly; FF/SF constrain the successor's finish, so the implied start keeps the
-    /// successor's duration.
+    /// successor's duration. Plain calendar-day math (use the calendar overload for
+    /// working-day semantics).
     /// </summary>
     public static DateTime EarliestStart(GanttTask predecessor, GanttTask successor, GanttDependency link)
-        => link.Type switch
+        => EarliestStart(predecessor, successor, link, null);
+
+    /// <summary>
+    /// The earliest start under a working-time calendar: the relation and its lag count in
+    /// working days, and the result never lands on a non-working day (a null calendar
+    /// degenerates to plain calendar-day math).
+    /// </summary>
+    public static DateTime EarliestStart(GanttTask predecessor, GanttTask successor, GanttDependency link, GanttCalendar? calendar)
+    {
+        var duration = successor.DurationDays;
+        var raw = link.Type switch
         {
-            GanttLinkType.FinishToStart => predecessor.Finish.Date.AddDays(link.LagDays),
-            GanttLinkType.StartToStart => predecessor.Start.Date.AddDays(link.LagDays),
-            GanttLinkType.FinishToFinish => predecessor.Finish.Date.AddDays(link.LagDays).AddDays(-successor.DurationDays),
-            _ => predecessor.Start.Date.AddDays(link.LagDays).AddDays(-successor.DurationDays),
+            GanttLinkType.FinishToStart => AddDays(predecessor.Finish.Date, link.LagDays, calendar),
+            GanttLinkType.StartToStart => AddDays(predecessor.Start.Date, link.LagDays, calendar),
+            GanttLinkType.FinishToFinish => AddDays(AddDays(predecessor.Finish.Date, link.LagDays, calendar), -duration, calendar),
+            _ => AddDays(AddDays(predecessor.Start.Date, link.LagDays, calendar), -duration, calendar),
         };
+
+        return calendar is null ? raw : calendar.NextWorkingDay(raw);
+    }
+
+    private static DateTime AddDays(DateTime date, int days, GanttCalendar? calendar)
+        => calendar is null ? date.AddDays(days) : calendar.AddWorkingDays(date, days);
 
     /// <summary>
     /// The ids of the tasks on the critical path: the longest chain (by duration) from the

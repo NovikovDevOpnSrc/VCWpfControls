@@ -290,6 +290,25 @@ public partial class GanttSampleViewModel : SampleViewModelBase
     [ObservableProperty]
     private bool _showCriticalPath = true;
 
+    /// <summary>Whether weekends/holidays are non-working (working-day scheduling + tint).</summary>
+    [ObservableProperty]
+    private bool _skipWeekends;
+
+    /// <summary>The working-time calendar (null = every day works).</summary>
+    public GanttCalendar? Calendar => SkipWeekends ? WeekendCalendar : null;
+
+    private static readonly GanttCalendar WeekendCalendar = CreateWeekendCalendar();
+
+    private static GanttCalendar CreateWeekendCalendar()
+    {
+        var calendar = new GanttCalendar();
+        calendar.Holidays.Add(new DateTime(2026, 11, 20)); // a sample holiday inside the plan
+        return calendar;
+    }
+
+    partial void OnSkipWeekendsChanged(bool value)
+        => OnPropertyChanged(nameof(Calendar));
+
     /// <summary>The timeline zoom unit.</summary>
     [ObservableProperty]
     private GanttTimescaleUnit _timescaleUnit = GanttTimescaleUnit.Day;

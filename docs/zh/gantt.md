@@ -25,6 +25,22 @@ description: GanttView —— 任务树 + 时间线条形图、依赖箭头、�
 - `AutoSchedule` 在加载/变更时运行引擎（违反约束的后续任务前移）；`ShowCriticalPath`
   用强调色描出关键条形与连线。双击条形 → `BarDoubleClicked`（在 `GanttTimelinePanel` 上）。
 
+## 非工作日
+
+`Calendar`（`GanttCalendar` 类：周末星期 + 显式节假日日期）让图表切换到工作时间：
+
+- 时间轴在网格下方为周末/节假日着色。
+- 开启 `AutoSchedule` 时，工期与延迟按**工作日**计算，被移动的任务绝不会从
+  非工作日开始（「周五 + 1」是周一而不是周六）。已满足链接约束的手工日期保持不变。
+- `CriticalPath` 仍按日历日计算（相对浮动）。
+- `null`（默认）保持纯日历日算法 — 现有图表行为不变。
+
+```csharp
+var calendar = new GanttCalendar();                 // 默认周六/周日
+calendar.Holidays.Add(new DateTime(2026, 11, 20));  // 公司假日
+view.Calendar = calendar;
+```
+
 ## 拖拽交互
 
 所有编辑按天对齐，日期写入任务后触发事件：

@@ -35,6 +35,11 @@ public class GanttView : Control
         nameof(ShowCriticalPath), typeof(bool), typeof(GanttView),
         new PropertyMetadata(Boxes.False, OnDataChanged));
 
+    /// <summary>Identifies the <see cref="Calendar"/> dependency property.</summary>
+    public static readonly DependencyProperty CalendarProperty = DependencyProperty.Register(
+        nameof(Calendar), typeof(GanttCalendar), typeof(GanttView),
+        new PropertyMetadata(null, OnDataChanged));
+
     /// <summary>Identifies the <see cref="TimescaleUnit"/> dependency property.</summary>
     public static readonly DependencyProperty TimescaleUnitProperty = DependencyProperty.Register(
         nameof(TimescaleUnit), typeof(GanttTimescaleUnit), typeof(GanttView),
@@ -94,6 +99,16 @@ public class GanttView : Control
     {
         get => (bool)GetValue(ShowCriticalPathProperty);
         set => SetValue(ShowCriticalPathProperty, value);
+    }
+
+    /// <summary>
+    /// The working-time calendar: weekends/holidays tint on the timeline and, with
+    /// <see cref="AutoSchedule"/>, durations and lags count in working days (null = none).
+    /// </summary>
+    public GanttCalendar? Calendar
+    {
+        get => (GanttCalendar?)GetValue(CalendarProperty);
+        set => SetValue(CalendarProperty, value);
     }
 
     /// <summary>The timeline zoom unit.</summary>
@@ -258,7 +273,7 @@ public class GanttView : Control
         var links = Dependencies ?? new ObservableCollection<GanttDependency>();
         if (AutoSchedule)
         {
-            GanttEngine.AutoSchedule(tasks, links);
+            GanttEngine.AutoSchedule(tasks, links, Calendar);
         }
 
         _criticalIds = ShowCriticalPath ? GanttEngine.CriticalPath(tasks, links) : Array.Empty<string>();
@@ -275,6 +290,7 @@ public class GanttView : Control
         _timeline.Tasks = VisibleRowsOf(_tree, tasks);
         _timeline.Dependencies = links;
         _timeline.CriticalTaskIds = _criticalIds;
+        _timeline.Calendar = Calendar;
     }
 
     /// <summary>Wraps the flat tasks into hierarchy view-models for the tree grid.</summary>
