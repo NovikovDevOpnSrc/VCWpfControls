@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — filter row editors shifted right of their columns (user report)
+
+The filter row presenter carried a template `Margin="8"` while the headers/cells sit at
+slot origin 0 — the old cells margin was removed by the alignment fix long ago, but the
+filter row (and the summary row) kept their copies: every filter box sat 8px right of its
+column. Both presenters now have no horizontal margin; filter editors get a 2px inset
+INSIDE their slot (alignment preserved). STA regression asserts each editor starts within
+2.5px of its column header (injection-validated: the 8px margin restored → red).
+
 ### Fixed — PropertyGrid property names black in dark theme (user report)
 
 The PropertyGrid's code-created texts (category headers, property names, expandable value

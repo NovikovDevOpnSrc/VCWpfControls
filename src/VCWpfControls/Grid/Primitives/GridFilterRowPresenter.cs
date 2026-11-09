@@ -71,6 +71,7 @@ public sealed class GridFilterRowPresenter : Panel
                 editor = new TextBox
                 {
                     VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(2, 0, 2, 0), // inset INSIDE the column slot — keeps alignment
                     Tag = column,
                 };
                 editor.TextChanged += OnEditorTextChanged;
