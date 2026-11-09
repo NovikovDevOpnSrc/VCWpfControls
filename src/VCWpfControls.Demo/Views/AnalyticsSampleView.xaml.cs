@@ -50,11 +50,4 @@ public partial class AnalyticsSampleView : UserControl
     private void OnExportHtml(object sender, RoutedEventArgs e)
         => GridExporter.ExportToHtml(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.html"));
 
-    private void OnToggleTheme(object sender, RoutedEventArgs e)
-    {
-        _dark = !_dark;
-        GridThemeManager.Apply(Grid, _dark ? GridTheme.Dark : GridTheme.Light);
-    }
-
-    private bool _dark;
 }

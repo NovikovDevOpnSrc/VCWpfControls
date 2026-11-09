@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — demo application settings (theme, accent, language)
+
+New "Settings" page: the Light/Dark theme now applies APPLICATION-WIDE (the shell sidebar
+follows the palette too — DynamicResource brushes), four accent presets override the
+brand tokens live (Default/Purple/Green/Orange; the Fiori qualitative pattern through the
+GridResources keys), and the library language switches en-US/ru-RU/zh-CN observably
+(localized strings: menus, hints, wizard buttons). Settings persist to
+`%AppData%/VCWpfControls.Demo/settings.json` and restore on the next launch (culture
+applied at startup, before the UI). The Analytics page's per-grid theme toggle is removed
+in favor of the single global source. E2E: theme/accent/language churn through the real
+shell with an observable Russian «Далее» assertion (serialized "UiSerial" collection so
+language persistence cannot race the wizard stress test; always restores defaults).
+
 ### Changed — default themes aligned with Fluent 2
 
 The Light/Dark palettes now follow the Fluent 2 foundations: brand `#0F6CBD`/`#479EF5`,

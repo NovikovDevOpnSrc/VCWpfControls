@@ -12,6 +12,7 @@ namespace VCWpfControls.UiTests;
 /// and Invoke, rapid navigation sweeps and view-switch churn — all through UIA patterns
 /// against the real demo shell.
 /// </summary>
+[Collection("UiSerial")]
 public sealed class UiStressTests : IDisposable
 {
     private readonly FlaUI.Core.Application _app;

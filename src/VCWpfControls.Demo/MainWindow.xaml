@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:VCWpfControls.Demo.Views"
         xmlns:vm="clr-namespace:VCWpfControls.Demo.ViewModels"
+        xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
         Title="Vibe Coded WPF Controls — Demo"
         Width="1180" Height="720"
         WindowStartupLocation="CenterScreen">
@@ -58,6 +59,9 @@
         <DataTemplate DataType="{x:Type vm:VirtualizationSampleViewModel}">
             <views:VirtualizationSampleView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsSampleViewModel}">
+            <views:SettingsSampleView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -66,7 +70,12 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="#FFF3F4F6" BorderBrush="#FFD1D5DB" BorderThickness="0,0,1,0">
+        <!-- The shell follows the library palette so the global Light/Dark theme
+             repaints the navigation sidebar as well (DynamicResource). -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource {x:Static grid:GridResources.HeaderBackgroundKey}}"
+                BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
+                BorderThickness="0,0,1,0">
             <ListBox x:Name="NavList"
                      Margin="8"
                      SelectedIndex="0"

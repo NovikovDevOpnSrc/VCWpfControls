@@ -418,3 +418,72 @@ public partial class SchedulerSampleViewModel : SampleViewModelBase
         yield return new SchedulerAppointment("oncall", "On-call handover", Today.AddHours(22), Today.AddHours(26)); // overnight
     }
 }
+
+/// <summary>Global demo settings: theme, accent preset and library language (persisted).</summary>
+public partial class SettingsSampleViewModel : SampleViewModelBase
+{
+    private readonly Services.DemoSettings _settings;
+
+    /// <inheritdoc />
+    public override string Title => "Settings";
+
+    /// <inheritdoc />
+    public override string Description => "Application-wide settings: the Light/Dark theme, the accent preset and the library language. Applied immediately, persisted to %AppData% and restored on the next launch.";
+
+    /// <summary>Creates the view model and applies the loaded settings.</summary>
+    public SettingsSampleViewModel()
+    {
+        _settings = Services.DemoSettings.Load();
+        Theme = _settings.Theme;
+        Accent = _settings.Accent;
+        Language = _settings.Language;
+        Apply();
+    }
+
+    /// <summary>The theme name ("Light" or "Dark").</summary>
+    [ObservableProperty]
+    private string _theme = "Light";
+
+    /// <summary>The accent preset name.</summary>
+    [ObservableProperty]
+    private string _accent = "Default";
+
+    /// <summary>The library UI culture name.</summary>
+    [ObservableProperty]
+    private string _language = "en-US";
+
+    /// <summary>The selectable options.</summary>
+    public string[] ThemeOptions { get; } = { "Light", "Dark" };
+
+    /// <summary>The selectable accent presets.</summary>
+    public string[] AccentOptions { get; } = Services.DemoAccent.All.Select(a => a.Name).ToArray();
+
+    /// <summary>The selectable languages (display name).</summary>
+    public string[] LanguageOptions { get; } = { "English (en-US)", "Русский (ru-RU)", "中文 (zh-CN)" };
+
+    /// <summary>Restores the shipped defaults.</summary>
+    public void Reset()
+    {
+        Theme = "Light";
+        Accent = "Default";
+        Language = "English (en-US)";
+        Apply();
+    }
+
+    partial void OnThemeChanged(string value) => Apply();
+    partial void OnAccentChanged(string value) => Apply();
+    partial void OnLanguageChanged(string value) => Apply();
+
+    private void Apply()
+    {
+        _settings.Theme = Theme;
+        _settings.Accent = Accent;
+        _settings.Language = CultureNameOf(Language);
+        _settings.Save();
+        Services.DemoTheme.Apply(Theme, Accent);
+        Services.DemoTheme.ApplyLanguage(_settings.Language);
+    }
+
+    private static string CultureNameOf(string display)
+        => display.Split('(').Length < 2 ? "en-US" : display.Split('(')[1].TrimEnd(')').Trim();
+}

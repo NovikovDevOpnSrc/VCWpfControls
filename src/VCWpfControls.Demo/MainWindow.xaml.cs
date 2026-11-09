@@ -21,6 +21,7 @@ public partial class MainWindow : Window
             new SelectionSampleViewModel(),
             new EditingSampleViewModel(),
             new VirtualizationSampleViewModel(),
+            new SettingsSampleViewModel(),
             new AnalyticsSampleViewModel(),
             new PropertyGridSampleViewModel(),
             new TreeListSampleViewModel(),
