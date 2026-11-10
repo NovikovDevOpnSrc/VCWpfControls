@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — column separators invisible after the Fluent 2 alignment (user report)
+
+The opt-in `ShowColumnSeparators` drew with `GridLinesBrush` (#F0F0F0 after the Fluent
+alignment) — nearly white on the white surface, i.e. invisible. Separators now use their
+own palette token `GridResources.SeparatorLineKey` (#E0E0E0 light / #3D3D3D dark — the
+Fluent divider shade, deliberately darker than GridLine); `ColumnSeparatorBrush` still
+overrides. Pixel regression (the frozen boundary at x=70 must carry a separator pixel
+against the white surface) + a token-vs-GridLine darkness assert; injection-validated
+(the old near-white brush → red).
+
 ### Fixed — demo ColumnTypes: Department combo's dropdown was empty (user report)
 
 The page bound the combo/auto-complete columns' ItemsSource with `RelativeSource

@@ -18,4 +18,5 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.AlternatingRowBackgroundKey}" Color="#FFFAFAFA" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.MutedTextKey}" Color="#FF616161" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BarFillKey}" Color="#FFE5E7EB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="#FFE0E0E0" />
 </ResourceDictionary>

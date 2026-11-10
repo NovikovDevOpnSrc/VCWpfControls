@@ -67,4 +67,7 @@ public static class GridResources
 
     /// <summary>The opaque body fill of bars/chips/spin-buttons drawn by custom render code.</summary>
     public static readonly ComponentResourceKey BarFillKey = new(typeof(GridResources), "BarFill");
+
+    /// <summary>Standalone vertical column separators and summary dividers (Fluent divider: #E0E0E0 / #3D3D3D) — darker than GridLine so opt-in separators are actually visible.</summary>
+    public static readonly ComponentResourceKey SeparatorLineKey = new(typeof(GridResources), "SeparatorLine");
 }

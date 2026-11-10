@@ -460,7 +460,7 @@ public sealed class GridCellsPanel : Panel
         }
 
         if (!owner.ShowColumnSeparators
-            || (owner.ColumnSeparatorBrush ?? owner.GridLinesBrush) is not { } brush)
+            || (owner.ColumnSeparatorBrush ?? TryFindResource(GridResources.SeparatorLineKey) as Brush ?? owner.GridLinesBrush) is not { } brush)
         {
             return;
         }
