@@ -50,14 +50,33 @@ public sealed class ConditionExpression : ConditionNode
     /// <summary>Creates the expression.</summary>
     public ConditionExpression(string fieldName, GridFilterOperator operatorKind, object? value = null, object? value2 = null)
     {
-        FieldName = fieldName;
+        _fieldName = fieldName;
         OperatorKind = operatorKind;
         Value = value;
         Value2 = value2;
     }
 
     /// <summary>The filtered field name.</summary>
-    public string FieldName { get; set; }
+    public string FieldName
+    {
+        get => _fieldName;
+        set
+        {
+            _fieldName = value;
+            _accessorFieldName = null; // invalidate the per-type accessor cache
+        }
+    }
+
+    private string _fieldName;
+
+    /// <summary>
+    /// Per-item-type accessor cache: dictionary lookups per evaluation dominated the
+    /// condition hot path (see benchmarks) — a ConditionalWeakTable read is free.
+    /// Weak: collected item types take their cache entries with them.
+    /// </summary>
+    internal System.Runtime.CompilerServices.ConditionalWeakTable<Type, Grid.Data.PropertyAccessor>? AccessorCache;
+
+    internal string? _accessorFieldName;
 
     /// <summary>The operator.</summary>
     public GridFilterOperator OperatorKind { get; set; }

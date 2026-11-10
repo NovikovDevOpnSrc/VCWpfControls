@@ -25,9 +25,24 @@ part of the allocation); the scheduler expansion is 100 endless DAILY series ove
 | Scheduler_Expand_3years            |  18.76 ms   | 0.32 ms   |   6.2 MB  |
 | Scheduler_LayoutOverlaps_1000dense |   0.071 ms  | 0.001 ms  |   0.1 MB  |
 
-> Optimization candidates: `ConditionEvaluator` is allocation-dominated (~680 B/item —
-> PropertyAccessor reflection per evaluation; a cached accessor path or compiled delegates
-> would cut both time and GC); Pivot is dominated by dictionary/boxing churn on composite keys.
+### Condition evaluation optimization (2026-11-10)
+
+Profiled with a GC.GetAllocatedBytesForCurrentThread probe: the 680 B/item were dominated
+by `PropertyAccessor.GetOrCreate` — 344 B on EVERY call even on cache hits (the
+KeyValuePair<Type,string> hashing + ConcurrentDictionary read path), plus a
+`GridFilterDescription` allocated per item per expression. Fix: `GridFilterDescription.MatchesCore`
+(the shared static evaluation path — grid and conditions still cannot diverge) + a
+`ConditionalWeakTable<Type, PropertyAccessor>` cache ON each ConditionExpression
+(invalidated when FieldName changes; weak in the item type).
+
+| Condition_MatchesAll_100k | Mean      | Allocated | Note |
+|--------------------------|----------:|----------:|------|
+| before                   |  85.84 ms |   67.8 MB | dictionary per item + description per item |
+| after                    |   9.36 ms |  625.8 KB | ~9x faster, ~108x less memory |
+
+> Optimization candidates: (done 2026-11-10 — see above) `ConditionEvaluator` had been
+> allocation-dominated (~680 B/item); Pivot is still dominated by dictionary/boxing churn
+> on composite keys.
 
 ## Results (default job, after the 2026-11-03 sort optimization)
 

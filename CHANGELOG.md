@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — ConditionEvaluator hot path: ~9x faster, ~108x less memory
+
+GC-probe profiling showed the 680 B/item from the benchmarks came from
+`PropertyAccessor.GetOrCreate` (344 B on EVERY call, cache hits included — the KVP+dict
+read path) and a `GridFilterDescription` allocated per item per expression. Fix:
+`GridFilterDescription.MatchesCore` — a shared static evaluation path (grid engine and
+condition trees still cannot diverge) — plus a weak per-expression
+`ConditionalWeakTable<Type, PropertyAccessor>` accessor cache, invalidated when
+`FieldName` changes. Benchmark 100k mixed tree: 85.8 ms → 9.4 ms, 67.8 MB → 0.6 MB.
+Semantics unchanged (the full condition test matrix and the randomized invariant
+round-trips are green).
+
 ## [0.5.2] — 2026-11-10
 
 Keyboard activation of template cells (#16): Space invokes the first Invoke/Toggle child

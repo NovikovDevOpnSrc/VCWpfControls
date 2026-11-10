@@ -95,63 +95,77 @@ public sealed class GridFilterDescription
     /// (resolved for the item's type and <see cref="FieldName"/>).
     /// </summary>
     public bool Matches(object item, PropertyAccessor accessor)
+        => MatchesCore(item, accessor, Operator, Value, Value2, CustomPredicate, TextComparison);
+
+    /// <summary>
+    /// The single evaluation path shared by the grid engine and the condition evaluator
+    /// (no description allocation on the hot path).
+    /// </summary>
+    internal static bool MatchesCore(
+        object item,
+        PropertyAccessor accessor,
+        GridFilterOperator op,
+        object? value,
+        object? value2,
+        Predicate<object>? customPredicate,
+        StringComparison textComparison)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        switch (Operator)
+        switch (op)
         {
             case GridFilterOperator.None:
                 return true;
 
             case GridFilterOperator.Custom:
-                return CustomPredicate is null || CustomPredicate(item);
+                return customPredicate is null || customPredicate(item);
 
             case GridFilterOperator.IsNull:
             case GridFilterOperator.IsNotNull:
-                var value = accessor.GetValue(item);
-                var isNull = value is null || value is DBNull;
-                return Operator == GridFilterOperator.IsNull ? isNull : !isNull;
+                var nullCheck = accessor.GetValue(item);
+                var isNull = nullCheck is null || nullCheck is DBNull;
+                return op == GridFilterOperator.IsNull ? isNull : !isNull;
         }
 
         var cell = accessor.GetValue(item);
         if (cell is null || cell is DBNull)
         {
             // Null cells only match explicit null operators (handled above) and In with null entry.
-            return Operator is GridFilterOperator.In && ListContains(Value, null);
+            return op is GridFilterOperator.In && ListContains(value, null);
         }
 
-        switch (Operator)
+        switch (op)
         {
             case GridFilterOperator.Equals:
-                return GridValueCompare.Compare(cell, Value, null) == 0;
+                return GridValueCompare.Compare(cell, value, null) == 0;
             case GridFilterOperator.NotEquals:
-                return GridValueCompare.Compare(cell, Value, null) != 0;
+                return GridValueCompare.Compare(cell, value, null) != 0;
             case GridFilterOperator.Contains:
-                return TextOf(cell).Contains(TextOf(Value), TextComparison);
+                return TextOf(cell).Contains(TextOf(value), textComparison);
             case GridFilterOperator.NotContains:
-                return !TextOf(cell).Contains(TextOf(Value), TextComparison);
+                return !TextOf(cell).Contains(TextOf(value), textComparison);
             case GridFilterOperator.StartsWith:
-                return TextOf(cell).StartsWith(TextOf(Value), TextComparison);
+                return TextOf(cell).StartsWith(TextOf(value), textComparison);
             case GridFilterOperator.EndsWith:
-                return TextOf(cell).EndsWith(TextOf(Value), TextComparison);
+                return TextOf(cell).EndsWith(TextOf(value), textComparison);
             case GridFilterOperator.GreaterThan:
-                return GridValueCompare.Compare(cell, Value, null) > 0;
+                return GridValueCompare.Compare(cell, value, null) > 0;
             case GridFilterOperator.GreaterThanOrEqual:
-                return GridValueCompare.Compare(cell, Value, null) >= 0;
+                return GridValueCompare.Compare(cell, value, null) >= 0;
             case GridFilterOperator.LessThan:
-                return GridValueCompare.Compare(cell, Value, null) < 0;
+                return GridValueCompare.Compare(cell, value, null) < 0;
             case GridFilterOperator.LessThanOrEqual:
-                return GridValueCompare.Compare(cell, Value, null) <= 0;
+                return GridValueCompare.Compare(cell, value, null) <= 0;
             case GridFilterOperator.Between:
-                return GridValueCompare.Compare(cell, Value, null) >= 0
-                    && GridValueCompare.Compare(cell, Value2, null) <= 0;
+                return GridValueCompare.Compare(cell, value, null) >= 0
+                    && GridValueCompare.Compare(cell, value2, null) <= 0;
             case GridFilterOperator.NotBetween:
-                return GridValueCompare.Compare(cell, Value, null) < 0
-                    || GridValueCompare.Compare(cell, Value2, null) > 0;
+                return GridValueCompare.Compare(cell, value, null) < 0
+                    || GridValueCompare.Compare(cell, value2, null) > 0;
             case GridFilterOperator.In:
-                return ListContains(Value, cell);
+                return ListContains(value, cell);
             case GridFilterOperator.NotIn:
-                return !ListContains(Value, cell);
+                return !ListContains(value, cell);
             default:
                 return true;
         }

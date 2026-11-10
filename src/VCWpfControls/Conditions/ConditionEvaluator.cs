@@ -85,12 +85,23 @@ public static class ConditionEvaluator
 
     private static bool MatchesExpression(object item, ConditionExpression expression)
     {
-        var accessor = PropertyAccessor.GetOrCreate(item.GetType(), expression.FieldName);
-        var description = new GridFilterDescription(
-            expression.FieldName,
-            expression.OperatorKind,
-            expression.Value,
-            expression.Value2);
-        return description.Matches(item, accessor);
+        // Hot path: the accessor is cached per (expression, item type) in a weak table and
+        // evaluation goes through MatchesCore — the shared grid path — without allocating
+        // a description per item.
+        var cache = expression.AccessorCache;
+        if (cache is null || expression._accessorFieldName != expression.FieldName)
+        {
+            expression._accessorFieldName = expression.FieldName;
+            expression.AccessorCache = cache = new System.Runtime.CompilerServices.ConditionalWeakTable<Type, PropertyAccessor>();
+        }
+
+        var type = item.GetType();
+        if (!cache.TryGetValue(type, out var accessor))
+        {
+            accessor = PropertyAccessor.GetOrCreate(type, expression.FieldName);
+            cache.Add(type, accessor);
+        }
+
+        return GridFilterDescription.MatchesCore(item, accessor, expression.OperatorKind, expression.Value, expression.Value2, null, StringComparison.CurrentCulture);
     }
 }
