@@ -2,7 +2,14 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
-             xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls">
+             xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls"
+             xmlns:services="clr-namespace:VCWpfControls.Demo.Services">
+    <UserControl.Resources>
+        <!-- Grid columns are DependencyObjects OUTSIDE the visual tree: a RelativeSource
+             AncestorType=Window binding on a column never resolves (the Department combo's
+             dropdown was empty). The proxy inherits the page DataContext and forwards it. -->
+        <services:BindingProxy x:Key="PageProxy" Data="{Binding}" />
+    </UserControl.Resources>
     <grid:GridControl
                       ItemsSource="{Binding Employees}"
                       FrozenColumnCount="1"
@@ -14,12 +21,12 @@
             <columns:GridTextColumn FieldName="Email" Header="Email" Width="*" />
             <columns:GridComboBoxColumn FieldName="Department" Header="Department"
                                         Width="130"
-                                        ItemsSource="{Binding DataContext.Departments, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        ItemsSource="{Binding Departments, Source={StaticResource PageProxy}}" />
             <columns:GridNumericColumn FieldName="Salary" Header="Salary" Width="120" StringFormat="C" />
             <columns:GridDateColumn FieldName="HireDate" Header="Hired" Width="120" />
             <columns:GridCheckBoxColumn FieldName="IsActive" Header="Active" Width="70" />
             <columns:GridAutoCompleteColumn FieldName="Name" Header="Name (auto-complete)" Width="190"
-                                            ItemsSource="{Binding DataContext.Names, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            ItemsSource="{Binding Names, Source={StaticResource PageProxy}}" />
             <columns:GridTemplateColumn FieldName="Salary" Header="Level" Width="90">
                 <columns:GridTemplateColumn.CellTemplate>
                     <DataTemplate>
