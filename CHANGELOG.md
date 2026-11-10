@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — demo ColumnTypes: Department combo's dropdown was empty (user report)
+
+The page bound the combo/auto-complete columns' ItemsSource with `RelativeSource
+AncestorType=Window` — but grid columns are DependencyObjects OUTSIDE the visual tree,
+so the ancestor walk never resolves (probed: column ItemsSource stayed null). The demo
+now uses the canonical BindingProxy Freezable (inherits the page DataContext in
+Resources, forwards it to the column bindings). STA regression: the ancestor path leaves
+the column ItemsSource null (documented failure mode), the proxy path populates the
+editor with all items (injection-validated).
+
 ### Changed — ConditionEvaluator hot path: ~9x faster, ~108x less memory
 
 GC-probe profiling showed the 680 B/item from the benchmarks came from
