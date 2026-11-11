@@ -49,7 +49,7 @@ public class ThemeManagerTests
         }
 
         Assert.True(brushFields.Count >= 12, $"expected the brush token set, found {brushFields.Count}");
-        foreach (var themeName in new[] { "Light", "Dark" })
+        foreach (var themeName in new[] { "Light", "Dark", "HighContrast" })
         {
             var dictionary = LoadTheme(themeName);
             foreach (var field in brushFields)

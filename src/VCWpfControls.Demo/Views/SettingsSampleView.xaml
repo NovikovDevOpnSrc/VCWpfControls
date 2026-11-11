@@ -17,7 +17,13 @@
                              AutomationProperties.AutomationId="SettingsThemeLightRadio" />
                 <RadioButton Content="Dark" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=Dark}"
+                             Margin="0,0,16,0"
                              AutomationProperties.AutomationId="SettingsThemeDarkRadio" />
+                <RadioButton Content="High contrast (follow Windows)"
+                             IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=HighContrast}"
+                             Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                             Margin="0,0,16,0"
+                             AutomationProperties.AutomationId="SettingsThemeHighContrastRadio" />
                 <RadioButton Content="System (follow Windows)"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=System}"
                              Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"

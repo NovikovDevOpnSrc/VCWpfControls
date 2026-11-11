@@ -1,0 +1,28 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:grid="clr-namespace:VCWpfControls.Grid">
+    <!-- High Contrast palette — every brush aliases a LIVE system color (DynamicResource on
+         Color), so switching the Windows contrast scheme repaints the app instantly and the
+         user's accessibility settings are never overridden (UX profile A11Y-003). Decorative
+         state (hover tint, alternating stripes) collapses to the window color; structure
+         (frame lines, selection, hot-track accent) stays at full system contrast. In inverted
+         schemes the selection swaps Window/Highlight colors — the row template pairs this
+         SelectionBackground with SelectionText (HighlightText) so text never vanishes. -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBorderKey}" Color="{DynamicResource {x:Static SystemColors.WindowFrameColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionTextKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="{DynamicResource {x:Static SystemColors.WindowFrameColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.TextBrushKey}" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AlternatingRowBackgroundKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.MutedTextKey}" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BarFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowFrameColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="{DynamicResource {x:Static SystemColors.WindowFrameColorKey}}" />
+</ResourceDictionary>

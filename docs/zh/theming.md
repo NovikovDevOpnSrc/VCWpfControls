@@ -25,6 +25,24 @@ ThemeManager.ThemeChanged += (_, _) => RefreshIcons();       // 重新读取缓�
 系统主题监视器）。`GridThemeManager.Apply(grid, theme)` 保留用于单控件场景。
 调色板完备性由契约测试守护：每个主题字典定义每个画笔令牌。
 
+## 高对比度（Windows 对比度方案）
+
+`GridTheme.HighContrast` 是无障碍调色板：**每个**画笔令牌都别名到实时的系统颜色
+（通过 Color 上的 `DynamicResource` 引用 `SystemColors`），因此 UI 跟随用户选择的任何
+Windows 对比度方案，且切换方案时立即重绘 — 无需重启应用。用户的无障碍设置永不被
+覆盖（UX 配置 A11Y-003）：
+
+- 文字与表面 → `Window`/`WindowText`；线条、条形与分隔线 → `WindowFrame`；
+- 选中态成对使用 `Highlight`/`HighlightText`：选中行文字随背景翻转
+  （`GridResources.SelectionTextKey`），反转方案（白色高亮、黑色文字）下依然可读，
+  而不是消失；
+- 强调色跟随 `HotTrack`；该主题激活期间忽略 `SetAccent` 的覆盖，切回 Light/Dark 时
+  自动恢复；
+- 装饰性状态（悬停底色、隔行条纹）折叠为窗口色。
+
+演示的 Settings 页提供该模式；`System` 模式下对比度方案解析为 HighContrast
+（监视器在浅色/深色偏好之外还轮询 `SystemParameters.HighContrast`）。
+
 ## Fluent 2 对齐
 
 默认 Light/Dark 调色板遵循 **Fluent 2** 基础（微软设计系统）：品牌主色
@@ -62,6 +80,7 @@ WPF 之所以能找到它，是因为 `GridControl` 重写了自身的 `DefaultS
 | `HeaderForegroundKey` | 列头文字 | `#FF374151` |
 | `HeaderBorderKey` | 列头边框与分隔线 | `#FFD1D5DB` |
 | `SelectionBackgroundKey` | 所选行背景 | `#FFCFE3F5` |
+| `SelectionTextKey` | 所选行文字（高对比度下为 HighlightText） | `#FF1F2937` |
 | `CurrentCellBorderBrushKey` | 当前单元格边框 | `#FF2563EB` |
 | `GridLineKey` | 行与行之间的水平分隔线 | `#FFE5E7EB` |
 | `AccentKey` | 排序指示符、冻结列边缘 | `#FF2563EB` |
@@ -115,8 +134,8 @@ WPF 之所以能找到它，是因为 `GridControl` 重写了自身的 `DefaultS
 
 ## 最小深色主题配方
 
-目前还没有内置的浅色/深色主题切换（计划于阶段 1.3），但上面这十个键已足以让表格
-以深色模式运行：
+`ThemeManager.Apply(GridTheme.Dark)` 会自动完成；手动写出的 — 上面的这些键已足以让
+表格以深色模式运行：
 
 ```xml
 <ResourceDictionary xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">

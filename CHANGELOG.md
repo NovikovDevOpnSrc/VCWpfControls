@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — High-contrast theme (`GridTheme.HighContrast`)
+
+The accessibility palette (UX profile A11Y-003 — support Windows contrast preferences):
+every brush token aliases a live system color (`SystemColors` via `DynamicResource`), so
+the UI follows the user's contrast scheme and repaints instantly when they switch it.
+Selection pairs `Highlight` with `HighlightText` — the new `SelectionTextKey` token flips
+the selected-row text with the background, keeping inverted schemes (white highlight,
+black text) readable. Accent overrides (`SetAccent`) are ignored while in contrast mode
+and return automatically on switching back to Light/Dark. The demo settings offer the
+mode; `System` mode resolves to it while Windows runs a contrast scheme (the watcher now
+polls `SystemParameters.HighContrast` too). The stale "no built-in Light/Dark switch yet"
+paragraph in the theming docs was refreshed along the way.
+
 ### Changed — Pivot engine: −25% allocations on the bucketing hot path
 
 GC-probe bisection found the churn: per-item `object?[]` axis-key arrays (200k per

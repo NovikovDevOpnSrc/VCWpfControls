@@ -20,6 +20,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FF374151" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBorderKey}" Color="#FFD1D5DB" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="#FFCFE3F5" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionTextKey}" Color="#FF1F2937" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="#FF2563EB" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="#FFE5E7EB" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF0F6CBD" />
@@ -308,6 +309,9 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+                            <!-- The text inverts WITH the selection: inverted high-contrast schemes
+                                 (e.g. white Highlight) would leave normal-colored text invisible on it. -->
+                            <Setter TargetName="RowBorder" Property="TextElement.Foreground" Value="{DynamicResource {x:Static grid:GridResources.SelectionTextKey}}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

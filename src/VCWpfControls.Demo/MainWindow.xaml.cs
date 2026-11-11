@@ -39,20 +39,23 @@ public partial class MainWindow : Window
         // settings — the same values App.OnStartup applied at boot).
         SettingsFlyout.DataContext = new SettingsSampleViewModel();
 
-        // System mode: follow the OS light/dark switch live (the VM re-applies only when
-        // its own values change; this covers the OS side).
+        // System mode: follow the OS light/dark and high-contrast switches live (the VM
+        // re-applies only when its own values change; this covers the OS side).
         Services.SystemThemeWatcher.Start();
-        Services.SystemThemeWatcher.LightChanged += (_, _) =>
-        {
-            if (SettingsFlyout.DataContext is ViewModels.SettingsSampleViewModel vm && vm.Theme == "System")
-            {
-                vm.ReapplyFromSystem();
-            }
-        };
+        Services.SystemThemeWatcher.LightChanged += OnSystemThemeFlip;
+        Services.SystemThemeWatcher.HighContrastChanged += OnSystemThemeFlip;
     }
 
     private void OnSettingsClick(object sender, System.Windows.RoutedEventArgs e)
         => SettingsPopup.IsOpen = !SettingsPopup.IsOpen;
+
+    private void OnSystemThemeFlip(object? sender, bool e)
+    {
+        if (SettingsFlyout.DataContext is ViewModels.SettingsSampleViewModel vm && vm.Theme == "System")
+        {
+            vm.ReapplyFromSystem();
+        }
+    }
 }
 
 /// <summary>Holds the sample list and the selected sample (raises change notifications).</summary>

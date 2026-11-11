@@ -11,6 +11,9 @@ public enum GridTheme
 
     /// <summary>Dark theme.</summary>
     Dark = 1,
+
+    /// <summary>High Contrast theme — every brush follows the live Windows contrast scheme (system colors are never overridden).</summary>
+    HighContrast = 2,
 }
 
 /// <summary>
@@ -28,6 +31,7 @@ public static class GridThemeManager
         var uri = theme switch
         {
             GridTheme.Dark => MakeUri("/VCWpfControls;component/Themes/Dark.xaml"),
+            GridTheme.HighContrast => MakeUri("/VCWpfControls;component/Themes/HighContrast.xaml"),
             _ => MakeUri("/VCWpfControls;component/Themes/Light.xaml"),
         };
 

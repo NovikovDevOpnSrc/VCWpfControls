@@ -9,6 +9,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FFD6D6D6" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBorderKey}" Color="#FF3D3D3D" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="#FF115EA3" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionTextKey}" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="#FF479EF5" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="#FF333333" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF479EF5" />

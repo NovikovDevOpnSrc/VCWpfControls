@@ -21,12 +21,18 @@ public sealed record DemoAccent(string Name, string LightHex, string DarkHex)
 /// </summary>
 public static class DemoTheme
 {
-    /// <summary>Applies the theme mode (Light/Dark/System) and the accent preset.</summary>
+    /// <summary>Applies the theme mode (Light/Dark/HighContrast/System) and the accent preset.</summary>
     public static void Apply(string themeMode, string accentName)
     {
-        var theme = themeMode == "System"
-            ? (SystemThemeWatcher.IsLightPreferred() ? GridTheme.Light : GridTheme.Dark)
-            : themeMode == "Dark" ? GridTheme.Dark : GridTheme.Light;
+        var theme = themeMode switch
+        {
+            "System" => SystemThemeWatcher.IsHighContrast()
+                ? GridTheme.HighContrast
+                : SystemThemeWatcher.IsLightPreferred() ? GridTheme.Light : GridTheme.Dark,
+            "Dark" => GridTheme.Dark,
+            "HighContrast" => GridTheme.HighContrast,
+            _ => GridTheme.Light,
+        };
 
         var accent = DemoAccent.All.FirstOrDefault(a => a.Name == accentName) ?? DemoAccent.All[0];
         ThemeManager.SetAccent(accent.Name == "Default" ? null : new AccentOverride(accent.Name, accent.LightHex, accent.DarkHex));

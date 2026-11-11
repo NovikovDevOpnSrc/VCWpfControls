@@ -37,10 +37,7 @@ public static class ThemeManager
         if (app is not null)
         {
             SwapTheme(app.Resources, theme);
-            if (CurrentAccent is { } accent)
-            {
-                SwapAccent(app.Resources, accent, theme);
-            }
+            SwapAccentOverlay(app.Resources, theme, CurrentAccent);
         }
 
         ThemeChanged?.Invoke(null, EventArgs.Empty);
@@ -48,7 +45,10 @@ public static class ThemeManager
 
     /// <summary>
     /// Sets an application-wide accent override (both palette keys and the current-cell
-    /// border follow); null restores the theme's brand colors.
+    /// border follow); null restores the theme's brand colors. Ignored while the
+    /// high-contrast theme is active — that palette belongs to the user's accessibility
+    /// settings, and <see cref="Apply(GridTheme)"/> re-applies the accent when it returns
+    /// to Light/Dark.
     /// </summary>
     public static void SetAccent(AccentOverride? accent)
     {
@@ -56,14 +56,7 @@ public static class ThemeManager
         var app = Application.Current;
         if (app is not null)
         {
-            if (accent is { } preset)
-            {
-                SwapAccent(app.Resources, preset, CurrentTheme);
-            }
-            else
-            {
-                Remove(app.Resources, AccentKey);
-            }
+            SwapAccentOverlay(app.Resources, CurrentTheme, accent);
         }
 
         ThemeChanged?.Invoke(null, EventArgs.Empty);
@@ -77,7 +70,17 @@ public static class ThemeManager
     internal static void ApplyTo(ResourceDictionary resources, GridTheme theme, AccentOverride? accent)
     {
         SwapTheme(resources, theme);
-        if (accent is { } preset)
+        SwapAccentOverlay(resources, theme, accent);
+    }
+
+    /// <summary>
+    /// Overlays the accent unless the high-contrast theme is active (system colors win
+    /// there — an accent overlay would repaint over the user's contrast scheme), lifting
+    /// any previously merged overlay in that case.
+    /// </summary>
+    private static void SwapAccentOverlay(ResourceDictionary resources, GridTheme theme, AccentOverride? accent)
+    {
+        if (accent is { } preset && theme != GridTheme.HighContrast)
         {
             SwapAccent(resources, preset, theme);
         }
@@ -89,11 +92,15 @@ public static class ThemeManager
 
     private static void SwapTheme(ResourceDictionary resources, GridTheme theme)
     {
+        var source = theme switch
+        {
+            GridTheme.Dark => "/VCWpfControls;component/Themes/Dark.xaml",
+            GridTheme.HighContrast => "/VCWpfControls;component/Themes/HighContrast.xaml",
+            _ => "/VCWpfControls;component/Themes/Light.xaml",
+        };
         var dictionary = new ResourceDictionary
         {
-            Source = new Uri(
-                theme == GridTheme.Dark ? "/VCWpfControls;component/Themes/Dark.xaml" : "/VCWpfControls;component/Themes/Light.xaml",
-                UriKind.Relative),
+            Source = new Uri(source, UriKind.Relative),
         };
         Replace(resources, ThemeKey, dictionary);
     }

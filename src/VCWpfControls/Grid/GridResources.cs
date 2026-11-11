@@ -23,6 +23,9 @@ public static class GridResources
     /// <summary>Brush of the row selection background.</summary>
     public static readonly ComponentResourceKey SelectionBackgroundKey = new(typeof(GridResources), "SelectionBackground");
 
+    /// <summary>Foreground of the selected row's text — flips together with the selection background (HighlightText in high contrast; the data text color elsewhere).</summary>
+    public static readonly ComponentResourceKey SelectionTextKey = new(typeof(GridResources), "SelectionText");
+
     /// <summary>Brush of the current cell border.</summary>
     public static readonly ComponentResourceKey CurrentCellBorderBrushKey = new(typeof(GridResources), "CurrentCellBorderBrush");
 

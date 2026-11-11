@@ -27,6 +27,26 @@ live 2-second OS watcher). `GridThemeManager.Apply(grid, theme)` remains for per
 opt-ins. Palette completeness is contract-tested: every theme dictionary defines every
 brush token.
 
+## High contrast (Windows contrast schemes)
+
+`GridTheme.HighContrast` is the accessibility palette: **every** brush token aliases a live
+system color (`SystemColors` via `DynamicResource` on the color), so the UI follows whatever
+Windows contrast scheme the user picked — and repaints instantly when they switch schemes,
+without an app restart. The user's accessibility settings are never overridden (UX profile
+A11Y-003):
+
+- text and surfaces → `Window`/`WindowText`; lines, bars and separators → `WindowFrame`;
+- selection pairs `Highlight` with `HighlightText`: selected-row text flips with the
+  background (`GridResources.SelectionTextKey`), so inverted schemes (white highlight,
+  black text) stay readable instead of vanishing;
+- the accent follows `HotTrack`; an accent override (`SetAccent`) is ignored while this
+  theme is active and automatically returns when switching back to Light/Dark;
+- decorative state (hover tint, alternating stripes) collapses to the window color.
+
+The demo's Settings page offers the mode; in `System` mode a contrast scheme resolves to
+HighContrast (the watcher polls `SystemParameters.HighContrast` alongside the light/dark
+preference).
+
 ## Fluent 2 alignment
 
 The default Light/Dark palettes follow the **Fluent 2** foundations (Microsoft's design
@@ -67,6 +87,7 @@ Two useful consequences:
 | `HeaderForegroundKey` | Column header text | `#FF374151` |
 | `HeaderBorderKey` | Header borders and separators | `#FFD1D5DB` |
 | `SelectionBackgroundKey` | Selected row background | `#FFCFE3F5` |
+| `SelectionTextKey` | Selected row text (HighlightText in high contrast) | `#FF1F2937` |
 | `CurrentCellBorderBrushKey` | Current cell border | `#FF2563EB` |
 | `GridLineKey` | Horizontal row separators | `#FFE5E7EB` |
 | `AccentKey` | Sort glyph, frozen-column edge | `#FF2563EB` |
@@ -120,8 +141,8 @@ not require theme resources at all:
 
 ## A minimal dark recipe
 
-There is no built-in Light/Dark theme switch yet (planned for stage 1.3), but the ten keys
-above are all it takes to run the grid dark:
+`ThemeManager.Apply(GridTheme.Dark)` automates this; spelled out manually, the keys above
+are all it takes to run the grid dark:
 
 ```xml
 <ResourceDictionary xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">

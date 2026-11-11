@@ -428,7 +428,7 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
     public override string Title => "Settings";
 
     /// <inheritdoc />
-    public override string Description => "Application-wide settings: the Light/Dark theme, the accent preset and the library language. Applied immediately, persisted to %AppData% and restored on the next launch.";
+    public override string Description => "Application-wide settings: the Light/Dark/High-contrast theme, the accent preset and the library language. Applied immediately, persisted to %AppData% and restored on the next launch.";
 
     /// <summary>Creates the view model and applies the loaded settings.</summary>
     public SettingsSampleViewModel()
@@ -440,7 +440,7 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
         Apply();
     }
 
-    /// <summary>The theme name ("Light" or "Dark").</summary>
+    /// <summary>The theme name ("Light", "Dark", "HighContrast" or "System").</summary>
     [ObservableProperty]
     private string _theme = "Light";
 
@@ -453,7 +453,7 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
     private string _language = "en-US";
 
     /// <summary>The selectable options.</summary>
-    public string[] ThemeOptions { get; } = { "Light", "Dark", "System" };
+    public string[] ThemeOptions { get; } = { "Light", "Dark", "HighContrast", "System" };
 
     /// <summary>The selectable accent presets.</summary>
     public string[] AccentOptions { get; } = Services.DemoAccent.All.Select(a => a.Name).ToArray();
