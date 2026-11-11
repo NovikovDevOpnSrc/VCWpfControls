@@ -32,18 +32,6 @@ public sealed class SchedulerDaysPanel : FrameworkElement
     private SchedulerOccurrence? _hover;
     private SchedulerOccurrence? _lastClick;
     private long _lastClickTime;
-    private static readonly Brush BlockFill = Frozen(Color.FromArgb(70, 30, 120, 255));
-    private static readonly Brush ChipFill = Frozen(Color.FromArgb(90, 30, 120, 255));
-    private static readonly Brush TodayTint = Frozen(Color.FromArgb(14, 30, 120, 255));
-    private static readonly Brush HalfHourTick = Frozen(Color.FromArgb(90, 160, 160, 160));
-    private static readonly Brush PreviewFill = Frozen(Color.FromArgb(40, 30, 120, 255));
-
-    private static Brush Frozen(Color color)
-    {
-        var brush = new SolidColorBrush(color);
-        brush.Freeze();
-        return brush;
-    }
 
     static SchedulerDaysPanel()
     {
@@ -288,6 +276,28 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Test seam for the wall clock (<see cref="NowLineRect"/> and the today/tint rendering
+    /// follow it; null = the real <see cref="DateTime.Now"/>).
+    /// </summary>
+    internal Func<DateTime>? NowForTest { get; set; }
+
+    /// <summary>
+    /// The now-line strip across today's column at the current time (empty when "now" is
+    /// outside the visible days or the hour window).
+    /// </summary>
+    internal Rect NowLineRect()
+    {
+        var now = NowForTest?.Invoke() ?? DateTime.Now;
+        var todayIndex = IndexOfDay(now.Date);
+        if (todayIndex < 0 || now.Hour < _dayStartHour || now.Hour >= _dayEndHour)
+        {
+            return Rect.Empty;
+        }
+
+        return new Rect(_timeRulerWidth, YOf(now), Math.Max(Width - _timeRulerWidth, 0), 0);
     }
 
     /// <summary>The occurrence whose block or chip contains the point (layout coordinates), if any.</summary>
@@ -745,6 +755,9 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         var headerBackground = TryFindResource(GridResources.HeaderBackgroundKey) as Brush ?? Brushes.WhiteSmoke;
         var border = TryFindResource(GridResources.HeaderBorderKey) as Brush ?? Brushes.LightGray;
         var gridLine = TryFindResource(GridResources.GridLineKey) as Brush ?? Brushes.Gainsboro;
+        var separator = TryFindResource(GridResources.SeparatorLineKey) as Brush ?? Brushes.Gray;
+        var eventFill = TryFindResource(GridResources.EventFillKey) as Brush ?? Brushes.DodgerBlue;
+        var nowLine = TryFindResource(GridResources.NowLineKey) as Brush ?? Brushes.OrangeRed;
         var textBrush = TryFindResource(GridResources.TextBrushKey) as Brush ?? Brushes.Black;
         var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         var captionTypeface = new Typeface(SystemFonts.MessageFontFamily, FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
@@ -753,10 +766,15 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         drawingContext.DrawRectangle(surface, null, new Rect(0, 0, Width, Height));
 
         // --- Scrolling content (layout coordinates). ---
-        var todayIndex = IndexOfDay(DateTime.Today);
+        var now = NowForTest?.Invoke() ?? DateTime.Now;
+        var todayIndex = IndexOfDay(now.Date);
         if (todayIndex >= 0)
         {
-            drawingContext.DrawRectangle(TodayTint, null, new Rect(ColumnX(todayIndex), 0, _dayWidth, Height));
+            // The tint is the event fill at low opacity (theme-tinted; invisible on the flat
+            // high-contrast palette, where the accent caption + underline already mark today).
+            drawingContext.PushOpacity(0.25);
+            drawingContext.DrawRectangle(eventFill, null, new Rect(ColumnX(todayIndex), 0, _dayWidth, Height));
+            drawingContext.Pop();
         }
 
         // Hour lines + day column separators.
@@ -773,7 +791,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         }
 
         // Half-hour ticks inside the ruler strip (lighter, short).
-        var halfPen = new Pen(HalfHourTick, 0.5);
+        var halfPen = new Pen(separator, 0.5);
         for (var h = 0; h < VisibleHourCount; h++)
         {
             var y = ContentTop + h * _hourHeight + _hourHeight / 2;
@@ -796,7 +814,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
                 continue; // the drag preview below replaces it while dragging
             }
 
-            DrawBlock(drawingContext, rect, entry.Slot.Occurrence, accent, textBrush, textTypeface, dpi);
+            DrawBlock(drawingContext, rect, entry.Slot.Occurrence, eventFill, separator, accent, textBrush, textTypeface, dpi);
         }
 
         // Drag preview: the occurrence's ghost at the snapped drop position.
@@ -804,8 +822,10 @@ public sealed class SchedulerDaysPanel : FrameworkElement
             && _dragMode is DragMode.Move or DragMode.ResizeStart or DragMode.ResizeEnd
             && PreviewRectOf(dragged, Mouse.GetPosition(this)) is { } ghost)
         {
-            drawingContext.DrawRoundedRectangle(PreviewFill, new Pen(accent, 1.2), ghost, 4, 4);
+            drawingContext.PushOpacity(0.55);
+            drawingContext.DrawRoundedRectangle(eventFill, new Pen(accent, 1.2), ghost, 4, 4);
             DrawBlockText(drawingContext, dragged.Subject, ghost, textBrush, textTypeface, dpi);
+            drawingContext.Pop();
         }
 
         // Create preview: the dragged-out range in the anchor day's column.
@@ -822,17 +842,18 @@ public sealed class SchedulerDaysPanel : FrameworkElement
                 var bottom = Math.Min(YInDay(end, day), ContentTop + VisibleHourCount * _hourHeight);
                 if (bottom > top)
                 {
-                    drawingContext.DrawRoundedRectangle(PreviewFill, new Pen(accent, 1), new Rect(ColumnX(dayIndex) + 1, top, _dayWidth - 2, bottom - top), 3, 3);
+                    drawingContext.PushOpacity(0.55);
+                    drawingContext.DrawRoundedRectangle(eventFill, new Pen(accent, 1), new Rect(ColumnX(dayIndex) + 1, top, _dayWidth - 2, bottom - top), 3, 3);
+                    drawingContext.Pop();
                 }
             }
         }
 
         // Now line (only when today's column is visible and inside the hour window).
-        if (todayIndex >= 0 && DateTime.Now.Hour >= _dayStartHour && DateTime.Now.Hour < _dayEndHour)
+        if (NowLineRect() is { IsEmpty: false } line)
         {
-            var nowY = YOf(DateTime.Now);
-            drawingContext.DrawLine(new Pen(Brushes.OrangeRed, 1) { DashStyle = DashStyles.Dash },
-                new Point(_timeRulerWidth, nowY), new Point(Width, nowY));
+            drawingContext.DrawLine(new Pen(nowLine, 1) { DashStyle = DashStyles.Dash },
+                new Point(line.X, line.Y), new Point(line.X + line.Width, line.Y));
         }
 
         // --- Pinned time ruler (x follows the horizontal scroll). ---
@@ -879,20 +900,20 @@ public sealed class SchedulerDaysPanel : FrameworkElement
             }
 
             var isSelected = ReferenceEquals(slot.Occurrence, _selected);
-            drawingContext.DrawRoundedRectangle(ChipFill,
-                new Pen(isSelected ? accent : Brushes.Gray, isSelected ? 1.6 : 0.8), chip, 4, 4);
+            drawingContext.DrawRoundedRectangle(eventFill,
+                new Pen(isSelected ? accent : separator, isSelected ? 1.6 : 0.8), chip, 4, 4);
             DrawBlockText(drawingContext, slot.Occurrence.Subject, chip, textBrush, textTypeface, dpi);
         }
 
         drawingContext.DrawRectangle(null, new Pen(border, 1), new Rect(0, bandTop, Width, bandHeight));
     }
 
-    private void DrawBlock(DrawingContext drawingContext, Rect rect, SchedulerOccurrence occurrence, Brush accent, Brush textBrush, Typeface typeface, double dpi)
+    private void DrawBlock(DrawingContext drawingContext, Rect rect, SchedulerOccurrence occurrence, Brush fill, Brush line, Brush accent, Brush textBrush, Typeface typeface, double dpi)
     {
         var isSelected = ReferenceEquals(occurrence, _selected);
         var isHover = ReferenceEquals(occurrence, _hover);
-        drawingContext.DrawRoundedRectangle(BlockFill,
-            new Pen(isSelected || isHover ? accent : Brushes.Gray, isSelected ? 1.6 : 0.8), rect, 4, 4);
+        drawingContext.DrawRoundedRectangle(fill,
+            new Pen(isSelected || isHover ? accent : line, isSelected ? 1.6 : 0.8), rect, 4, 4);
         DrawBlockText(drawingContext, occurrence.Subject, rect, textBrush, typeface, dpi);
     }
 

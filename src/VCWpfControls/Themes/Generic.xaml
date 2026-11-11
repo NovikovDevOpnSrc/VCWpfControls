@@ -32,6 +32,8 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.MutedTextKey}" Color="#FF616161" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BarFillKey}" Color="#FFE5E7EB" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="#FFE0E0E0" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#461E78FF" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF4500" />
 
 <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
     <sys:Double x:Key="{x:Static grid:GridResources.FontSizeCaptionKey}">12</sys:Double>
@@ -829,6 +831,7 @@
 
     <Style TargetType="{x:Type scheduler:SchedulerView}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static grid:GridResources.FocusVisualKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="BorderThickness" Value="1" />

@@ -27,17 +27,6 @@ public sealed class SchedulerMonthPanel : FrameworkElement
     /// <summary>How many chips fit one cell before the "+N more" row.</summary>
     public const int ChipsPerCell = 2;
 
-    private static readonly Brush ChipFill = Frozen(70, 30, 120, 255);
-    private static readonly Brush TodayTint = Frozen(16, 30, 120, 255);
-    private static readonly Brush NeighborDayDim = Frozen(90, 255, 255, 255);
-
-    private static Brush Frozen(byte alpha, byte r, byte g, byte b)
-    {
-        var brush = new SolidColorBrush(Color.FromArgb(alpha, r, g, b));
-        brush.Freeze();
-        return brush;
-    }
-
     static SchedulerMonthPanel()
     {
         ClipToBoundsProperty.OverrideMetadata(typeof(SchedulerMonthPanel), new PropertyMetadata(true));
@@ -261,6 +250,9 @@ public sealed class SchedulerMonthPanel : FrameworkElement
         var surface = TryFindResource(GridResources.SurfaceBackgroundKey) as Brush ?? Brushes.White;
         var border = TryFindResource(GridResources.HeaderBorderKey) as Brush ?? Brushes.LightGray;
         var gridLine = TryFindResource(GridResources.GridLineKey) as Brush ?? Brushes.Gainsboro;
+        var separator = TryFindResource(GridResources.SeparatorLineKey) as Brush ?? Brushes.Gray;
+        var eventFill = TryFindResource(GridResources.EventFillKey) as Brush ?? Brushes.DodgerBlue;
+        var mutedText = TryFindResource(GridResources.MutedTextKey) as Brush ?? Brushes.Gray;
         var textBrush = TryFindResource(GridResources.TextBrushKey) as Brush ?? Brushes.Black;
         var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         var captionTypeface = new Typeface(SystemFonts.MessageFontFamily, FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
@@ -294,23 +286,22 @@ public sealed class SchedulerMonthPanel : FrameworkElement
 
             if (isToday)
             {
-                drawingContext.DrawRectangle(TodayTint, null, cell);
+                // The tint is the event fill at low opacity (theme-tinted; invisible on the
+                // flat high-contrast palette, where the accent day number already marks today).
+                drawingContext.PushOpacity(0.2);
+                drawingContext.DrawRectangle(eventFill, null, cell);
+                drawingContext.Pop();
             }
 
             drawingContext.DrawRectangle(null, cellPen, cell);
 
             var dayText = new FormattedText(
                 day.Day.ToString(culture), culture, FlowDirection.LeftToRight, captionTypeface, 11,
-                isToday ? accent : textBrush, dpi)
+                isToday ? accent : inMonth ? textBrush : mutedText, dpi)
             {
                 MaxTextWidth = Math.Max(ColumnWidth - 8, 1),
             };
             drawingContext.DrawText(dayText, new Point(cell.Right - dayText.Width - 4, cell.Top + 2));
-            if (!inMonth)
-            {
-                // Dim the day number of neighbor-month cells.
-                drawingContext.DrawRectangle(NeighborDayDim, null, new Rect(cell.X, cell.Y, cell.Width, 16));
-            }
 
             if (!_byDay.TryGetValue(day, out var list))
             {
@@ -325,9 +316,9 @@ public sealed class SchedulerMonthPanel : FrameworkElement
                 }
 
                 var isSelected = ReferenceEquals(list[c], _selected);
-                drawingContext.DrawRoundedRectangle(ChipFill,
-                    new Pen(isSelected ? accent : Brushes.Gray, isSelected ? 1.6 : 0.6), chip, 4, 4);
-                DrawChipText(drawingContext, list[c].Subject, chip, Brushes.Black, textTypeface, dpi);
+                drawingContext.DrawRoundedRectangle(eventFill,
+                    new Pen(isSelected ? accent : separator, isSelected ? 1.6 : 0.6), chip, 4, 4);
+                DrawChipText(drawingContext, list[c].Subject, chip, textBrush, textTypeface, dpi);
             }
 
             if (list.Count > ChipsPerCell)

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Scheduler polish: keyboard surface, theme tokens, live now line
+
+The scheduler had no keyboard channel (UX profile keyboard MUST): arrows now walk the
+selection through the visible occurrences by start time, `Enter` activates (the
+double-click channel), `Delete` removes the appointment (new `AppointmentDeleted`
+event), `T` anchors to today, `Esc` clears; clicking the view focuses it and the focus
+ring follows `FocusVisualKey`. The day/month panels' literal brushes are tokenized
+(`EventFillKey`, `NowLineKey` — palette-complete in all four themes; high contrast maps
+them to Window/HotTrack), fixing two real dark-theme bugs found in the audit: month
+chips drew BLACK text regardless of the palette, and neighbor-month days wore a white
+translucent veil (a bright bar in dark theme — now the day number is simply muted).
+The now line and today highlight now refresh on a 60-second timer instead of going
+stale on an idle screen.
+
 ### Added — High-contrast theme (`GridTheme.HighContrast`)
 
 The accessibility palette (UX profile A11Y-003 — support Windows contrast preferences):

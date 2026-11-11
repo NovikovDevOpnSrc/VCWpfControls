@@ -43,10 +43,15 @@ description: SchedulerView — 在重复日程之上提供日/工作周/周/月�
 - 所有操作吸附到 `SnapMinutes` 网格（默认 15；设为 1 可精确到分钟）。
 - 重复系列**不可**拖拽编辑（时间由重复规则决定）——对系列实例的拖动会被忽略，
   请修改规则本身。
+- **键盘** — 方向键按开始时间在可见实例间移动选中项（两端不循环），`Enter`
+  激活选中项（双击通道），`Delete` 从 `Appointments` 移除该日程，`T` 回到今天，
+  `Esc` 清除选中。点击控件即获得焦点，指点之后按键立即可用；焦点环使用共享的
+  `FocusVisualKey` 令牌。
 
 ```csharp
 view.AppointmentEdited += (_, appointment) => Persist(appointment);   // 拖动/调整
 view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
+view.AppointmentDeleted += (_, appointment) => PersistRemoval(appointment); // Delete 键
 ```
 
 ## 导航

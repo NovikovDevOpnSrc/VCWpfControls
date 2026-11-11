@@ -46,10 +46,16 @@ Day/work-week/week views are editable (the month view is read-only for now):
 - Everything snaps to `SnapMinutes` (default 15; set 1 for minute precision).
 - Recurring series are **not** drag-editable (the recurrence rule owns the times) —
   drags on series occurrences are ignored; edit the rule itself instead.
+- **Keyboard** — arrows walk the selection through the visible occurrences by start time
+  (no wrap at the ends), `Enter` activates the selection (the double-click channel),
+  `Delete` removes the appointment from `Appointments`, `T` anchors to today, `Esc`
+  clears the selection. Clicking the view focuses it, so the keys work right after
+  pointing; the focus ring follows the shared `FocusVisualKey` token.
 
 ```csharp
 view.AppointmentEdited += (_, appointment) => Persist(appointment);   // drag/resize
 view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
+view.AppointmentDeleted += (_, appointment) => PersistRemoval(appointment); // Delete key
 ```
 
 ## Navigation

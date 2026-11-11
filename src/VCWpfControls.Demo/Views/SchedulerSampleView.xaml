@@ -4,7 +4,7 @@
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
              xmlns:scheduler="clr-namespace:VCWpfControls.Scheduler;assembly=VCWpfControls">
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,4">
             <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
             <ComboBox ItemsSource="{Binding ViewTypes}"
                       SelectedItem="{Binding ViewType}"
@@ -22,6 +22,9 @@
                        VerticalAlignment="Center" Margin="16,0,0,0"
                        FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" TextTrimming="CharacterEllipsis" />
         </StackPanel>
+        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" FontSize="12"
+                   Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                   Text="Keyboard: arrows select, Enter opens, Delete removes, T — today, Esc clears. Drag to move/resize; drag empty space to create." />
         <scheduler:SchedulerView x:Name="Scheduler"
                                  Appointments="{Binding Appointments}"
                                  ViewType="{Binding ViewType}"
@@ -29,6 +32,7 @@
                                  DayEndHour="20"
                                  OccurrenceDoubleClicked="OnOccurrenceDoubleClicked"
                                  AppointmentEdited="OnAppointmentEdited"
-                                 AppointmentCreated="OnAppointmentCreated" />
+                                 AppointmentCreated="OnAppointmentCreated"
+                                 AppointmentDeleted="OnAppointmentDeleted" />
     </DockPanel>
 </UserControl>

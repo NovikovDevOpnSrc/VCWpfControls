@@ -73,4 +73,10 @@ public static class GridResources
 
     /// <summary>Standalone vertical column separators and summary dividers (Fluent divider: #E0E0E0 / #3D3D3D) — darker than GridLine so opt-in separators are actually visible.</summary>
     public static readonly ComponentResourceKey SeparatorLineKey = new(typeof(GridResources), "SeparatorLine");
+
+    /// <summary>Translucent fill of scheduler event blocks and chips (accent-tinted; flat window color in high contrast, where structure rides on borders).</summary>
+    public static readonly ComponentResourceKey EventFillKey = new(typeof(GridResources), "EventFill");
+
+    /// <summary>The scheduler's current-time line (attention color; follows HotTrack in high contrast).</summary>
+    public static readonly ComponentResourceKey NowLineKey = new(typeof(GridResources), "NowLine");
 }

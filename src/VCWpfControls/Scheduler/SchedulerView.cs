@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
 using VCWpfControls.Localization;
 
 namespace VCWpfControls.Scheduler;
@@ -12,7 +14,10 @@ namespace VCWpfControls.Scheduler;
 /// time ruler, side-by-side lanes for overlapping occurrences, an all-day band, a today
 /// highlight and a now line. Navigate by changing <see cref="AnchorDate"/> (or
 /// <see cref="Navigate"/>/<see cref="GoToToday"/>); double-click an occurrence to open an
-/// editor (<see cref="OccurrenceDoubleClicked"/>).
+/// editor (<see cref="OccurrenceDoubleClicked"/>). The keyboard drives the same surface:
+/// arrows move the selection through the visible occurrences, Enter activates the selected
+/// one (the double-click channel), Delete removes it from <see cref="Appointments"/>,
+/// T returns to today and Esc clears the selection.
 /// </summary>
 public class SchedulerView : Control
 {
@@ -64,6 +69,7 @@ public class SchedulerView : Control
     private ScrollViewer? _daysScroll;
     private SchedulerDaysPanel? _daysPanel;
     private SchedulerMonthPanel? _monthPanel;
+    private DispatcherTimer? _nowTimer;
 
     static SchedulerView()
     {
@@ -74,6 +80,8 @@ public class SchedulerView : Control
     public SchedulerView()
     {
         Appointments = new ObservableCollection<SchedulerAppointment>();
+        Loaded += OnViewLoaded;
+        Unloaded += OnViewUnloaded;
     }
 
     /// <summary>The appointments (plain or recurring; mutations refresh the view).</summary>
@@ -153,6 +161,9 @@ public class SchedulerView : Control
     /// <summary>Raised after a drag-created appointment was added to <see cref="Appointments"/>.</summary>
     public event EventHandler<SchedulerAppointment>? AppointmentCreated;
 
+    /// <summary>Raised after the Delete key removed an appointment from <see cref="Appointments"/>.</summary>
+    public event EventHandler<SchedulerAppointment>? AppointmentDeleted;
+
     /// <summary>The effective anchor (an unset anchor falls back to today).</summary>
     internal DateTime EffectiveAnchor => AnchorDate == default(DateTime) ? DateTime.Today : AnchorDate;
 
@@ -186,6 +197,114 @@ public class SchedulerView : Control
 
     /// <summary>Anchors the view back to today.</summary>
     public void GoToToday() => AnchorDate = DateTime.Today;
+
+    /// <inheritdoc />
+    protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        base.OnPreviewMouseLeftButtonDown(e);
+        if (!IsKeyboardFocusWithin)
+        {
+            Focus(); // the keyboard follows the click (arrows/Delete/T work right after pointing)
+        }
+    }
+
+    /// <summary>
+    /// The keyboard surface: arrows walk the visible occurrences by start time, Enter
+    /// activates the selection (the double-click channel), Delete removes the appointment,
+    /// T anchors to today, Esc clears the selection.
+    /// </summary>
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        switch (e.Key)
+        {
+            case Key.Down or Key.Right:
+                SelectRelative(1);
+                break;
+
+            case Key.Up or Key.Left:
+                SelectRelative(-1);
+                break;
+
+            case Key.Enter when SelectedOccurrence is { } activated:
+                OccurrenceDoubleClicked?.Invoke(this, activated);
+                break;
+
+            case Key.Delete:
+                DeleteSelectedOccurrence();
+                break;
+
+            case Key.T:
+                GoToToday();
+                break;
+
+            case Key.Escape:
+                SelectedOccurrence = null;
+                break;
+
+            default:
+                return; // not the scheduler's key — let it bubble
+        }
+
+        e.Handled = true;
+    }
+
+    private void SelectRelative(int delta)
+    {
+        var ordered = VisibleOccurrences.OrderBy(static o => o.Start).ThenBy(static o => o.End).ToList();
+        if (ordered.Count == 0)
+        {
+            return;
+        }
+
+        var index = -1;
+        if (SelectedOccurrence is { } current)
+        {
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                if (ReferenceEquals(ordered[i], current))
+                {
+                    index = i;
+                    break;
+                }
+            }
+        }
+
+        SelectedOccurrence = index < 0
+            ? ordered[delta > 0 ? 0 : ordered.Count - 1]
+            : ordered[Math.Clamp(index + delta, 0, ordered.Count - 1)];
+    }
+
+    private void DeleteSelectedOccurrence()
+    {
+        if (SelectedOccurrence is not { } occurrence || Appointments is not { } appointments
+            || !appointments.Contains(occurrence.Appointment))
+        {
+            return;
+        }
+
+        var appointment = occurrence.Appointment;
+        SelectedOccurrence = null;
+        appointments.Remove(appointment); // CollectionChanged rebuilds the view
+        AppointmentDeleted?.Invoke(this, appointment);
+    }
+
+    private void OnViewLoaded(object sender, RoutedEventArgs e)
+    {
+        _nowTimer ??= new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
+        _nowTimer.Tick -= OnNowTick; // Loaded can fire repeatedly — subscribe once
+        _nowTimer.Tick += OnNowTick;
+        _nowTimer.Start();
+    }
+
+    private void OnViewUnloaded(object sender, RoutedEventArgs e) => _nowTimer?.Stop();
+
+    private void OnNowTick(object? sender, EventArgs e)
+    {
+        // The now line and the today highlight follow the wall clock even on an idle screen.
+        _daysPanel?.InvalidateVisual();
+        _monthPanel?.InvalidateVisual();
+    }
 
     /// <summary>Rebuilds the current view from <see cref="Appointments"/> (called automatically on changes).</summary>
     public void Rebuild()
