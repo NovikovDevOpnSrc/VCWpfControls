@@ -121,15 +121,12 @@ public static class PivotEngine
                 ? cached
                 : accessorCache[(type, field)] = PropertyAccessor.GetOrCreate(type, field);
 
-        object?[] KeyOf(object item, IReadOnlyList<string> fields)
+        void FillKey(object?[] key, object item, IReadOnlyList<string> fields)
         {
-            var key = new object?[fields.Count];
             for (var i = 0; i < fields.Count; i++)
             {
                 key[i] = Accessor(item.GetType(), fields[i]).GetValue(item);
             }
-
-            return key;
         }
 
         // Bucket the source rows by (rowKey, columnKey).
@@ -142,6 +139,9 @@ public static class PivotEngine
         var sourceBuckets = includeSourceRows
             ? new Dictionary<(int Row, int Column), List<object>>()
             : null;
+        var rowScratch = new object?[rowFields.Count];
+        var columnScratch = new object?[columnFields.Count];
+        object?[] rowKey = Array.Empty<object?>(), columnKey = Array.Empty<object?>();
         var includedItems = new List<object>();
 
         foreach (var item in materialized)
@@ -177,17 +177,20 @@ public static class PivotEngine
             }
 
             includedItems.Add(item);
-            var rowKey = KeyOf(item, rowFields);
-            var columnKey = KeyOf(item, columnFields);
-            if (!rowIndexByKey.TryGetValue(rowKey, out var r))
+            FillKey(rowScratch, item, rowFields);
+            FillKey(columnScratch, item, columnFields);
+            if (!rowIndexByKey.TryGetValue(rowScratch, out var r))
             {
+                // The dictionary retains the key — materialize it once per distinct axis.
+                rowKey = (object?[])rowScratch.Clone();
                 r = rowKeys.Count;
                 rowIndexByKey[rowKey] = r;
                 rowKeys.Add(rowKey);
             }
 
-            if (!columnIndexByKey.TryGetValue(columnKey, out var c))
+            if (!columnIndexByKey.TryGetValue(columnScratch, out var c))
             {
+                columnKey = (object?[])columnScratch.Clone();
                 c = columnKeys.Count;
                 columnIndexByKey[columnKey] = c;
                 columnKeys.Add(columnKey);
@@ -266,22 +269,37 @@ public static class PivotEngine
             };
         }
 
+        // Totals walk the SAME buckets again — one pooled list per axis, refilled per
+        // row/column (no intermediate copies, no iterator state machines).
+        var pooled = new List<object>(Math.Max(sortedRows.Count, sortedColumns.Count));
         var rowTotals = new object?[sortedRows.Count][];
         for (var r = 0; r < sortedRows.Count; r++)
         {
-            var rowItems = columnOrder
-                .SelectMany(c => buckets.GetValueOrDefault((rowOrder[r], c)) ?? Enumerable.Empty<object>())
-                .ToList();
-            rowTotals[r] = Aggregate(rowItems, measures, Accessor);
+            pooled.Clear();
+            foreach (var c in columnOrder)
+            {
+                if (buckets.GetValueOrDefault((rowOrder[r], c)) is { } bucket)
+                {
+                    pooled.AddRange(bucket);
+                }
+            }
+
+            rowTotals[r] = Aggregate(pooled, measures, Accessor);
         }
 
         var columnTotals = new object?[sortedColumns.Count][];
         for (var c = 0; c < sortedColumns.Count; c++)
         {
-            var columnItems = rowOrder
-                .SelectMany(r => buckets.GetValueOrDefault((r, columnOrder[c])) ?? Enumerable.Empty<object>())
-                .ToList();
-            columnTotals[c] = Aggregate(columnItems, measures, Accessor);
+            pooled.Clear();
+            foreach (var r in rowOrder)
+            {
+                if (buckets.GetValueOrDefault((r, columnOrder[c])) is { } bucket)
+                {
+                    pooled.AddRange(bucket);
+                }
+            }
+
+            columnTotals[c] = Aggregate(pooled, measures, Accessor);
         }
 
         return new PivotResult
@@ -296,7 +314,7 @@ public static class PivotEngine
         };
     }
 
-    private static object?[] Aggregate(List<object>? items, IReadOnlyList<PivotMeasure> measures, Func<Type, string, PropertyAccessor> accessor)
+    private static object?[] Aggregate(IEnumerable<object>? items, IReadOnlyList<PivotMeasure> measures, Func<Type, string, PropertyAccessor> accessor)
     {
         var values = new object?[measures.Count];
         for (var m = 0; m < measures.Count; m++)
@@ -305,7 +323,7 @@ public static class PivotEngine
             values[m] = GridSummaryCalculator.Calculate(
                 measures[m].Function,
                 measures[m].FieldName,
-                items ?? new List<object>(),
+                items ?? Array.Empty<object>(),
                 accessor);
         }
 

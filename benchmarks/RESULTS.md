@@ -18,7 +18,7 @@ part of the allocation); the scheduler expansion is 100 endless DAILY series ove
 
 | Method                             | Mean        | Error     | Allocated |
 |----------------------------------- |------------:|----------:|----------:|
-| Pivot_100k                         |  50.85 ms   | 1.00 ms   |  38.1 MB  |
+| Pivot_100k                         |  51.50 ms   | 1.01 ms   |  28.5 MB  | (2026-11-11: −25% mem — scratch keys + pooled totals) |
 | Condition_MatchesAll_100k          |  85.84 ms   | 0.72 ms   |  67.8 MB  |
 | Gantt_AutoSchedule_1000chain       |   5.19 ms   | 0.08 ms   |   0.6 MB  |
 | Gantt_CriticalPath_1000chain       |  14.43 ms   | 0.25 ms   |   1.3 MB  |
@@ -40,6 +40,18 @@ KeyValuePair<Type,string> hashing + ConcurrentDictionary read path), plus a
 | before                   |  85.84 ms |   67.8 MB | dictionary per item + description per item |
 | after                    |   9.36 ms |  625.8 KB | ~9x faster, ~108x less memory |
 
+> ### Pivot allocation optimization (2026-11-11)
+>
+> GC-probe bisection: per-item `object?[]` axis-key allocation (200k arrays) and
+> `SelectMany().ToList()` copies in row/column totals dominated. Fix: scratch key buffers
+> (a reusable array hashes/equals by value — the dictionary materializes a clone only on
+> first sight, 40 clones instead of 200k allocations) + one pooled list refilled per
+> row/column for the totals + `Array.Empty` for empty intersections. BDN Pivot_100k
+> (2 measures): 38.1 MB → 28.5 MB (−25%), time neutral (50.85 → 51.50 ms).
+> REMAINING churn: `PropertyAccessor.GetValue` boxes each value per aggregation pass
+> (cells + totals walk items 3×) — a typed fast path would need multi-result
+> `GridSummaryCalculator` surgery on a shared component; deferred.
+>
 > Optimization candidates: (done 2026-11-10 — see above) `ConditionEvaluator` had been
 > allocation-dominated (~680 B/item); Pivot is still dominated by dictionary/boxing churn
 > on composite keys.

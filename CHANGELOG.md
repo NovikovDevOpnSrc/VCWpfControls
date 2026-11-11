@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Pivot engine: −25% allocations on the bucketing hot path
+
+GC-probe bisection found the churn: per-item `object?[]` axis-key arrays (200k per
+compute) and `SelectMany().ToList()` copies in the row/column totals. Now: reusable
+scratch key buffers (the dictionary materializes a key only on first sight — 40 clones
+instead of 200k arrays), one pooled list refilled per row/column for the totals, and
+`Array.Empty` for empty intersections. BDN Pivot_100k: 38.1 → 28.5 MB (−25%), time
+neutral. Semantics unchanged (the full Pivot test matrix + the randomized three-way
+totals invariants are green).
+
 ## [0.5.3] — 2026-11-11
 
 ConditionEvaluator ~9x faster with ~108x less memory on the hot path, two user-report
