@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] — 2026-11-11
+
+High-contrast theme following the live Windows contrast scheme, the scheduler keyboard
+surface + theme-token polish (two dark-theme bugs fixed), Gantt chart-artifact tokens,
+and −25% Pivot bucketing allocations.
+
 ### Added — Gantt theming tokens
 
 The Gantt timeline's chart artifacts drew with literal brushes (the same class the
