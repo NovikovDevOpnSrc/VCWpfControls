@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] — 2026-11-11
+
+ConditionEvaluator ~9x faster with ~108x less memory on the hot path, two user-report
+fixes (the empty Department dropdown — columns are outside the visual tree, now served
+through a BindingProxy in the demo; invisible column separators — a dedicated
+`SeparatorLineKey` token), the UI/UX design guidelines adopted (docs + AGENTS.md rules)
+and the demo aligned to them (4/8 spacing grid, type ladder, 32px interactive height).
+
 ### Changed — demo aligned with the UI guidelines (spacing grid, type ladder, captions)
 
 Mechanical pass over every demo page + the shell per `docs/ui-guidelines.md`: all
