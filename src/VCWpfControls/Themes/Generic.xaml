@@ -34,6 +34,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="#FFE0E0E0" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#461E78FF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF4500" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E696969" />
 
 <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
     <sys:Double x:Key="{x:Static grid:GridResources.FontSizeCaptionKey}">12</sys:Double>

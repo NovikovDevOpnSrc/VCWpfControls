@@ -94,6 +94,11 @@ ramp'а (`#242424`/`#FFFFFF` текст, `#FAFAFA`/`#1F1F1F` поверхнос�
 | `HoverBackgroundKey` | Фон строки/заголовка при наведении | `#FFEDF2F9` |
 | `AccentTextKey` | Акцентный текст (нажатые заголовки, ссылки) | `#FF1D4ED8` |
 
+Помимо таблицы, каждая встроенная тема (Light/Dark/HighContrast) определяет и chart-токены
+кастомно-рендерящихся контролов: `BarFillKey` (тела баров/чипов), `EventFillKey` (события
+Scheduler), `BaselineFillKey` (базлайны Gantt), `NowLineKey` (линия сегодня/сейчас),
+`SeparatorLineKey` (заметные разделители) и `MutedTextKey` (вторичный текст).
+
 ## Переопределение ключей
 
 Переопределите ключ в `Application.Resources` (или в любом локальном словаре) — тот же ключ

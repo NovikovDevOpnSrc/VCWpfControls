@@ -22,4 +22,5 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="#FFE0E0E0" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#461E78FF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF4500" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E696969" />
 </ResourceDictionary>

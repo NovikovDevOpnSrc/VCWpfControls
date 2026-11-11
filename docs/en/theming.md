@@ -94,6 +94,12 @@ Two useful consequences:
 | `HoverBackgroundKey` | Row/header hover background | `#FFEDF2F9` |
 | `AccentTextKey` | Accent text (pressed headers, links) | `#FF1D4ED8` |
 
+Beyond the table, every built-in theme (Light/Dark/HighContrast) also defines the chart
+tokens used by the custom-rendered controls: `BarFillKey` (bar/chip bodies),
+`EventFillKey` (scheduler events), `BaselineFillKey` (Gantt baselines), `NowLineKey`
+(the today/now line), `SeparatorLineKey` (visible dividers) and `MutedTextKey`
+(secondary text).
+
 ## Overriding keys
 
 Redefine a key in `Application.Resources` (or in any scoped dictionary) — the same key

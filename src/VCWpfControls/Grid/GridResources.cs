@@ -79,4 +79,7 @@ public static class GridResources
 
     /// <summary>The scheduler's current-time line (attention color; follows HotTrack in high contrast).</summary>
     public static readonly ComponentResourceKey NowLineKey = new(typeof(GridResources), "NowLine");
+
+    /// <summary>Translucent fill of Gantt baseline bands and legend glyphs (muted gray; flat window color in high contrast, where the border conveys the band).</summary>
+    public static readonly ComponentResourceKey BaselineFillKey = new(typeof(GridResources), "BaselineFill");
 }

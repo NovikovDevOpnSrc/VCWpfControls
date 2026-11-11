@@ -27,4 +27,5 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="{DynamicResource {x:Static SystemColors.WindowFrameColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
 </ResourceDictionary>

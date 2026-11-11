@@ -87,6 +87,11 @@ WPF 之所以能找到它，是因为 `GridControl` 重写了自身的 `DefaultS
 | `HoverBackgroundKey` | 行/列头悬停背景 | `#FFEDF2F9` |
 | `AccentTextKey` | 强调文字（按下的列头、链接） | `#FF1D4ED8` |
 
+除上表之外，每个内置主题（Light/Dark/HighContrast）还定义了自绘控件使用的图表
+令牌：`BarFillKey`（条形/色签主体）、`EventFillKey`（日程事件）、`BaselineFillKey`
+（甘特基线）、`NowLineKey`（今天/当前时间线）、`SeparatorLineKey`（清晰可见的
+分隔线）与 `MutedTextKey`（次要文字）。
+
 ## 覆盖资源键
 
 在 `Application.Resources`（或任意作用域字典）中重新定义同名键 —— 同一个键只需

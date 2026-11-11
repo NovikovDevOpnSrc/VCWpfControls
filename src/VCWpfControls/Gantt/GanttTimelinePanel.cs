@@ -118,15 +118,6 @@ public sealed class GanttTimelinePanel : FrameworkElement
     private DateTime _rangeStart = DateTime.Today;
     private DateTime _rangeEnd = DateTime.Today;
     private int _hoverIndex = -1;
-    private static readonly System.Windows.Media.Brush NonWorkingTint = Frozen(56, 128, 128, 128);
-    private static readonly System.Windows.Media.Brush BaselineFill = Frozen(110, 105, 105, 105);
-
-    private static System.Windows.Media.Brush Frozen(byte alpha, byte r, byte g, byte b)
-    {
-        var brush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, r, g, b));
-        brush.Freeze();
-        return brush;
-    }
 
     static GanttTimelinePanel()
     {
@@ -496,6 +487,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
         var surface = TryFindResource(GridResources.SurfaceBackgroundKey) as Brush ?? Brushes.White;
         var border = TryFindResource(GridResources.HeaderBorderKey) as Brush ?? Brushes.LightGray;
         var textBrush = TryFindResource(GridResources.TextBrushKey) as Brush ?? Brushes.Black;
+        var gridLine = TryFindResource(GridResources.GridLineKey) as Brush ?? Brushes.Gainsboro;
+        var separator = TryFindResource(GridResources.SeparatorLineKey) as Brush ?? Brushes.Gray;
+        var muted = TryFindResource(GridResources.MutedTextKey) as Brush ?? Brushes.Gray;
+        var nowLine = TryFindResource(GridResources.NowLineKey) as Brush ?? Brushes.OrangeRed;
+        var baselineFill = TryFindResource(GridResources.BaselineFillKey) as Brush ?? Brushes.Gray;
         var criticalSet = new HashSet<string>(CriticalTaskIds);
 
         drawingContext.DrawRectangle(surface, null, new Rect(0, 0, RenderSize.Width, RenderSize.Height));
@@ -552,26 +548,30 @@ public sealed class GanttTimelinePanel : FrameworkElement
         var todayX = XOf(DateTime.Today);
         if (todayX >= 0 && todayX <= RenderSize.Width)
         {
-            drawingContext.DrawLine(new Pen(Brushes.OrangeRed, 1) { DashStyle = DashStyles.Dash }, new Point(todayX, 0), new Point(todayX, RenderSize.Height));
+            drawingContext.DrawLine(new Pen(nowLine, 1) { DashStyle = DashStyles.Dash }, new Point(todayX, 0), new Point(todayX, RenderSize.Height));
         }
 
         // Row separators (only the visible band — culling).
         var (firstRow, lastRow) = VisibleRowRange;
         FirstRenderedRow = firstRow;
         LastRenderedRow = lastRow;
+        var rowPen = new Pen(gridLine, 0.5);
         for (var i = firstRow; i <= lastRow + 1; i++)
         {
             var y = HeaderHeight + i * RowHeight;
-            drawingContext.DrawLine(new Pen(new SolidColorBrush(Color.FromArgb(128, 160, 160, 160)), 0.5), new Point(0, y), new Point(RenderSize.Width, y));
+            drawingContext.DrawLine(rowPen, new Point(0, y), new Point(RenderSize.Width, y));
         }
 
-        // Non-working day tint (weekends/holidays under the grid, beneath the bars).
+        // Non-working day tint (weekends/holidays under the grid, beneath the bars) — the
+        // muted text brush at low opacity (theme-tinted; high contrast keeps a light shade).
         foreach (var day in _nonWorkingDays)
         {
             var x = XOf(day);
             if (x + DayWidth >= 0 && x <= RenderSize.Width)
             {
-                drawingContext.DrawRectangle(NonWorkingTint, null, new Rect(x, HeaderHeight, DayWidth, RenderSize.Height - HeaderHeight));
+                drawingContext.PushOpacity(0.22);
+                drawingContext.DrawRectangle(muted, null, new Rect(x, HeaderHeight, DayWidth, RenderSize.Height - HeaderHeight));
+                drawingContext.Pop();
             }
         }
 
@@ -585,7 +585,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
                     continue;
                 }
 
-                drawingContext.DrawRectangle(BaselineFill, new Pen(Brushes.DimGray, 0.6), baseline);
+                drawingContext.DrawRectangle(baselineFill, new Pen(separator, 0.6), baseline);
             }
         }
 
@@ -603,7 +603,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 var center = new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
                 var size = 7;
                 var diamond = CreateDiamond(center, size);
-                drawingContext.DrawGeometry(i == _hoverIndex ? accent : Brushes.DimGray, new Pen(Brushes.Black, 0.8), diamond);
+                drawingContext.DrawGeometry(i == _hoverIndex ? accent : muted, new Pen(textBrush, 0.8), diamond);
                 continue;
             }
 
@@ -617,7 +617,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 var centerY = rect.Y + rect.Height / 2;
                 var band = new Rect(rect.X, centerY - 3, rect.Width, 6);
                 var capHeight = 12;
-                drawingContext.DrawRectangle(fill, new Pen(critical ? accent : Brushes.Gray, critical ? 1.6 : 0.8), band);
+                drawingContext.DrawRectangle(fill, new Pen(critical ? accent : separator, critical ? 1.6 : 0.8), band);
                 drawingContext.DrawRectangle(fill, null, new Rect(rect.X, centerY - capHeight / 2, 2.5, capHeight));
                 drawingContext.DrawRectangle(fill, null, new Rect(rect.Right - 2.5, centerY - capHeight / 2, 2.5, capHeight));
 
@@ -636,7 +636,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 continue;
             }
 
-            drawingContext.DrawRectangle(fill, new Pen(critical ? accent : Brushes.Gray, critical ? 1.6 : 0.8), rect);
+            drawingContext.DrawRectangle(fill, new Pen(critical ? accent : separator, critical ? 1.6 : 0.8), rect);
 
             var completionWidth = rect.Width * Math.Clamp(task.Completion, 0, 100) / 100.0;
             if (completionWidth > 0)
@@ -676,7 +676,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
         // Dependency arrows (drawn after bars so they stay visible).
         foreach (var link in Dependencies)
         {
-            DrawLink(drawingContext, link, Brushes.Gray);
+            DrawLink(drawingContext, link, muted);
         }
 
         foreach (var link in Dependencies)
@@ -705,7 +705,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
                     _ => 16,
                 };
                 var barFill = TryFindResource(GridResources.BarFillKey) as Brush ?? Brushes.LightGray;
-                DrawLegendGlyph(drawingContext, item.Key, x, legendY + LegendHeight / 2, glyphWidth, accent, barFill);
+                DrawLegendGlyph(drawingContext, item.Key, x, legendY + LegendHeight / 2, glyphWidth, accent, barFill, muted, separator, baselineFill, textBrush);
                 var caption = new FormattedText(
                     item.Caption, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, captionTypeface, 10, textBrush, dpi)
                 {
@@ -757,21 +757,23 @@ public sealed class GanttTimelinePanel : FrameworkElement
         return items;
     }
 
-    private static void DrawLegendGlyph(DrawingContext drawingContext, string key, double x, double centerY, double width, Brush accent, Brush barFill)
+    private static void DrawLegendGlyph(DrawingContext drawingContext, string key, double x, double centerY, double width, Brush accent, Brush barFill, Brush muted, Brush separator, Brush baselineFill, Brush textBrush)
     {
         switch (key)
         {
             case "milestone":
-                drawingContext.DrawGeometry(Brushes.DimGray, new Pen(Brushes.Black, 0.8), CreateDiamond(new Point(x + width / 2, centerY), 5));
+                drawingContext.DrawGeometry(muted, new Pen(textBrush, 0.8), CreateDiamond(new Point(x + width / 2, centerY), 5));
                 break;
             case "critical":
                 drawingContext.DrawRectangle(null, new Pen(accent, 1.6), new Rect(x, centerY - 4, width, 8));
                 break;
             case "baseline":
-                drawingContext.DrawRectangle(BaselineFill, new Pen(Brushes.DimGray, 0.6), new Rect(x, centerY - 2, width, 4));
+                drawingContext.DrawRectangle(baselineFill, new Pen(separator, 0.6), new Rect(x, centerY - 2, width, 4));
                 break;
             case "nonworking":
-                drawingContext.DrawRectangle(NonWorkingTint, new Pen(Brushes.DimGray, 0.6), new Rect(x, centerY - 4, width, 8));
+                drawingContext.PushOpacity(0.22);
+                drawingContext.DrawRectangle(muted, new Pen(separator, 0.6), new Rect(x, centerY - 4, width, 8));
+                drawingContext.Pop();
                 break;
             case "summary":
                 drawingContext.DrawRectangle(barFill, null, new Rect(x, centerY - 3, width, 6));
@@ -779,7 +781,7 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 drawingContext.DrawRectangle(barFill, null, new Rect(x + width - 2, centerY - 6, 2, 12));
                 break;
             default:
-                drawingContext.DrawRectangle(barFill, new Pen(Brushes.Gray, 0.8), new Rect(x, centerY - 4, width, 8));
+                drawingContext.DrawRectangle(barFill, new Pen(separator, 0.8), new Rect(x, centerY - 4, width, 8));
                 drawingContext.DrawRectangle(accent, null, new Rect(x, centerY - 4, width * 0.55, 8));
                 break;
         }

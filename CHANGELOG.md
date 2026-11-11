@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt theming tokens
+
+The Gantt timeline's chart artifacts drew with literal brushes (the same class the
+Scheduler round removed): the milestone diamond was gray-on-black regardless of the
+palette — invisible in dark — and nothing followed high contrast. Everything resolves
+through theme tokens now: the today line reuses `NowLineKey`, milestone diamonds fill
+with `MutedTextKey` and outline with the text brush, task/summary bar borders and
+dependency links use `SeparatorLineKey`/`MutedTextKey`, row separators `GridLineKey`,
+and the new `BaselineFillKey` carries baseline bands (palette-complete in all four
+themes; high contrast maps it to the window color). Non-working day shading is the
+muted brush at low opacity. The theming docs gained a chart-tokens note (en/ru/zh).
+
 ### Added — Scheduler polish: keyboard surface, theme tokens, live now line
 
 The scheduler had no keyboard channel (UX profile keyboard MUST): arrows now walk the
