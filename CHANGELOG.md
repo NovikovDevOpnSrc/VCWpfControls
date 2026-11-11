@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — UI/UX design guidelines adopted (XAML rules, Windows 11 / Fluent)
+
+`docs/ui-guidelines.md` (from the user's master `UI_GUIDELINES.md`) + a condensed rules
+section in AGENTS.md: the 4/8px spacing grid (no arbitrary margins), the type ladder
+(Page Title 24–28 SemiBold … Caption 12 muted), Fluent layers (Base/Card with 1px border
++ CornerRadius 8), accent-for-one-primary-action-only, control metrics (32px interactive
+height, 4–6/8 corner radii), labels above fields, Windows button order with action
+verbs, UX patterns (300 ms progress, empty states, LostFocus validation without
+MessageBox, Tab/Enter/Esc) and clean-XAML rules (ResourceDictionary reuse, vector icons,
+AutomationProperties.Name on icon buttons, no gratuitous x:Name). Existing surfaces are
+audited incrementally like the other profiles.
+
 ### Fixed — column separators invisible after the Fluent 2 alignment (user report)
 
 The opt-in `ShowColumnSeparators` drew with `GridLinesBrush` (#F0F0F0 after the Fluent
