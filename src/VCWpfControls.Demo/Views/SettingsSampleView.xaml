@@ -24,23 +24,23 @@
                              AutomationProperties.AutomationId="SettingsThemeSystemRadio" />
             </StackPanel>
 
-            <TextBlock Text="Accent" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,18,0,6" />
+            <TextBlock Text="Accent" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,16,0,6" />
             <ComboBox ItemsSource="{Binding AccentOptions}"
                       SelectedItem="{Binding Accent}"
                       Width="180" HorizontalAlignment="Left"
                       AutomationProperties.AutomationId="SettingsAccentCombo" />
 
-            <TextBlock Text="Language (library strings)" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,18,0,6" />
+            <TextBlock Text="Language (library strings)" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,16,0,6" />
             <ComboBox ItemsSource="{Binding LanguageOptions}"
                       SelectedItem="{Binding Language}"
                       Width="240" HorizontalAlignment="Left"
                       AutomationProperties.AutomationId="SettingsLanguageCombo" />
             <TextBlock Text="Switches the localized library strings (grid menus, hints, wizard buttons, empty states). Demo page texts stay English; already rendered strings refresh on the next interaction."
-                       Opacity="0.7" TextWrapping="Wrap" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,6,0,0" />
+                       TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Margin="0,6,0,0" />
 
             <Button Content="Reset to defaults"
                     Click="OnReset"
-                    Margin="0,24,0,0" Padding="12,6" HorizontalAlignment="Left"
+                    Margin="0,24,0,0" Padding="12,8" HorizontalAlignment="Left"
                     AutomationProperties.AutomationId="SettingsResetButton" />
         </StackPanel>
     </ScrollViewer>

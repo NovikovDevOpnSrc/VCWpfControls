@@ -10,7 +10,7 @@
 
         <TextBlock
             x:Name="Status"
-            Margin="0,0,0,10"
+            Margin="0,0,0,12"
             Opacity="0.75"
             Text="Page 1 of 3 — check the box below to allow leaving this page." />
 
@@ -28,7 +28,7 @@
             <wizard:WizardPage Header="Details">
                 <StackPanel>
                     <TextBlock Text="Enter anything — the second page never blocks." TextWrapping="Wrap" />
-                    <TextBox Margin="0,12,0,0" Padding="6" Text="some details" />
+                    <TextBox Margin="0,12,0,0" Padding="8" Text="some details" />
                 </StackPanel>
             </wizard:WizardPage>
             <wizard:WizardPage Header="Finish">

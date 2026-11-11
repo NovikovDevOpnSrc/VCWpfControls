@@ -1,6 +1,7 @@
 <UserControl x:Class="VCWpfControls.Demo.Views.PivotSampleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
              xmlns:pivot="clr-namespace:VCWpfControls.Pivot;assembly=VCWpfControls">
     <Grid>
         <Grid.RowDefinitions>
@@ -10,7 +11,7 @@
 
         <TextBlock
             Margin="0,0,0,8"
-            Opacity="0.7"
+            FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
             Text="Region rows x Product columns, Sum(Amount); totals column + grand row. Change the fields/measures below in code — the grid recomputes." />
 
         <pivot:PivotGrid x:Name="Pivot" Grid.Row="1" PivotItemsSource="{Binding Sales}" RowHeight="28" />

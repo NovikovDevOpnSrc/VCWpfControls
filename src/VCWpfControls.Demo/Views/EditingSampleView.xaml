@@ -9,7 +9,7 @@
                       Content="Can user add rows" />
             <Button Margin="0,0,8,0" Padding="12,4" Click="OnPasteClick"
                     Content="Paste (Ctrl+V)" />
-            <TextBlock VerticalAlignment="Center" Opacity="0.7"
+            <TextBlock VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
                        Text="TSV text pastes from the current cell; Esc cancels a fresh add-row."
                        TextWrapping="Wrap" />
         </StackPanel>

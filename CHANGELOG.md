@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — demo aligned with the UI guidelines (spacing grid, type ladder, captions)
+
+Mechanical pass over every demo page + the shell per `docs/ui-guidelines.md`: all
+`Margin`/`Padding` values normalized to the 4/8 grid (10→12, icon gaps 6→4, 18→16,
+flyout 14→16, wizard status 10→12; label→field 4–6 kept where it is exactly that);
+the callout card radius 6→8. The shell now runs on the theme font token + Body 14
+(`FontSizeBodyKey`), page padding 16→24, the page title 22→24 SemiBold (24–28 ladder),
+every secondary caption is now Caption 12 + `MutedTextKey` instead of `Opacity=0.7`
+(19 TextBlocks; xmlns added where missing), nav item padding on the grid, and an
+implicit `Button` style sets the 32px minimum interactive height (toolbars, the
+settings flyout, the wizard template buttons). UI e2e 21/21 green.
+
 ### Added — UI/UX design guidelines adopted (XAML rules, Windows 11 / Fluent)
 
 `docs/ui-guidelines.md` (from the user's master `UI_GUIDELINES.md`) + a condensed rules

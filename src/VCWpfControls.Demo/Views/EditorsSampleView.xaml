@@ -1,24 +1,25 @@
 <UserControl x:Class="VCWpfControls.Demo.Views.EditorsSampleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
              xmlns:editors="clr-namespace:VCWpfControls.Editors;assembly=VCWpfControls">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel MaxWidth="480" HorizontalAlignment="Left">
             <TextBlock FontWeight="SemiBold" Text="Masked inputs" />
-            <TextBlock Margin="0,4,0,6" Opacity="0.7" Text="Phone mask +7 (000) 000-00-00 — literals are typed automatically" />
+            <TextBlock Margin="0,4,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="Phone mask +7 (000) 000-00-00 — literals are typed automatically" />
             <editors:MaskedTextBox Mask="+7 (000) 000-00-00" Margin="0,0,0,12" />
 
-            <TextBlock Margin="0,0,0,6" Opacity="0.7" Text="Serial number LL-0000 (two letters required, digits required)" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="Serial number LL-0000 (two letters required, digits required)" />
             <editors:MaskedTextBox Mask="LL-0000" PromptChar="*" Margin="0,0,0,12" />
 
-            <TextBlock Margin="0,0,0,6" Opacity="0.7" Text="Date 00/00/0000 with literals included in Value" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="Date 00/00/0000 with literals included in Value" />
             <editors:MaskedTextBox x:Name="DateMask" Mask="00/00/0000" IncludeLiterals="True" Margin="0,0,0,12" />
 
             <TextBlock FontWeight="SemiBold" Margin="0,8,0,4" Text="Numeric spinners" />
-            <TextBlock Margin="0,0,0,6" Opacity="0.7" Text="0..100, step 1; arrows, wheel and repeat buttons" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="0..100, step 1; arrows, wheel and repeat buttons" />
             <editors:NumericUpDown MinValue="0" MaxValue="100" Value="42" Margin="0,0,0,12" />
 
-            <TextBlock Margin="0,0,0,6" Opacity="0.7" Text="0..10, step 0.25, currency format" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="0..10, step 0.25, currency format" />
             <editors:NumericUpDown MinValue="0" MaxValue="10" Increment="0.25" FormatString="C2" Value="2.5" Margin="0,0,0,12" />
         </StackPanel>
     </ScrollViewer>

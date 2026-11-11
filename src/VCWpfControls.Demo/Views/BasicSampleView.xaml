@@ -7,7 +7,7 @@
                   Checked="OnSeparatorsToggled" Unchecked="OnSeparatorsToggled"
                   Content="Show column separators" />
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,4" Orientation="Horizontal">
-            <TextBlock Text="Vertical separators respect frozen columns and horizontal scrolling." Opacity="0.7" TextWrapping="Wrap" />
+            <TextBlock Text="Vertical separators respect frozen columns and horizontal scrolling." FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" TextWrapping="Wrap" />
         </StackPanel>
         <grid:GridControl x:Name="Grid"
                       ItemsSource="{Binding Employees}"

@@ -5,43 +5,43 @@
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button x:Name="GroupByDepartment" AutomationProperties.Name="Group by Department" Margin="0,0,8,0" Padding="10,4" Click="OnGroupByDepartment">
+            <Button x:Name="GroupByDepartment" AutomationProperties.Name="Group by Department" Margin="0,0,8,0" Padding="12,4" Click="OnGroupByDepartment">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="Group" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Group by Department" Margin="6,0,0,0" />
+                    <TextBlock Text="Group by Department" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="ClearGroups" AutomationProperties.Name="Clear grouping" Margin="0,0,8,0" Padding="10,4" Click="OnClearGroups">
+            <Button x:Name="ClearGroups" AutomationProperties.Name="Clear grouping" Margin="0,0,8,0" Padding="12,4" Click="OnClearGroups">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="Ungroup" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Clear grouping" Margin="6,0,0,0" />
+                    <TextBlock Text="Clear grouping" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="SortByName" AutomationProperties.Name="Sort by Name" Margin="0,0,8,0" Padding="10,4" Click="OnSortByName">
+            <Button x:Name="SortByName" AutomationProperties.Name="Sort by Name" Margin="0,0,8,0" Padding="12,4" Click="OnSortByName">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="SortAlphabeticalAscending" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Sort by Name" Margin="6,0,0,0" />
+                    <TextBlock Text="Sort by Name" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="ExportCsv" AutomationProperties.Name="Export CSV" Margin="0,0,8,0" Padding="10,4" Click="OnExportCsv">
+            <Button x:Name="ExportCsv" AutomationProperties.Name="Export CSV" Margin="0,0,8,0" Padding="12,4" Click="OnExportCsv">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="FileDelimited" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Export CSV" Margin="6,0,0,0" />
+                    <TextBlock Text="Export CSV" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="ExportXlsx" AutomationProperties.Name="Export XLSX" Margin="0,0,8,0" Padding="10,4" Click="OnExportXlsx">
+            <Button x:Name="ExportXlsx" AutomationProperties.Name="Export XLSX" Margin="0,0,8,0" Padding="12,4" Click="OnExportXlsx">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="FileExcel" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Export XLSX" Margin="6,0,0,0" />
+                    <TextBlock Text="Export XLSX" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="ExportHtml" AutomationProperties.Name="Export HTML" Margin="0,0,8,0" Padding="10,4" Click="OnExportHtml">
+            <Button x:Name="ExportHtml" AutomationProperties.Name="Export HTML" Margin="0,0,8,0" Padding="12,4" Click="OnExportHtml">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="CodeTags" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Export HTML" Margin="6,0,0,0" />
+                    <TextBlock Text="Export HTML" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <TextBlock x:Name="RowCountText" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.7" />
+            <TextBlock x:Name="RowCountText" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" />
         </StackPanel>
         <grid:GridControl x:Name="Grid"
                           ItemsSource="{Binding Employees}"

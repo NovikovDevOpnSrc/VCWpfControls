@@ -6,8 +6,15 @@
         xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
         Title="Vibe Coded WPF Controls — Demo"
         Width="1180" Height="720"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{DynamicResource {x:Static grid:GridResources.FontFamilyKey}}"
+        FontSize="{DynamicResource {x:Static grid:GridResources.FontSizeBodyKey}}">
     <Window.Resources>
+        <!-- Guidelines: min interactive height 32px (Fitts); applies to page toolbars,
+             the settings flyout and the wizard template buttons. -->
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="MinHeight" Value="32" />
+        </Style>
         <DataTemplate DataType="{x:Type vm:BasicSampleViewModel}">
             <views:BasicSampleView />
         </DataTemplate>
@@ -82,7 +89,7 @@
                 <Button x:Name="SettingsButton"
                         DockPanel.Dock="Bottom"
                         Margin="8"
-                        Padding="10,6"
+                        Padding="12,8"
                         HorizontalAlignment="Stretch"
                         Background="Transparent"
                         BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
@@ -108,7 +115,7 @@
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
                             <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Padding" Value="8,6" />
+                            <Setter Property="Padding" Value="8,4" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
@@ -137,7 +144,7 @@
                        VerticalOffset="-6"
                        StaysOpen="False"
                        AllowsTransparency="True">
-                    <Border MinWidth="300" MaxWidth="380" Padding="14"
+                    <Border MinWidth="300" MaxWidth="380" Padding="16"
                             Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}"
                             BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
                             BorderThickness="1" CornerRadius="8">
@@ -147,7 +154,7 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Column="1" Margin="16"
+        <Grid Grid.Column="1" Margin="24"
               Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -156,12 +163,11 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
-                       FontSize="22" FontWeight="SemiBold"
+                       FontSize="24" FontWeight="SemiBold"
                        Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                        Text="{Binding SelectedSample.Title}" />
             <TextBlock Grid.Row="1"
-                       Margin="0,4,0,12" Opacity="0.7"
-                       Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                       Margin="0,4,0,12" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
                        Text="{Binding SelectedSample.Description}" />
 
             <ContentControl Grid.Row="2"

@@ -1,6 +1,7 @@
 <UserControl x:Class="VCWpfControls.Demo.Views.GanttSampleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
              xmlns:gantt="clr-namespace:VCWpfControls.Gantt;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
@@ -27,10 +28,10 @@
                       Width="90" VerticalAlignment="Center" />
             <Button Content="Reset"
                     Click="OnReset"
-                    Margin="12,0,0,0" Padding="10,4" VerticalAlignment="Center" />
+                    Margin="12,0,0,0" Padding="12,4" VerticalAlignment="Center" />
             <TextBlock Text="{Binding LastAction}"
                        VerticalAlignment="Center" Margin="16,0,0,0"
-                       Opacity="0.7" TextTrimming="CharacterEllipsis" />
+                       FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" TextTrimming="CharacterEllipsis" />
         </StackPanel>
         <gantt:GanttView Tasks="{Binding Tasks}"
                          Dependencies="{Binding Dependencies}"

@@ -6,23 +6,23 @@
              xmlns:columns="clr-namespace:VCWpfControls.Grid.Columns;assembly=VCWpfControls">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button x:Name="ExpandAll" AutomationProperties.Name="Expand all" Margin="0,0,8,0" Padding="10,4" Click="OnExpandAll">
+            <Button x:Name="ExpandAll" AutomationProperties.Name="Expand all" Margin="0,0,8,0" Padding="12,4" Click="OnExpandAll">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="UnfoldMoreHorizontal" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Expand all" Margin="6,0,0,0" />
+                    <TextBlock Text="Expand all" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
-            <Button x:Name="CollapseAll" AutomationProperties.Name="Collapse all" Margin="0,0,8,0" Padding="10,4" Click="OnCollapseAll">
+            <Button x:Name="CollapseAll" AutomationProperties.Name="Collapse all" Margin="0,0,8,0" Padding="12,4" Click="OnCollapseAll">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="UnfoldLessHorizontal" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Collapse all" Margin="6,0,0,0" />
+                    <TextBlock Text="Collapse all" Margin="4,0,0,0" />
                 </StackPanel>
             </Button>
             <CheckBox x:Name="NodeCheckBoxes" AutomationProperties.Name="Node check boxes" Margin="0,0,12,0" VerticalAlignment="Center"
                       Checked="OnCheckBoxesToggled" Unchecked="OnCheckBoxesToggled">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="CheckboxMarked" Width="16" Height="16" VerticalAlignment="Center" />
-                    <TextBlock Text="Node check boxes" Margin="6,0,0,0" />
+                    <TextBlock Text="Node check boxes" Margin="4,0,0,0" />
                 </StackPanel>
             </CheckBox>
             <TextBlock x:Name="CheckedCount" VerticalAlignment="Center" FontWeight="SemiBold" />
