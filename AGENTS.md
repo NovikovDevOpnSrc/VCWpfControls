@@ -147,7 +147,8 @@ dotnet test tests/VCWpfControls.Control.Tests/...   # STA-тесты
   (у gh-токена workflow-scope у активного аккаунта теперь есть, но пушить всё равно
   надёжнее из пользовательского git).
 - Скилы в `.agents/skills/`: `vcwpf-release` (релизный runbook), `vcwpf-buground`
-  (приём багрепортов), `wpf-pixel-forensics` (разбор скриншотов).
+  (приём багрепортов), `wpf-pixel-forensics` (разбор скриншотов), `vcwpf-ui-review`
+  (приёмка UI: измеримые gate-ы по обоим профилям + адаптация ux-ui-agent-skills).
 
 ## Релиз
 
