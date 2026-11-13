@@ -181,7 +181,10 @@ public class GridComboBoxColumn : GridColumnBase
             VerticalAlignment = VerticalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Center,
             ItemsSource = ItemsSource,
-            DisplayMemberPath = DisplayMemberPath ?? string.Empty,
+            // null path must STAY null: coercing it to "" makes WPF look up a property
+            // named "" on each item — enums/strings have none, so the editor rendered
+            // EMPTY when editing began (the selected value never displayed).
+            DisplayMemberPath = DisplayMemberPath,
         };
 
         if (string.IsNullOrEmpty(SelectedValuePath))
