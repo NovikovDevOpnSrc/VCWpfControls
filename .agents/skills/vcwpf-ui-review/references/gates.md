@@ -105,6 +105,13 @@ Button/RepeatButton/ToggleButton/Editor — `ActualHeight ≥ 32` (icon-only ≥
 `ActualWidth ≥ 24`; adjacent clickables in the same panel: horizontal gap ≥ 8. Report
 the minimums found with counts.
 
+**Measure inside the surface's REAL container bounds.** A row that fits a bare test
+window can overflow its actual host: a flyout's `Popup`/`Border` may clamp width to
+(e.g.) 380 minus padding while the replica panel was 560 wide. Before reporting PASS on
+"fits", read the host XAML (popup Border `MaxWidth`/`Padding`, scroll viewer
+orientation) and compare the measured row width against the USABLE width — a
+non-wrapping row clipped by its host is a Major (options unreachable by mouse).
+
 ### R3 — Names in the automation tree
 Walk the realized tree, `UIElementAutomationPeer.CreatePeerForElement`, collect elements
 whose visible content is glyph/icon-only — name must be non-empty (Localization-aware:
