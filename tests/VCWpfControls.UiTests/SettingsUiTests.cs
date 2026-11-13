@@ -120,16 +120,17 @@ public sealed class SettingsUiTests : IDisposable
                 .FirstOrDefault(b => (b.Properties.Name.ValueOrDefault ?? "") == "Далее");
             Assert.NotNull(next); // GridStrings.WizardNext in Russian — the setting reached the library
 
-            // Settings survive a flyout round-trip (the VM persisted them). The selected
-            // item's UIA NAME can lag a dispatcher pass after the popup re-created its
-            // containers on slow runners (observed: deterministically "" on CI, green
-            // locally) — re-FIND and re-read for up to 3s instead of trusting one read.
+            // Settings survive a flyout round-trip (the VM persisted them). NOTE: read the
+            // item's NAME (the peer name = item.ToString() for string items), not FlaUI's
+            // ComboBoxItem.Text — that one walks the RAW tree for an inner TextBlock,
+            // which does not exist until the container is realized, and with the themed
+            // combo template the reopened popup's containers are not realized on CI.
             var reopened = OpenSettings();
             string? selected = null;
             for (var attempt = 0; attempt < 30; attempt++)
             {
-                var combo = reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))?.AsComboBox();
-                selected = combo?.SelectedItem?.Text;
+                var item = reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))?.AsComboBox().SelectedItem;
+                selected = item?.Properties.Name.ValueOrDefault ?? item?.Text;
                 if (selected == "Purple")
                 {
                     break;
@@ -139,8 +140,7 @@ public sealed class SettingsUiTests : IDisposable
             }
 
             Assert.True(selected == "Purple",
-                $"accent did not persist the flyout round-trip: selected='{selected}' " +
-                $"(combo name='{reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))?.Properties.Name.ValueOrDefault}')");
+                $"accent did not persist the flyout round-trip: selected='{selected}'");
             Assert.False(_app.HasExited, "application crashed during settings churn");
         }
         finally
