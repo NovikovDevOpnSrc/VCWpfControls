@@ -184,6 +184,71 @@ public class SchedulerView : Control
     /// <summary>The month panel (test hook).</summary>
     internal SchedulerMonthPanel? MonthPanel => _monthPanel;
 
+    /// <inheritdoc />
+    protected override System.Windows.Automation.Peers.AutomationPeer OnCreateAutomationPeer()
+        => new SchedulerViewAutomationPeer(this);
+
+    /// <summary>The automation activation channel (Invoke on an occurrence peer).</summary>
+    internal void ActivateOccurrenceForAutomation(SchedulerOccurrence occurrence)
+        => OccurrenceDoubleClicked?.Invoke(this, occurrence);
+
+    /// <summary>Scrolls an occurrence's block/chip into the viewport (keyboard selection follows).</summary>
+    internal void BringOccurrenceIntoView(SchedulerOccurrence occurrence)
+    {
+        if (_daysScroll is null)
+        {
+            return;
+        }
+
+        if (_daysPanel is { } days)
+        {
+            foreach (var day in CurrentDays)
+            {
+                if (days.BlockOf(occurrence, day) is not { } block)
+                {
+                    continue;
+                }
+
+                var viewport = _daysScroll.ViewportHeight;
+                var top = days.VerticalOffset;
+                if (block.Bottom > top + viewport)
+                {
+                    top = block.Bottom - viewport + 8;
+                }
+
+                if (block.Top < top)
+                {
+                    top = Math.Max(block.Top - 8, 0);
+                }
+
+                if (Math.Abs(top - days.VerticalOffset) > 0.5)
+                {
+                    _daysScroll.ScrollToVerticalOffset(top);
+                }
+
+                var x = days.HorizontalOffset;
+                var width = _daysScroll.ViewportWidth;
+                var left = x;
+                if (block.Right > x + width)
+                {
+                    left = block.Right - width + 8;
+                }
+
+                if (block.Left < left)
+                {
+                    left = Math.Max(block.Left - days.TimeRulerWidth - 8, 0);
+                }
+
+                if (Math.Abs(left - x) > 0.5)
+                {
+                    _daysScroll.ScrollToHorizontalOffset(left);
+                }
+
+                return;
+            }
+        }
+    }
+
     /// <summary>Moves the anchor by whole view steps (days/weeks/months; negative goes back).</summary>
     public void Navigate(int stepCount)
     {
@@ -273,6 +338,10 @@ public class SchedulerView : Control
         SelectedOccurrence = index < 0
             ? ordered[delta > 0 ? 0 : ordered.Count - 1]
             : ordered[Math.Clamp(index + delta, 0, ordered.Count - 1)];
+        if (SelectedOccurrence is { } selected)
+        {
+            BringOccurrenceIntoView(selected); // arrows can walk off-viewport otherwise
+        }
     }
 
     private void DeleteSelectedOccurrence()
@@ -476,6 +545,12 @@ public class SchedulerView : Control
         if (view._monthPanel is not null)
         {
             view._monthPanel.SelectedOccurrence = view.SelectedOccurrence;
+        }
+
+        // Announce to automation clients (the calendar's occurrences are virtual peers).
+        if (System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(view) is SchedulerViewAutomationPeer peer)
+        {
+            peer.RaiseSelectionChanged();
         }
     }
 

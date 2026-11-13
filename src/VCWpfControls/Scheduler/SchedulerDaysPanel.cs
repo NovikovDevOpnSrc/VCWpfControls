@@ -203,6 +203,46 @@ public sealed class SchedulerDaysPanel : FrameworkElement
     /// <summary>How many hour rows the visible window spans.</summary>
     internal int VisibleHourCount => Math.Max(1, _dayEndHour - _dayStartHour);
 
+    /// <summary>
+    /// How many of a day column's occurrences the pinned hour window clips ABOVE (before
+    /// <see cref="DayStartHour"/>) and BELOW (after <see cref="DayEndHour"/>). The render
+    /// draws cue markers from these counts — a pinned window must not silently hide data
+    /// (a day that looks empty while events exist outside the window).
+    /// </summary>
+    internal (int Above, int Below) HiddenCounts(int dayIndex)
+    {
+        if (dayIndex < 0 || dayIndex >= _days.Count)
+        {
+            return (0, 0);
+        }
+
+        var day = _days[dayIndex];
+        var windowStart = day.AddHours(_dayStartHour);
+        var windowEnd = day.AddHours(_dayEndHour);
+        var above = 0;
+        var below = 0;
+        foreach (var entry in _timedByDay)
+        {
+            if (entry.DayIndex != dayIndex)
+            {
+                continue;
+            }
+
+            var occurrence = entry.Slot.Occurrence;
+            if (occurrence.Start < windowStart && occurrence.End > day)
+            {
+                above++;
+            }
+
+            if (occurrence.Start < day.AddDays(1) && occurrence.End > windowEnd)
+            {
+                below++;
+            }
+        }
+
+        return (above, below);
+    }
+
     /// <summary>Where the day column of <paramref name="index"/> starts (x).</summary>
     internal double ColumnX(int index) => _timeRulerWidth + index * _dayWidth;
 
@@ -759,6 +799,7 @@ public sealed class SchedulerDaysPanel : FrameworkElement
         var eventFill = TryFindResource(GridResources.EventFillKey) as Brush ?? Brushes.DodgerBlue;
         var nowLine = TryFindResource(GridResources.NowLineKey) as Brush ?? Brushes.OrangeRed;
         var textBrush = TryFindResource(GridResources.TextBrushKey) as Brush ?? Brushes.Black;
+        var mutedText = TryFindResource(GridResources.MutedTextKey) as Brush ?? Brushes.Gray;
         var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         var captionTypeface = new Typeface(SystemFonts.MessageFontFamily, FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
         var textTypeface = new Typeface(SystemFonts.MessageFontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
@@ -815,6 +856,26 @@ public sealed class SchedulerDaysPanel : FrameworkElement
             }
 
             DrawBlock(drawingContext, rect, entry.Slot.Occurrence, eventFill, separator, accent, textBrush, textTypeface, dpi);
+        }
+
+        // Hidden-content cues: occurrences clipped by the pinned hour window (above/below)
+        // get a small marker at the column's window edges — the window must not silently
+        // hide data (acceptance finding: a day that looked empty while an overnight event
+        // existed outside the 8–20 window).
+        for (var i = 0; i < _days.Count; i++)
+        {
+            var (above, below) = HiddenCounts(i);
+            if (above > 0)
+            {
+                DrawCue(drawingContext, string.Create(CultureInfo.CurrentCulture, $"\u25b2 {above}"),
+                    ColumnX(i) + 4, ContentTop + 2, mutedText, textTypeface, dpi);
+            }
+
+            if (below > 0)
+            {
+                DrawCue(drawingContext, string.Create(CultureInfo.CurrentCulture, $"\u25bc {below}"),
+                    ColumnX(i) + 4, ContentTop + VisibleHourCount * _hourHeight - 13, mutedText, textTypeface, dpi);
+            }
         }
 
         // Drag preview: the occurrence's ghost at the snapped drop position.
@@ -907,6 +968,10 @@ public sealed class SchedulerDaysPanel : FrameworkElement
 
         drawingContext.DrawRectangle(null, new Pen(border, 1), new Rect(0, bandTop, Width, bandHeight));
     }
+
+    private static void DrawCue(DrawingContext drawingContext, string text, double x, double y, Brush brush, Typeface typeface, double dpi)
+        => drawingContext.DrawText(new FormattedText(
+            text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, 10, brush, dpi), new Point(x, y));
 
     private void DrawBlock(DrawingContext drawingContext, Rect rect, SchedulerOccurrence occurrence, Brush fill, Brush line, Brush accent, Brush textBrush, Typeface typeface, double dpi)
     {

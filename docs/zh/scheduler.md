@@ -54,6 +54,18 @@ view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
 view.AppointmentDeleted += (_, appointment) => PersistRemoval(appointment); // Delete 键
 ```
 
+## 无障碍与隐藏内容提示
+
+控件提供完整的自动化表面：每个可见实例都是日历 peer 的 DataItem 子项（名称 =
+「主题, 开始 – 结束」），支持 SelectionItem（选中 = `SelectedOccurrence`）与 Invoke
+（`OccurrenceDoubleClicked` 通道）——屏幕阅读器可以列出、选择并激活日程，选中变化
+会触发 UIA 事件。请为控件设置 `AutomationProperties.Name`（演示中为
+「Appointment calendar」）。
+
+当 `DayStartHour`/`DayEndHour` 固定的时间窗窄于数据时，每个日列在窗口边缘绘制
+「▲ N / ▼ N」小标记，标示被裁剪的实例数量——固定窗口绝不静默隐藏事件。键盘选中
+会自动将所选实例滚动到可视区域。
+
 ## 导航
 
 ```csharp

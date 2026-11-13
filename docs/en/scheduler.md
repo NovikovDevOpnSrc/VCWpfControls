@@ -58,6 +58,20 @@ view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
 view.AppointmentDeleted += (_, appointment) => PersistRemoval(appointment); // Delete key
 ```
 
+## Accessibility and hidden-content cues
+
+The control exposes a full automation surface: every visible occurrence is a DataItem
+child of the calendar peer (name = "Subject, start – end") supporting SelectionItem
+(select = `SelectedOccurrence`) and Invoke (the `OccurrenceDoubleClicked` channel) —
+screen readers can list, select and activate appointments, and selection changes raise
+UIA events. Give the control an `AutomationProperties.Name` ("Appointment calendar" in
+the demo) so it announces meaningfully.
+
+When `DayStartHour`/`DayEndHour` pin a narrower window than the data, each day column
+shows a small "▲ N / ▼ N" cue at its window edges counting occurrences clipped above
+and below — a pinned window never silently hides events. Keyboard selection
+automatically scrolls the selected occurrence into view.
+
 ## Navigation
 
 ```csharp

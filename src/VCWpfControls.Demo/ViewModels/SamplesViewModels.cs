@@ -379,12 +379,25 @@ public partial class SchedulerSampleViewModel : SampleViewModelBase
     /// <summary>The sample appointments (relative to today, so the views always have content).</summary>
     public ObservableCollection<SchedulerAppointment> Appointments { get; } = new(CreateAppointments());
 
-    /// <summary>The available view types for the combo box.</summary>
-    public SchedulerViewType[] ViewTypes { get; } = Enum.GetValues<SchedulerViewType>();
+    /// <summary>The available view types for the combo box (display names — the raw enum identifiers are dev-speak).</summary>
+    public string[] ViewTypeOptions { get; } = { "Day", "Work week", "Week", "Month" };
+
+    /// <summary>The selected view type's display name (maps to <see cref="ViewType"/>).</summary>
+    [ObservableProperty]
+    private string _selectedViewType = "Work week";
 
     /// <summary>The shown view granularity.</summary>
     [ObservableProperty]
     private SchedulerViewType _viewType = SchedulerViewType.WorkWeek;
+
+    partial void OnSelectedViewTypeChanged(string value)
+        => ViewType = value switch
+        {
+            "Day" => SchedulerViewType.Day,
+            "Week" => SchedulerViewType.Week,
+            "Month" => SchedulerViewType.Month,
+            _ => SchedulerViewType.WorkWeek,
+        };
 
     /// <summary>Last interaction reported by the view.</summary>
     [ObservableProperty]

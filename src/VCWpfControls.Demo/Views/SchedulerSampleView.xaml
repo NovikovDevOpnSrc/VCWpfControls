@@ -4,28 +4,44 @@
              xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
              xmlns:scheduler="clr-namespace:VCWpfControls.Scheduler;assembly=VCWpfControls">
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,4">
-            <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
-            <ComboBox ItemsSource="{Binding ViewTypes}"
-                      SelectedItem="{Binding ViewType}"
-                      Width="100" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerViewTypeCombo" />
-            <Button Content="&#x2190; Prev"
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding ViewTypeOptions}"
+                      SelectedItem="{Binding SelectedViewType}"
+                      Width="110" VerticalAlignment="Center"
+                      AutomationProperties.Name="View type"
+                      AutomationProperties.AutomationId="SchedulerViewTypeCombo" />
+            <Button Grid.Column="2" Content="&#x2190; Prev"
                     Click="OnPrev"
-                    Margin="12,0,0,0" Padding="12,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerPrevButton" />
-            <Button Content="Next &#x2192;"
+                    Margin="12,0,0,0" Padding="12,4,12,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerPrevButton" />
+            <Button Grid.Column="3" Content="Next &#x2192;"
                     Click="OnNext"
-                    Margin="4,0,0,0" Padding="12,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerNextButton" />
-            <Button Content="Today"
+                    Margin="8,0,0,0" Padding="12,4,12,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerNextButton" />
+            <Button Grid.Column="4" Content="Today"
                     Click="OnToday"
-                    Margin="4,0,0,0" Padding="12,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerTodayButton" />
-            <TextBlock Text="{Binding LastAction}"
+                    Margin="8,0,0,0" Padding="12,4,12,4" VerticalAlignment="Center" AutomationProperties.AutomationId="SchedulerTodayButton" />
+            <!-- A star column WIDTH-CONSTRAINS the status line: inside the old horizontal
+                 StackPanel children measured with infinite width and TextTrimming never
+                 engaged (long feedback hard-clipped at the window edge). -->
+            <TextBlock Grid.Column="5" Text="{Binding LastAction}"
                        VerticalAlignment="Center" Margin="16,0,0,0"
-                       FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" TextTrimming="CharacterEllipsis" />
-        </StackPanel>
-        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" FontSize="12"
+                       FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       TextTrimming="CharacterEllipsis"
+                       AutomationProperties.LiveSetting="Polite" />
+        </Grid>
+        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" FontSize="12" TextWrapping="Wrap"
                    Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
                    Text="Keyboard: arrows select, Enter opens, Delete removes, T — today, Esc clears. Drag to move/resize; drag empty space to create." />
         <scheduler:SchedulerView x:Name="Scheduler"
+                                 AutomationProperties.Name="Appointment calendar"
                                  Appointments="{Binding Appointments}"
                                  ViewType="{Binding ViewType}"
                                  DayStartHour="8"

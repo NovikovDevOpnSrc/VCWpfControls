@@ -59,6 +59,19 @@ view.AppointmentCreated += (_, appointment) => OpenEditor(appointment);
 view.AppointmentDeleted += (_, appointment) => PersistRemoval(appointment); // Delete
 ```
 
+## Доступность и индикаторы скрытого
+
+Контрол несёт полную automation-поверхность: каждое видимое вхождение — DataItem-ребёнок
+пира календаря (имя = «Тема, начало – конец») с паттернами SelectionItem (выбор =
+`SelectedOccurrence`) и Invoke (канал `OccurrenceDoubleClicked`) — скрин-ридеры могут
+перечислять, выбирать и активировать встречи, а смена выделения поднимает UIA-события.
+Задайте контролу `AutomationProperties.Name` (в демо — «Appointment calendar»).
+
+Когда `DayStartHour`/`DayEndHour` пинят окно ýже данных, колонка дня рисует маленький
+маркер «▲ N / ▼ N» у краёв окна — сколько вхождений обрезано сверху и снизу; закреплённое
+окно никогда не прячет события молча. Клавиатурное выделение автоматически прокручивает
+выбранное вхождение в видимую область.
+
 ## Навигация
 
 ```csharp

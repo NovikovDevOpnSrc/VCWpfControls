@@ -31,7 +31,7 @@ public partial class SchedulerSampleView : UserControl
 
     private void OnAppointmentCreated(object sender, SchedulerAppointment appointment)
         => ((SchedulerSampleViewModel)DataContext).LastAction =
-            $"Created '{appointment.Subject}' {appointment.Start:g} \u2013 {appointment.End:g} (double-click to rename)";
+            $"Created '{appointment.Subject}' {appointment.Start:g} \u2013 {appointment.End:g} \u2014 drag to move, edges to resize";
 
     private void OnAppointmentDeleted(object sender, SchedulerAppointment appointment)
         => ((SchedulerSampleViewModel)DataContext).LastAction =

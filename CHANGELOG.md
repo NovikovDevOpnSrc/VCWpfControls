@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Scheduler accessibility and honest-window round (ui-review acceptance 3)
+
+The calendar had no automation surface — occurrences were OnRender pixels, invisible to
+screen readers. `SchedulerViewAutomationPeer` now exposes every visible occurrence as a
+DataItem child (name = "Subject, start – end") with SelectionItem (select =
+`SelectedOccurrence`) and Invoke (the double-click channel); selection changes raise UIA
+events. Pinned hour windows no longer silently hide data: each day column draws a
+"▲ N / ▼ N" cue at its window edges counting occurrences clipped above/below
+(`HiddenCounts` test hook). Keyboard selection scrolls the occurrence into view. Demo:
+the toolbar fixes 4px button gaps (→8), the status line moved into a star-sized Grid
+column (TextTrimming inside a horizontal StackPanel never engaged), the view combo shows
+display names ("Work week") instead of raw enum identifiers and carries an accessibility
+name, the status line is a polite live region, and the misleading "double-click to
+rename" promise became an honest "drag to move, edges to resize". 4 new STA regressions,
+3 guards injection-validated.
+
 ### Fixed — first ui-review acceptance round (Settings flyout + Editors)
 
 The new `vcwpf-ui-review` acceptance skill ran on two surfaces; the findings are fixed.
