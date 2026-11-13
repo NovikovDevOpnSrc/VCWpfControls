@@ -112,4 +112,26 @@
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
     </Style>
+
+    <!-- Implicit TextBox: stock chrome is a white box on dark surfaces (the grid's text
+         editor, PropertyGrid value editors, filter row); the caret is black on dark too. -->
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+    </Style>
+    <!-- Implicit DatePicker (GridDateColumn's editor): same stock-chrome class; its inner
+         PART_TextBox follows the TextBox style above. The calendar DROPDOWN remains a
+         stock system control (known limitation). -->
+    <Style TargetType="DatePickerTextBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
+    </Style>
+    <Style TargetType="DatePicker">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+    </Style>
 </ResourceDictionary>

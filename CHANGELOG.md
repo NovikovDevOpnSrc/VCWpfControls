@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — all-editors theme sweep (user request: re-verify every editor in every theme)
+
+An R1b sweep (realized text-vs-background, pixel-measured per theme) over every library
+editor — TextBox, MaskedTextBox, NumericUpDown, AutoComplete, ComboBox, CheckBox,
+RadioButton, DatePicker and the PropertyGrid's realized editors — in Light/Dark/
+HighContrast. Findings fixed: the stock **TextBox** rendered a white box on dark surfaces
+(the grid's text editor, PropertyGrid value editors, the filter row) with an invisible
+black caret — now an implicit themed style (Background/Foreground/BorderBrush/CaretBrush/
+SelectionBrush) in every theme dictionary; the stock **DatePicker** (GridDateColumn's
+editor) had the same white-box problem, fixed with implicit DatePicker and
+DatePickerTextBox styles (the inner box is a SEPARATE type a TextBox style cannot reach);
+**AutoComplete did not display its initial Text** (the DP-changed callback fired before
+the template, found no text box and dropped the value silently — OnApplyTemplate now
+pushes the current Text; NumericUpDown was suspected of the same but its coercion re-run
+already covers it — no change, behavior now locked by a regression). Chrome guards use
+the band MEDIAN luma (a min/max guard is blind to the white-chrome-black-text failure
+mode). Calendar dropdown popups remain stock system controls (known limitation).
+
 ### Fixed — stock chrome text unreadable in themed apps (user reports)
 
 Two dark-theme readability reports from the Basic binding page, both the same class the

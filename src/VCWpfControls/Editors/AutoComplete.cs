@@ -159,6 +159,12 @@ public class AutoComplete : Control
         {
             _textBox.TextChanged += OnInputChanged;
             _textBox.PreviewKeyDown += OnInputKeyDown;
+            if (!_suppressText)
+            {
+                _textBox.Text = Text; // a Text set BEFORE the template applied never
+                                      // reached the box (the callback found _textBox
+                                      // null and dropped it silently).
+            }
         }
 
         if (_list is not null)

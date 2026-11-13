@@ -193,6 +193,108 @@ public class AcceptanceFixTests
         }
     }
 
+    [StaFact]
+    public void Editors_DisplayInitialValueAndText()
+    {
+        // Editor-theme-sweep finding: a Value/Text set BEFORE the template applied never
+        // reached the inner box (the DP callback found _textBox null and dropped it) —
+        // both editors rendered empty until the first change.
+        var spinner = new NumericUpDown { Width = 200, Value = 42m };
+        var complete = new AutoComplete { Width = 200, Text = "Alice Johnson" };
+        var host = new StackPanel();
+        host.Children.Add(spinner);
+        host.Children.Add(complete);
+        var window = TestWindowHost.Show(host);
+        TestWindowHost.Pump();
+        try
+        {
+            var spinnerBox = Assert.IsType<TextBox>(spinner.Template.FindName("PART_TextBox", spinner));
+            Assert.Equal("42", spinnerBox.Text);
+            var completeBox = Assert.IsType<TextBox>(complete.Template.FindName("PART_TextBox", complete));
+            Assert.Equal("Alice Johnson", completeBox.Text);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void ThemedApps_TextBoxAndDatePicker_FollowTheDarkTheme()
+    {
+        // Sweep findings: the stock TextBox (grid text editor, PropertyGrid values, filter
+        // row) and the stock DatePicker (GridDateColumn's editor) rendered a WHITE box on
+        // the dark surface; the DatePicker's inner box is a DatePickerTextBox — a separate
+        // type needing its own style.
+        var host = new StackPanel();
+        host.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml"),
+        });
+        var box = new TextBox { Width = 160, Text = "Sample" };
+        var picker = new DatePicker { Width = 160, SelectedDate = new DateTime(2026, 11, 13) };
+        host.Children.Add(box);
+        host.Children.Add(picker);
+
+        var window = TestWindowHost.Show(host);
+        TestWindowHost.Pump();
+        try
+        {
+            AssertBandFollowsTheme(host, box, "TextBox");
+            var inner = Assert.IsAssignableFrom<TextBox>(picker.Template.FindName("PART_TextBox", picker));
+            AssertBandFollowsTheme(host, inner, "DatePickerTextBox");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static void AssertBandFollowsTheme(FrameworkElement host, FrameworkElement editor, string name)
+    {
+        ((Panel)host).Background = Brushes.DimGray; // expose chrome vs surface distinctly
+        TestWindowHost.Pump();
+        var width = (int)Math.Ceiling(host.ActualWidth);
+        var height = (int)Math.Ceiling(host.ActualHeight);
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+        var visual = new DrawingVisual();
+        using (var ctx = visual.RenderOpen())
+        {
+            ctx.DrawRectangle(new VisualBrush(host), null, new Rect(0, 0, width, height));
+        }
+
+        bitmap.Render(visual);
+        var pixels = new byte[width * height * 4];
+        bitmap.CopyPixels(pixels, width * 4, 0);
+
+        var topLeft = editor.TranslatePoint(new Point(0, 0), host);
+        var yStart = (int)(topLeft.Y + editor.ActualHeight / 4);
+        var yEnd = (int)(topLeft.Y + editor.ActualHeight * 3 / 4);
+        var lumas = new List<int>();
+        for (var y = yStart; y <= yEnd; y++)
+        {
+            for (var x = (int)topLeft.X + 3; x < topLeft.X + editor.ActualWidth - 3; x++)
+            {
+                var i = (y * width + x) * 4;
+                if (pixels[i + 3] < 200)
+                {
+                    continue;
+                }
+
+                lumas.Add((pixels[i] * 11 + pixels[i + 1] * 59 + pixels[i + 2] * 30) / 100);
+            }
+        }
+
+        Assert.NotEmpty(lumas);
+        lumas.Sort();
+        // MEDIAN = the chrome (the dominant surface of the band): the broken state was a
+        // white box with BLACK text — min/max both pass that; the median does not.
+        var median = lumas[lumas.Count / 2];
+        var maxLuma = lumas[^1];
+        Assert.True(median < 80, $"{name}: chrome still light (median luma {median})");
+        Assert.True(maxLuma > 200, $"{name}: text still invisible (max luma {maxLuma})");
+    }
+
     [StaTheory]
     [InlineData(GridTheme.Light)]
     [InlineData(GridTheme.Dark)]
