@@ -5,22 +5,52 @@
              xmlns:editors="clr-namespace:VCWpfControls.Editors;assembly=VCWpfControls">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel MaxWidth="480" HorizontalAlignment="Left">
-            <TextBlock FontWeight="SemiBold" Text="Masked inputs" />
-            <TextBlock Margin="0,4,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="Phone mask +7 (000) 000-00-00 — literals are typed automatically" />
-            <editors:MaskedTextBox Mask="+7 (000) 000-00-00" Margin="0,0,0,12" />
+            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Masked inputs" />
+            <TextBlock Margin="0,4,0,6" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       Text="Phone mask +7 (000) 000-00-00 — literals are typed automatically" />
+            <editors:MaskedTextBox x:Name="PhoneMask" Mask="+7 (000) 000-00-00" MinHeight="32" Margin="0,0,0,12" />
 
-            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="Serial number LL-0000 (two letters required, digits required)" />
-            <editors:MaskedTextBox Mask="LL-0000" PromptChar="*" Margin="0,0,0,12" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       Text="Serial number LL-0000 (two letters required, digits required)" />
+            <editors:MaskedTextBox x:Name="SerialMask" Mask="LL-0000" PromptChar="*" MinHeight="32" Margin="0,0,0,12" />
 
-            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="Date 00/00/0000 with literals included in Value" />
-            <editors:MaskedTextBox x:Name="DateMask" Mask="00/00/0000" IncludeLiterals="True" Margin="0,0,0,12" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       Text="Date 00/00/0000 with literals included in Value" />
+            <editors:MaskedTextBox x:Name="DateMask" Mask="00/00/0000" IncludeLiterals="True" MinHeight="32" Margin="0,0,0,12" />
 
-            <TextBlock FontWeight="SemiBold" Margin="0,8,0,4" Text="Numeric spinners" />
-            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="0..100, step 1; arrows, wheel and repeat buttons" />
-            <editors:NumericUpDown MinValue="0" MaxValue="100" Value="42" Margin="0,0,0,12" />
+            <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,24,0,4" Text="Numeric spinners" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       Text="0..100, step 1; arrows, wheel and repeat buttons" />
+            <editors:NumericUpDown x:Name="Spinner" MinValue="0" MaxValue="100" Value="42" MinHeight="32" Margin="0,0,0,12" />
 
-            <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Text="0..10, step 0.25, currency format" />
-            <editors:NumericUpDown MinValue="0" MaxValue="10" Increment="0.25" FormatString="C2" Value="2.5" Margin="0,0,0,12" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       Text="0..10, step 0.25, currency format" />
+            <editors:NumericUpDown x:Name="Price" MinValue="0" MaxValue="10" Increment="0.25" FormatString="C2" Value="2.5" MinHeight="32" Margin="0,0,0,12" />
+
+            <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,24,0,4" Text="Auto-complete" />
+            <TextBlock Margin="0,0,0,6" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                       Text="Type a few letters — suggestions filter as you go; arrows + Enter accept" />
+            <editors:AutoComplete x:Name="NameComplete" MinHeight="32" Margin="0,0,0,12" />
+
+            <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,24,0,4" Text="Current values" />
+            <StackPanel Margin="0,0,0,12">
+                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           Text="{Binding Text, ElementName=PhoneMask, StringFormat='Phone: {0}'}" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           Text="{Binding Value, ElementName=DateMask, StringFormat='Date value: {0}'}" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           Text="{Binding Value, ElementName=Spinner, StringFormat='Spinner: {0}'}" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           Text="{Binding Value, ElementName=Price, StringFormat='Price: {0:C}'}" />
+                <TextBlock FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           Text="{Binding Text, ElementName=NameComplete, StringFormat='Name: {0}'}" />
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

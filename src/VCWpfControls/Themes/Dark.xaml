@@ -24,4 +24,13 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF6A00" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E8C8C8C" />
 
+    <!-- Implicit ComboBox (merged app-wide by ThemeManager): themed chrome + the 32px
+         field minimum; the stock template would sit as a light box on the dark surface. -->
+    <Style TargetType="ComboBox">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
 </ResourceDictionary>

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — first ui-review acceptance round (Settings flyout + Editors)
+
+The new `vcwpf-ui-review` acceptance skill ran on two surfaces; the findings are fixed.
+Library: an implicit themed `ComboBox` style in every theme dictionary (merged app-wide
+by `ThemeManager`) lifts stock 22px light-chrome boxes to the 32px field minimum with
+theme-correct colors; `NumericUpDown` is no longer a dead tab stop (the inner TextBox
+owns the caret), its spin buttons reach the 24px target width and gained a real
+`IsMouseOver` state (the old template rested on the hover token with no trigger — hover
+was invisible). Demo: the settings flyout's theme radios are a vertical list (the
+horizontal row overflowed the 380px flyout — trailing options were unreachable), the
+flyout takes keyboard focus on open and closes on Esc, the "High contrast" radio no
+longer claims "(follow Windows)" (that mode pins the theme; only System follows the OS),
+combos carry accessibility names; the Editors page gained 16px section headers, caption
+wrapping, 32px form fields, an AutoComplete section and a live values readout.
+Regression guards: themed-ComboBox (×3 themes), tab-stop metadata, spin width + hover
+trigger — all injection-validated.
+
 ## [0.5.4] — 2026-11-11
 
 High-contrast theme following the live Windows contrast scheme, the scheduler keyboard

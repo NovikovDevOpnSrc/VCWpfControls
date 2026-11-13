@@ -28,4 +28,15 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+
+    <!-- Implicit ComboBox (merged app-wide by ThemeManager): the setters resolve through
+         the HC token aliases (Window/WindowText/WindowFrame), so the picker follows the
+         user's contrast scheme. -->
+    <Style TargetType="ComboBox">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
 </ResourceDictionary>

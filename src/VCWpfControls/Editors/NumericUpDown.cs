@@ -69,6 +69,13 @@ public class NumericUpDown : Control
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(NumericUpDown),
             new FrameworkPropertyMetadata(typeof(NumericUpDown)));
+        // The wrapper itself is NOT a tab stop: the inner TextBox handles the caret, and a
+        // focusable wrapper adds a dead Tab press before every spinner (acceptance fix;
+        // AutoComplete uses the same pattern).
+        KeyboardNavigation.IsTabStopProperty.OverrideMetadata(typeof(NumericUpDown),
+            new FrameworkPropertyMetadata(false));
+        FocusableProperty.OverrideMetadata(typeof(NumericUpDown),
+            new FrameworkPropertyMetadata(false));
     }
 
     /// <summary>Occurs after <see cref="Value"/> changed.</summary>

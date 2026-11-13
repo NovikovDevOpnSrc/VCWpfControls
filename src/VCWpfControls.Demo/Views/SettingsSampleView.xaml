@@ -6,47 +6,52 @@
     <UserControl.Resources>
         <converters:EqualsConverter x:Key="EqualsConverter" />
     </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="0,8,0,0" MaxWidth="560" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                       Margin="0,0,0,12" />
+
             <TextBlock Text="Theme" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,0,0,6" />
-            <StackPanel Orientation="Horizontal">
+            <!-- Vertical list: the flyout's usable width (~346px) cannot hold the four
+                 options in one row (~490px English, more in RU) — trailing radios were
+                 clipped and unreachable. Vertical rows are also bigger hit targets. -->
+            <StackPanel>
                 <RadioButton Content="Light" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=Light}"
-                             Margin="0,0,16,0"
-                             AutomationProperties.AutomationId="SettingsThemeLightRadio" />
+                             Margin="0,0,0,8" AutomationProperties.AutomationId="SettingsThemeLightRadio" />
                 <RadioButton Content="Dark" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=Dark}"
-                             Margin="0,0,16,0"
-                             AutomationProperties.AutomationId="SettingsThemeDarkRadio" />
-                <RadioButton Content="High contrast (follow Windows)"
+                             Margin="0,0,0,8" AutomationProperties.AutomationId="SettingsThemeDarkRadio" />
+                <RadioButton Content="High contrast"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=HighContrast}"
                              Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
-                             Margin="0,0,16,0"
-                             AutomationProperties.AutomationId="SettingsThemeHighContrastRadio" />
+                             Margin="0,0,0,8" AutomationProperties.AutomationId="SettingsThemeHighContrastRadio" />
                 <RadioButton Content="System (follow Windows)"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=System}"
                              Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                              AutomationProperties.AutomationId="SettingsThemeSystemRadio" />
             </StackPanel>
 
-            <TextBlock Text="Accent" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,16,0,6" />
+            <TextBlock Text="Accent" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,24,0,6" />
             <ComboBox ItemsSource="{Binding AccentOptions}"
                       SelectedItem="{Binding Accent}"
                       Width="180" HorizontalAlignment="Left"
+                      AutomationProperties.Name="Accent preset"
                       AutomationProperties.AutomationId="SettingsAccentCombo" />
 
-            <TextBlock Text="Language (library strings)" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,16,0,6" />
+            <TextBlock Text="Language (library strings)" FontWeight="SemiBold" Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" Margin="0,24,0,6" />
             <ComboBox ItemsSource="{Binding LanguageOptions}"
                       SelectedItem="{Binding Language}"
                       Width="240" HorizontalAlignment="Left"
+                      AutomationProperties.Name="Library language"
                       AutomationProperties.AutomationId="SettingsLanguageCombo" />
             <TextBlock Text="Switches the localized library strings (grid menus, hints, wizard buttons, empty states). Demo page texts stay English; already rendered strings refresh on the next interaction."
                        TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" Margin="0,6,0,0" />
 
             <Button Content="Reset to defaults"
                     Click="OnReset"
-                    Margin="0,24,0,0" Padding="12,8" HorizontalAlignment="Left"
+                    Margin="0,24,0,0" Padding="12,8,12,8" HorizontalAlignment="Left"
                     AutomationProperties.AutomationId="SettingsResetButton" />
         </StackPanel>
     </ScrollViewer>

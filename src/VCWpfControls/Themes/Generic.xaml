@@ -529,13 +529,18 @@
                                 TextAlignment="Right"
                                 IsReadOnly="{TemplateBinding IsReadOnly}" />
                             <StackPanel Grid.Column="1" Margin="0,2,2,2">
-                                <RepeatButton x:Name="PART_UpButton" Content="▴" Width="22" Height="12" Focusable="False" Padding="0">
+                                <RepeatButton x:Name="PART_UpButton" Content="▴" Width="24" Height="12" Focusable="False" Padding="0">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border x:Name="Bd" Background="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" CornerRadius="2,2,0,0">
+                                            <!-- Rest is quiet; hover/pressed carry the state (the old template
+                                                 RESTED on the hover token with no trigger — hover was invisible). -->
+                                            <Border x:Name="Bd" Background="Transparent" CornerRadius="2,2,0,0">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                                                </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
                                                     <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
                                                 </Trigger>
@@ -543,13 +548,16 @@
                                         </ControlTemplate>
                                     </RepeatButton.Template>
                                 </RepeatButton>
-                                <RepeatButton x:Name="PART_DownButton" Content="▾" Width="22" Height="12" Focusable="False" Padding="0" Margin="0,1,0,0">
+                                <RepeatButton x:Name="PART_DownButton" Content="▾" Width="24" Height="12" Focusable="False" Padding="0" Margin="0,1,0,0">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border x:Name="Bd" Background="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" CornerRadius="0,0,2,2">
+                                            <Border x:Name="Bd" Background="Transparent" CornerRadius="0,0,2,2">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                                                </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
                                                     <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
                                                 </Trigger>

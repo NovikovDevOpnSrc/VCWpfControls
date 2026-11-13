@@ -10,5 +10,10 @@ public partial class EditorsSampleView : UserControl
     {
         InitializeComponent();
         this.SetValue(System.Windows.Automation.AutomationProperties.AutomationIdProperty, "EditorsSample");
+        NameComplete.ItemsSource = new[]
+        {
+            "Alice Johnson", "Albert Wagner", "Amelia Clarke", "Boris Novak",
+            "Clara Oswald", "Dmitri Ivanov", "Elena Petrova", "Frederik Zimen",
+        };
     }
 }

@@ -79,6 +79,13 @@ public sealed class SettingsUiTests : IDisposable
         {
             var flyout = OpenSettings();
 
+            // The shell moves the keyboard INTO the flyout on open (a popup is a separate
+            // focus scope; without the move the surface is mouse-only — acceptance fix).
+            var firstRadio = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeLightRadio"))
+                ?? throw new InvalidOperationException("first theme radio not found");
+            Assert.True(firstRadio.Properties.HasKeyboardFocus.ValueOrDefault,
+                "opening the flyout must focus the first theme option");
+
             // Theme: the Dark radio selects and sticks.
             var dark = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeDarkRadio"))
                 ?? throw new InvalidOperationException("dark radio not found");

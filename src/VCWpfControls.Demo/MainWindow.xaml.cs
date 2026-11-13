@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VCWpfControls.Demo.ViewModels;
 
@@ -46,8 +47,28 @@ public partial class MainWindow : Window
         Services.SystemThemeWatcher.HighContrastChanged += OnSystemThemeFlip;
     }
 
+    /// <inheritdoc />
+    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    {
+        base.OnPreviewKeyDown(e);
+        if (e.Key == Key.Escape && SettingsPopup.IsOpen)
+        {
+            SettingsPopup.IsOpen = false; // Esc closes the flyout (guidelines: Esc for panels)
+            e.Handled = true;
+        }
+    }
+
     private void OnSettingsClick(object sender, System.Windows.RoutedEventArgs e)
-        => SettingsPopup.IsOpen = !SettingsPopup.IsOpen;
+    {
+        SettingsPopup.IsOpen = !SettingsPopup.IsOpen;
+        if (SettingsPopup.IsOpen)
+        {
+            // The popup is a separate focus scope — move the keyboard into it, or the
+            // whole settings surface stays mouse-only (acceptance round finding).
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,
+                () => SettingsFlyout.FocusFirstOption());
+        }
+    }
 
     private void OnSystemThemeFlip(object? sender, bool e)
     {
