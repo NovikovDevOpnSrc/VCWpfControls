@@ -19,6 +19,15 @@ light). Every theme dictionary now carries implicit themed styles for CheckBox
 ThemeManager. Regression: realized-contrast tests (checkbox text follows the theme;
 dropdown item ≥ 4.5:1), injection-validated.
 
+Follow-up (user report): the CLOSED combo editor still rendered light chrome under light
+text — the stock ComboBox template IGNORES Background/BorderBrush (the chrome is baked
+into the system theme), so setter-only styling painted the property, not the pixels
+(probe: Background property #FF292929, text band all-light luma 232–255). The implicit
+ComboBox style gained a full themed ControlTemplate (themed toggle+chrome, hover and
+open states, PART_EditableTextBox for editable mode, themed popup surface). Pixel
+regression: the dark editor's text band must contain both dark chrome (<80 luma) and
+light glyphs (>200), injection-validated.
+
 ### Added — Scheduler accessibility and honest-window round (ui-review acceptance 3)
 
 The calendar had no automation surface — occurrences were OnRender pixels, invisible to

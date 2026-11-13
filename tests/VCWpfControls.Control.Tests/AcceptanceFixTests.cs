@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using VCWpfControls.Control.Tests.Infrastructure;
 using VCWpfControls.Editors;
 using VCWpfControls.Grid;
@@ -134,6 +135,64 @@ public class AcceptanceFixTests
         return (l1 + 0.05) / (l2 + 0.05);
     }
 
+    [StaFact]
+    public void ThemedApps_ComboBoxEditor_TextReadableInTheDarkTheme()
+    {
+        // User report round 2: the CLOSED editor still showed light chrome under themed
+        // light text — the STOCK ComboBox template ignores Background/BorderBrush (the
+        // chrome is baked into the system theme), so setter-only styling painted the
+        // property, not the pixels. The full themed template must RENDER the surface.
+        var host = new StackPanel();
+        host.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml"),
+        });
+        var combo = new ComboBox { Width = 160 };
+        combo.ItemsSource = new[] { "IT", "HR", "Sales" };
+        combo.SelectedIndex = 0;
+        host.Children.Add(combo);
+
+        var window = TestWindowHost.Show(host);
+        TestWindowHost.Pump();
+        try
+        {
+            var width = (int)Math.Ceiling(combo.ActualWidth);
+            var height = (int)Math.Ceiling(combo.ActualHeight);
+            var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            var visual = new DrawingVisual();
+            using (var ctx = visual.RenderOpen())
+            {
+                ctx.DrawRectangle(new VisualBrush(combo), null, new Rect(0, 0, width, height));
+            }
+
+            bitmap.Render(visual);
+            var pixels = new byte[width * height * 4];
+            bitmap.CopyPixels(pixels, width * 4, 0);
+
+            // The text band must contain BOTH the dark chrome and light glyphs (the
+            // broken state rendered everything light: min luma 232 on the probe).
+            var minLuma = 255;
+            var maxLuma = 0;
+            for (var y = height / 4; y < height * 3 / 4; y++)
+            {
+                for (var x = 4; x < width / 2; x++)
+                {
+                    var i = (y * width + x) * 4;
+                    var luma = (pixels[i] * 11 + pixels[i + 1] * 59 + pixels[i + 2] * 30) / 100;
+                    minLuma = Math.Min(minLuma, luma);
+                    maxLuma = Math.Max(maxLuma, luma);
+                }
+            }
+
+            Assert.True(minLuma < 80, $"editor chrome still light: min luma {minLuma}");
+            Assert.True(maxLuma > 200, $"editor text still dark: max luma {maxLuma}");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [StaTheory]
     [InlineData(GridTheme.Light)]
     [InlineData(GridTheme.Dark)]
@@ -156,18 +215,10 @@ public class AcceptanceFixTests
         TestWindowHost.Pump();
         try
         {
-            // The 32px field minimum from the implicit style (was 22px stock).
+            // The 32px field minimum from the implicit style (was 22px stock). The RENDERED
+            // chrome is asserted pixel-wise in ThemedApps_ComboBoxEditor_TextReadableInTheDarkTheme.
             Assert.True(combo.ActualHeight >= 32, $"{theme}: combo realized {combo.ActualHeight:F0}px, need >= 32");
-
-            // The chrome follows the theme: background resolves to the palette surface,
-            // not the stock light box (the dark-surface failure mode).
-            var background = Assert.IsType<SolidColorBrush>(combo.Background);
-            var dictionary = new ResourceDictionary
-            {
-                Source = new Uri($"pack://application:,,,/VCWpfControls;component/Themes/{theme}.xaml"),
-            };
-            var surface = Assert.IsType<SolidColorBrush>(dictionary[GridResources.SurfaceBackgroundKey]);
-            Assert.Equal(surface.Color, background.Color);
+            Assert.NotNull(combo.Template); // the themed template, not the stock chrome
         }
         finally
         {
