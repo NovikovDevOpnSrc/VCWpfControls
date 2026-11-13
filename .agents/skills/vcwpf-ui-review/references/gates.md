@@ -60,6 +60,10 @@ padding ≥ 20. `x:Name` only for elements the code-behind actually references.
 Environment check FIRST: render a known-good control offscreen (VisualBrush method,
 R5). All-empty output ⇒ RDP session disconnected ⇒ mark R1–R7 SKIPPED, report it.
 
+If the surface lives in the Demo assembly: `Control.Tests` has NO reference to it —
+either replicate the page's controls inline (identical instances + layout; the measured
+metrics come from library styles, not the page) or run the probe from UiTests.
+
 ### R1 — Contrast per theme and state (the XIAS state-aware WCAG idea)
 Resolve the token pairs from each theme dictionary and compute WCAG ratios:
 TextBrush×SurfaceBackground, MutedText×SurfaceBackground, HeaderForeground×HeaderBackground,
@@ -88,6 +92,12 @@ static double Contrast(Color a, Color b) { var l1 = Math.Max(Lum(a), Lum(b)); va
 Report EVERY pair's numbers (see the report table format). Below 4.5:1 for text or 3:1
 for large/UI = FAIL, Major. Element-level custom colors (BarBrush etc.) get measured the
 same way against their actual background.
+
+**High-contrast exemption:** WCAG 1.4.3 exempts text rendered by the OS high-contrast
+mode, and pairs aliased to `SystemColors` (Highlight/HighlightText etc.) belong to the
+user's accessibility palette — overriding them would violate A11Y-003. When an HC pair
+measures below 4.5:1, report the measured number and verdict `EXEMPT (OS palette)`,
+never a FAIL, never a "fix".
 
 ### R2 — Realized metrics
 `TestWindowHost.Show(surface); Pump();` then walk the tree (`VisualTreeHelper`): every
