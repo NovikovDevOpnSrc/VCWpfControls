@@ -157,7 +157,10 @@ demo); prefer a fresh subagent holding only the artifact + this list.
 - **C3 Uniformity slop** — N identical cards doing different jobs; same radius/shadow
   everywhere; decorative gradients. Vary shape by meaning.
 - **C4 Empty ≠ broken** — empty states must read "nothing here yet + how to start",
-  not "the page failed".
+  not "the page failed". Includes SILENT CLIPPING by pinned windows: an hour range,
+  zoom level or frozen zone that hides real data (the view shows a day that LOOKS
+  empty while occurrences exist outside the window) is the same failure class —
+  check the sample/data ranges against every pinned window.
 - **C5 Loading ≠ disabled** — busy states keep full strength + spinner; disabled
   dimming is for "cannot", never for "wait".
 - **C6 Honest feedback** — a status line/toast claiming a change must match an actual
