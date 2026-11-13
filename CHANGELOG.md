@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Department editor empty when editing began (user report; root-caused)
+
+The Column types page bound the combo/auto-complete columns' `ItemsSource` through the
+page's BindingProxy with a path missing the `Data.` prefix — `{Binding Departments,
+Source=PageProxy}` resolves against the PROXY (which has no Departments property), so the
+columns received null and the editor rendered empty when editing began (dropdown too).
+Fixed to `Data.Departments`/`Data.Names`. WHO LET IT SLIP: the original proxy round
+validated the proxy MECHANISM with a correct path in an STA probe, but nothing covered
+the live page's XAML — Control.Tests cannot reference the Demo assembly and FlaUI cannot
+see the combo before edit mode; the new regression replicates the live flow (column +
+proxy binding + BeginEdit) and asserts the editor shows the current value,
+injection-validated with the broken path.
+
 ### Fixed — all-editors theme sweep (user request: re-verify every editor in every theme)
 
 An R1b sweep (realized text-vs-background, pixel-measured per theme) over every library

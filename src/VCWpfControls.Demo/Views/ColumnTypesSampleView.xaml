@@ -21,12 +21,12 @@
             <columns:GridTextColumn FieldName="Email" Header="Email" Width="*" />
             <columns:GridComboBoxColumn FieldName="Department" Header="Department"
                                         Width="130"
-                                        ItemsSource="{Binding Departments, Source={StaticResource PageProxy}}" />
+                                        ItemsSource="{Binding Data.Departments, Source={StaticResource PageProxy}}" />
             <columns:GridNumericColumn FieldName="Salary" Header="Salary" Width="120" StringFormat="C" />
             <columns:GridDateColumn FieldName="HireDate" Header="Hired" Width="120" />
             <columns:GridCheckBoxColumn FieldName="IsActive" Header="Active" Width="70" />
             <columns:GridAutoCompleteColumn FieldName="Name" Header="Name (auto-complete)" Width="190"
-                                            ItemsSource="{Binding Names, Source={StaticResource PageProxy}}" />
+                                            ItemsSource="{Binding Data.Names, Source={StaticResource PageProxy}}" />
             <columns:GridTemplateColumn FieldName="Salary" Header="Level" Width="90">
                 <columns:GridTemplateColumn.CellTemplate>
                     <DataTemplate>
