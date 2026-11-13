@@ -120,9 +120,27 @@ public sealed class SettingsUiTests : IDisposable
                 .FirstOrDefault(b => (b.Properties.Name.ValueOrDefault ?? "") == "Далее");
             Assert.NotNull(next); // GridStrings.WizardNext in Russian — the setting reached the library
 
-            // Settings survive a flyout round-trip (the VM persisted them).
+            // Settings survive a flyout round-trip (the VM persisted them). The selected
+            // item's UIA NAME can lag a dispatcher pass after the popup re-created its
+            // containers on slow runners (observed: deterministically "" on CI, green
+            // locally) — re-FIND and re-read for up to 3s instead of trusting one read.
             var reopened = OpenSettings();
-            Assert.Equal("Purple", reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))!.AsComboBox().SelectedItem?.Text);
+            string? selected = null;
+            for (var attempt = 0; attempt < 30; attempt++)
+            {
+                var combo = reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))?.AsComboBox();
+                selected = combo?.SelectedItem?.Text;
+                if (selected == "Purple")
+                {
+                    break;
+                }
+
+                System.Threading.Thread.Sleep(100);
+            }
+
+            Assert.True(selected == "Purple",
+                $"accent did not persist the flyout round-trip: selected='{selected}' " +
+                $"(combo name='{reopened.FindFirstDescendant(cf => cf.ByAutomationId("SettingsAccentCombo"))?.Properties.Name.ValueOrDefault}')");
             Assert.False(_app.HasExited, "application crashed during settings churn");
         }
         finally
