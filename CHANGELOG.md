@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] — 2026-11-13
+
+UI acceptance as a process + a theme/accessibility sweep over every editor and control
+surface: the new `vcwpf-ui-review` gate skill, three full acceptances with all findings
+fixed (themed templates and styles for ComboBox/TextBox/DatePicker/CheckBox/ComboBoxItem
+across all four palettes; Scheduler automation peers and hidden-content cues; the
+settings flyout's keyboard/overflow fixes), and the user-reported bugs (Department
+editor empty — proxy binding path; unreadable editor text in dark themes; the initial
+AutoComplete text). +17 injection-validated regressions.
+
 ### Fixed — Department editor empty when editing began (user report; root-caused)
 
 The Column types page bound the combo/auto-complete columns' `ItemsSource` through the
