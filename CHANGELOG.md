@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — stock chrome text unreadable in themed apps (user reports)
+
+Two dark-theme readability reports from the Basic binding page, both the same class the
+new R1b gate now covers (palette pairs passed while REAL elements rendered unreadable):
+the stock CheckBox painted its label `ControlText` black regardless of the theme
+("Show column separators" — black on dark), and the themed ComboBox's dropdown kept
+stock light ComboBoxItems under themed light text (the Department editor — light on
+light). Every theme dictionary now carries implicit themed styles for CheckBox
+(Foreground) and ComboBoxItem (Foreground + Background), merged app-wide by
+ThemeManager. Regression: realized-contrast tests (checkbox text follows the theme;
+dropdown item ≥ 4.5:1), injection-validated.
+
 ### Added — Scheduler accessibility and honest-window round (ui-review acceptance 3)
 
 The calendar had no automation surface — occurrences were OnRender pixels, invisible to

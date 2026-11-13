@@ -55,6 +55,85 @@ public class AcceptanceFixTests
         }
     }
 
+    [StaFact]
+    public void ThemedApps_StockCheckBoxText_FollowsTheTheme()
+    {
+        // User report: "Show column separators" was black on the dark surface — the stock
+        // CheckBox template paints ControlText regardless of the theme. The implicit
+        // themed style must carry the text brush.
+        var host = new StackPanel();
+        host.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml"),
+        });
+        var box = new CheckBox { Content = "Show column separators" };
+        host.Children.Add(box);
+
+        var window = TestWindowHost.Show(host);
+        TestWindowHost.Pump();
+        try
+        {
+            var text = Assert.IsType<SolidColorBrush>(box.Foreground);
+            Assert.Equal(Color.FromRgb(0xFF, 0xFF, 0xFF), text.Color); // Dark TextBrush
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [StaFact]
+    public void ThemedApps_ComboBoxDropDown_ItemsReadableInTheDarkTheme()
+    {
+        // User report: the Department dropdown's editor showed light text on a light
+        // popup — the ComboBox was themed but its ITEMS (ComboBoxItem) kept stock chrome.
+        var host = new StackPanel();
+        host.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml"),
+        });
+        var combo = new ComboBox();
+        combo.ItemsSource = new[] { "IT", "HR", "Sales" };
+        combo.SelectedIndex = 0;
+        host.Children.Add(combo);
+
+        var window = TestWindowHost.Show(host);
+        TestWindowHost.Pump();
+        combo.IsDropDownOpen = true; // containers generate only when the dropdown opens
+        TestWindowHost.Pump();
+        try
+        {
+            var item = (ComboBoxItem)combo.ItemContainerGenerator.ContainerFromIndex(0);
+            Assert.NotNull(item);
+            var foreground = Assert.IsType<SolidColorBrush>(item.Foreground);
+            var background = Assert.IsType<SolidColorBrush>(item.Background);
+            Assert.True(Contrast(foreground.Color, background.Color) >= 4.5,
+                $"dropdown item contrast {Contrast(foreground.Color, background.Color):F2}:1 — text must be readable on its own background");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static double Lum(Color c)
+    {
+        double F(int v)
+        {
+            var s = v / 255.0;
+            return s <= 0.03928 ? s / 12.92 : Math.Pow((s + 0.055) / 1.055, 2.4);
+        }
+
+        return 0.2126 * F(c.R) + 0.7152 * F(c.G) + 0.0722 * F(c.B);
+    }
+
+    private static double Contrast(Color a, Color b)
+    {
+        var l1 = Math.Max(Lum(a), Lum(b));
+        var l2 = Math.Min(Lum(a), Lum(b));
+        return (l1 + 0.05) / (l2 + 0.05);
+    }
+
     [StaTheory]
     [InlineData(GridTheme.Light)]
     [InlineData(GridTheme.Dark)]

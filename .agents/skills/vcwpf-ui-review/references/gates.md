@@ -99,6 +99,28 @@ user's accessibility palette — overriding them would violate A11Y-003. When an
 measures below 4.5:1, report the measured number and verdict `EXEMPT (OS palette)`,
 never a FAIL, never a "fix".
 
+### R1b — REALIZED text-vs-background contrast (per element, per theme)
+
+R1's token pairs can pass while a REAL element still renders unreadable text: the token
+system only covers what USES the tokens. Stock WPF chrome ignores it — the stock
+CheckBox paints `ControlText` (black) regardless of the theme (black-on-dark), and a
+themed ComboBox's dropdown keeps stock light ComboBoxItems under themed light text
+(light-on-light). Both shipped as user reports after an acceptance that passed R1.
+
+Method (per swept theme, on the realized surface): walk the visual tree; for every
+text-bearing leaf — TextBlock, TextBox, CheckBox/RadioButton content, ComboBoxItem,
+code-drawn `DrawText` where geometry is known — take the effective Foreground (own, else
+inherited) and the effective BACKGROUND = the nearest ancestor with a non-null
+`Background` (fallback: the theme SurfaceBackground token); compute the WCAG ratio;
+FAIL below 4.5:1 with both colors and the element's type + name in the evidence.
+
+Known culprits to check explicitly: stock CheckBox/RadioButton Foreground, ComboBoxItem
+(and any dropdown/popup surface), Popups (separate HWND — host content inherits the
+popup's own resources, not the window's), and any control whose template was never
+re-templated for themes. When the root cause is stock chrome, the fix is an implicit
+themed style in the theme dictionaries (merged app-wide by ThemeManager) — see
+`AcceptanceFixTests` for the regression shape.
+
 ### R2 — Realized metrics
 `TestWindowHost.Show(surface); Pump();` then walk the tree (`VisualTreeHelper`): every
 Button/RepeatButton/ToggleButton/Editor — `ActualHeight ≥ 32` (icon-only ≥ 24),
