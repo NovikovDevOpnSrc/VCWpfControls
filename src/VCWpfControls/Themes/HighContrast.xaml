@@ -40,6 +40,7 @@
         <Setter Property="Padding" Value="8,0,24,0" />
         <Setter Property="MaxDropDownHeight" Value="220" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
         <!-- Full themed template: the STOCK template ignores Background/BorderBrush (the
              chrome is baked into the system theme), so a themed Foreground rendered as
              light text on light chrome — unreadable editors in the dark theme. -->
@@ -79,7 +80,7 @@
                         <TextBox x:Name="PART_EditableTextBox" Margin="{TemplateBinding Padding}" VerticalAlignment="Center"
                                  Background="Transparent" BorderThickness="0" Foreground="{TemplateBinding Foreground}"
                                  IsReadOnly="{TemplateBinding IsReadOnly}" Visibility="Collapsed" />
-                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Placement="Bottom" PopupAnimation="Fade">
+                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Placement="Bottom">
                             <Border Margin="0,2,0,0" CornerRadius="4" MinWidth="{TemplateBinding ActualWidth}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                     Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}"
