@@ -12,7 +12,7 @@
     <Window.Resources>
         <!-- Guidelines: min interactive height 32px (Fitts); applies to page toolbars,
              the settings flyout and the wizard template buttons. -->
-        <Style TargetType="{x:Type Button}">
+        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="MinHeight" Value="32" />
         </Style>
         <DataTemplate DataType="{x:Type vm:BasicSampleViewModel}">

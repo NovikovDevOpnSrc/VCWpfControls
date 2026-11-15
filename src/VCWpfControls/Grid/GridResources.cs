@@ -82,4 +82,10 @@ public static class GridResources
 
     /// <summary>Translucent fill of Gantt baseline bands and legend glyphs (muted gray; flat window color in high contrast, where the border conveys the band).</summary>
     public static readonly ComponentResourceKey BaselineFillKey = new(typeof(GridResources), "BaselineFill");
+
+    /// <summary>Text color on accent fills — the primary CTA style pairs AccentKey background with this foreground (readable in both palettes; high contrast keeps system colors).</summary>
+    public static readonly ComponentResourceKey OnAccentTextKey = new(typeof(GridResources), "OnAccentText");
+
+    /// <summary>The primary CTA button style: accent-filled, for the ONE main action of a dialog (the wizard's Next/Finish). High contrast keeps the standard chrome and marks the primary with weight.</summary>
+    public static readonly ComponentResourceKey PrimaryButtonStyleKey = new(typeof(GridResources), "PrimaryButtonStyle");
 }

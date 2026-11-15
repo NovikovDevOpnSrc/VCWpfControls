@@ -34,6 +34,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="#FFE0E0E0" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#461E78FF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF4500" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.OnAccentTextKey}" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E696969" />
 
 <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
@@ -753,12 +754,38 @@
                         CornerRadius="8"
                         Padding="12">
                         <DockPanel>
+                            <!-- Empty state (a no-pages wizard read as a broken frame). -->
+                            <TextBlock
+                                x:Name="PART_EmptyState"
+                                DockPanel.Dock="Top"
+                                HorizontalAlignment="Center"
+                                Margin="0,24,0,24"
+                                FontSize="{DynamicResource {x:Static grid:GridResources.FontSizeBodyKey}}"
+                                Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                                Text="{x:Static localization:GridStrings.WizardNoPages}"
+                                Visibility="Collapsed" />
+
+                            <!-- Header + step indicator: the page caption and the sense of
+                                 place ("2 of 3") the wizard previously had none of. -->
+                            <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                                <TextBlock
+                                    FontSize="{DynamicResource {x:Static grid:GridResources.FontSizeSubtitleKey}}"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding CurrentPage.Header, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue=''}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    x:Name="PART_StepText"
+                                    FontSize="{DynamicResource {x:Static grid:GridResources.FontSizeCaptionKey}}"
+                                    Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" />
+                            </StackPanel>
+
                             <Border
+                                x:Name="PART_Footer"
                                 DockPanel.Dock="Bottom"
                                 BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
                                 BorderThickness="0,1,0,0"
-                                Padding="0,10,0,0"
-                                Margin="0,10,0,0">
+                                Padding="0,12,0,0"
+                                Margin="0,12,0,0">
                                 <StackPanel
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right">
@@ -766,25 +793,32 @@
                                         x:Name="PART_BackButton"
                                         Content="{x:Static localization:GridStrings.WizardBack}"
                                         MinWidth="88"
-                                        Margin="0,0,8,0"
-                                        Padding="12,6" />
+                                        Margin="0,0,8,0" />
+                                    <!-- The primary CTA: accent-filled (the ONE main action). -->
                                     <Button
                                         x:Name="PART_NextButton"
                                         Content="{x:Static localization:GridStrings.WizardNext}"
                                         MinWidth="88"
                                         Margin="0,0,8,0"
-                                        Padding="12,6" />
+                                        Style="{DynamicResource {x:Static grid:GridResources.PrimaryButtonStyleKey}}" />
                                     <Button
                                         x:Name="PART_CancelButton"
                                         Content="{x:Static localization:GridStrings.WizardCancel}"
-                                        MinWidth="88"
-                                        Padding="12,6" />
+                                        MinWidth="88" />
                                 </StackPanel>
                             </Border>
                             <ContentPresenter
                                 Content="{Binding CurrentPage, RelativeSource={RelativeSource TemplatedParent}}" />
                         </DockPanel>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasPages" Value="False">
+                            <Setter TargetName="PART_EmptyState" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_Footer" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_NextButton" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_BackButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -863,6 +897,46 @@
                                 Visibility="Collapsed" />
                         </Grid>
                     </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The primary CTA: accent fill for the ONE main action (Wizard Next/Finish). Hover
+         steps to the accent-text shade (darker on light, lighter on dark). -->
+    <Style x:Key="{x:Static grid:GridResources.PrimaryButtonStyleKey}" TargetType="Button"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.AccentKey}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.OnAccentTextKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.AccentKey}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="Bd"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="True">
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.AccentTextKey}}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.AccentTextKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.AccentKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -207,7 +207,17 @@ public class Order : IDataErrorInfo
 - **PageChanging** (отменяемое — `e.Cancel` оставляет на `e.From`), **PageChanged**,
   **Finished** (Next на последней странице), **Cancelled**.
 - Кнопка Next становится **Finish** на последней странице; надписи локализованы
-  (EN/RU/ZH). Свои шаблоны: `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`.
+  (EN/RU/ZH). Свои шаблоны: `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`
+  и `PART_StepText`.
+- **Клавиатура**: Enter подтверждает (Next/Finish), Esc отменяет — конвенция Windows-
+  мастеров; клавиши, которые уже обработал фокусированный ребёнок (Enter многострочного
+  TextBox), не трогаются.
+- Дефолтный шаблон показывает `Header` каждой страницы (Subtitle, SemiBold) с
+  локализованным индикатором шага («Шаг 2 из 3»), стилизует Next/Finish как **primary
+  CTA** (заливка акцентом через `GridResources.PrimaryButtonStyleKey`; высокая
+  контрастность оставляет системный хром и выделяет весом) и показывает локализованное
+  пустое состояние при пустом `Pages`. Кнопки — тематический неявный стиль Button
+  (`OnAccentTextKey` дополняет `AccentKey` для текста на акцентной заливке).
 
 
 ## Конструктор условий

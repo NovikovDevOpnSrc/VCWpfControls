@@ -197,7 +197,14 @@ code-behind 即可集成：
 - **PageChanging**（可取消——设置 `e.Cancel` 留在 `e.From`）、**PageChanged**、
   **Finished**（最后一页的 Next）、**Cancelled**。
 - 最后一页的 Next 按钮变为 **Finish**；按钮文案已本地化（中/英/俄）。自定义模板：
-  `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`。
+  `PART_BackButton`/`PART_NextButton`/`PART_CancelButton` 以及 `PART_StepText`。
+- **键盘**：Enter 确认（Next/Finish），Esc 取消——Windows 向导的惯例；已被焦点
+  子元素消费的按键（多行 TextBox 的 Enter）不会被劫持。
+- 默认模板渲染每页的 `Header`（Subtitle 字号、SemiBold）与本地化的步骤指示
+  （「第 2 步，共 3 步」），将 Next/Finish 样式化为 **主 CTA**（通过
+  `GridResources.PrimaryButtonStyleKey` 的强调色填充；高对比度保留系统外观，仅以
+  字重标识主操作），并在 `Pages` 为空时显示本地化的空状态。按钮使用主题化的隐式
+  Button 样式（`OnAccentTextKey` 与 `AccentKey` 搭配构成强调色填充上的文字）。
 
 
 ## 条件构造器

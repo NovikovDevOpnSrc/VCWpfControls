@@ -93,13 +93,17 @@ public class SchedulerAccessibilityTests
     [StaFact]
     public void PinnedHourWindow_CountsHiddenOccurrences_AndCuesTheDay()
     {
+        // A FIXED Wednesday (the lesson from the GoToToday date-dependence bug: a test
+        // mixing DateTime.Today with a week-aligned range breaks when Today lands on a
+        // weekend — Today must not appear in the WorkWeek days then).
+        var wednesday = new DateTime(2026, 11, 11);
         var oncall = new SchedulerAppointment("oncall", "On-call handover",
-            DateTime.Today.AddHours(22), DateTime.Today.AddHours(26)); // overnight, crosses BOTH edges
+            wednesday.AddHours(22), wednesday.AddHours(26)); // overnight, crosses BOTH edges
         var view = new SchedulerView
         {
             Width = 800,
             Height = 420,
-            AnchorDate = DateTime.Today,
+            AnchorDate = wednesday,
             DayStartHour = 8,
             DayEndHour = 20,
             Appointments = new ObservableCollection<SchedulerAppointment> { oncall },
@@ -109,24 +113,24 @@ public class SchedulerAccessibilityTests
         try
         {
             var panel = view.DaysPanel!;
-            var todayIndex = -1;
+            var dayIndex = -1;
             for (var i = 0; i < view.CurrentDays.Count; i++)
             {
-                if (view.CurrentDays[i] == DateTime.Today)
+                if (view.CurrentDays[i] == wednesday)
                 {
-                    todayIndex = i;
+                    dayIndex = i;
                     break;
                 }
             }
 
-            Assert.True(todayIndex >= 0, "today must be in the anchored work week");
+            Assert.True(dayIndex >= 0, "the anchored Wednesday must be in the work week");
 
-            var (above, below) = panel.HiddenCounts(todayIndex);
+            var (above, below) = panel.HiddenCounts(dayIndex);
             Assert.True(below >= 1, "the 22:00 part hides below the 8-20 window");
-            Assert.Equal(0, above); // today's segment starts INSIDE the day, after the window
+            Assert.Equal(0, above); // the Wednesday segment starts INSIDE the day, after the window
 
-            var nextIndex = todayIndex + 1 < view.CurrentDays.Count ? todayIndex + 1 : todayIndex;
-            if (nextIndex != todayIndex)
+            var nextIndex = dayIndex + 1 < view.CurrentDays.Count ? dayIndex + 1 : dayIndex;
+            if (nextIndex != dayIndex)
             {
                 var (nextAbove, _) = panel.HiddenCounts(nextIndex);
                 Assert.True(nextAbove >= 1, "the 00:00-02:00 part hides above the next day's window");

@@ -121,6 +121,13 @@ public static class GridStrings
     /// <summary>The wizard "Cancel" button caption.</summary>
     public static string WizardCancel => Get("WizardCancel");
 
+    /// <summary>Formats the wizard step indicator: current page number and page count.</summary>
+    public static string WizardStepFormat(int current, int count)
+        => string.Format(CultureInfo.CurrentCulture, Get("WizardStepFormat"), current, count);
+
+    /// <summary>The wizard empty-state text (no pages).</summary>
+    public static string WizardNoPages => Get("WizardNoPages");
+
     /// <summary>The "From" label of the range filter.</summary>
     public static string FilterFrom => Get("FilterFrom");
 

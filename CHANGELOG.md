@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added/Fixed — Wizard acceptance round: theming, keyboard, header/steps, empty state
+
+The fourth `vcwpf-ui-review` acceptance (the Wizard template, library mode) returned
+REWORK; everything is fixed. **Themed implicit Button style** in Light/Dark/HighContrast
+(a full themed template — the stock Aero2 chrome is a light box on dark surfaces and
+ignores Background setters, the same class as the ComboBox fix; hover/pressed/disabled
+token states, the shared focus ring, the 32px minimum) plus the new `OnAccentTextKey`
+token and the keyed `PrimaryButtonStyleKey` CTA style (accent fill; high contrast keeps
+system chrome and marks the primary with weight). **Wizard keyboard**: Enter confirms
+(Next/Finish), Esc cancels — keys a focused child already consumed are left alone.
+**Header + step indicator**: the default template now renders each page's `Header`
+(Subtitle SemiBold) with a localized "Step 2 of 3" line; `CurrentPage` moved to a
+read-only dependency property (a CLR property never notified, so template bindings on
+it could go stale). **Empty state**: a no-pages wizard shows a localized message and
+hides the navigation footer. Footer spacing back on the 4px grid; buttons ≥32px.
+`CurrentPageIndex` date-dependent scheduler regression re-anchored to a fixed Wednesday
+(it asserted Today inside a WorkWeek — broken on weekends). 4 new STA regressions,
+3 guards injection-validated.
+
 ## [0.5.5] — 2026-11-13
 
 UI acceptance as a process + a theme/accessibility sweep over every editor and control

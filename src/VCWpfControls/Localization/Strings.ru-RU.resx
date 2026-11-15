@@ -52,6 +52,8 @@
   <data name="WizardFinish" xml:space="preserve"><value>Готово</value></data>
   <data name="WizardBack" xml:space="preserve"><value>Назад</value></data>
   <data name="WizardCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="WizardStepFormat" xml:space="preserve"><value>Шаг {0} из {1}</value></data>
+  <data name="WizardNoPages" xml:space="preserve"><value>Нет страниц для показа</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Фильтр...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>Фильтр по значениям</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Выбор столбцов</value></data>

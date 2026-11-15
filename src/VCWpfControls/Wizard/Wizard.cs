@@ -34,21 +34,38 @@ public sealed class WizardPageChangingEventArgs : RoutedEventArgs
 [TemplatePart(Name = PartBack, Type = typeof(Button))]
 [TemplatePart(Name = PartNext, Type = typeof(Button))]
 [TemplatePart(Name = PartCancel, Type = typeof(Button))]
+[TemplatePart(Name = PartStepText, Type = typeof(TextBlock))]
 public class Wizard : Control
 {
     private const string PartBack = "PART_BackButton";
     private const string PartNext = "PART_NextButton";
     private const string PartCancel = "PART_CancelButton";
+    private const string PartStepText = "PART_StepText";
 
     /// <summary>Identifies the <see cref="CurrentPageIndex"/> dependency property.</summary>
     public static readonly DependencyProperty CurrentPageIndexProperty = DependencyProperty.Register(
         nameof(CurrentPageIndex), typeof(int), typeof(Wizard),
         new PropertyMetadata(0, OnCurrentPageIndexChanged, CoerceIndex));
 
+    /// <summary>Identifies the read-only <see cref="CurrentPage"/> dependency property (the template binds it; a CLR property would never notify).</summary>
+    private static readonly DependencyPropertyKey CurrentPagePropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(CurrentPage), typeof(WizardPage), typeof(Wizard), new PropertyMetadata(null));
+
+    /// <summary>Identifies the read-only <see cref="CurrentPage"/> dependency property.</summary>
+    public static readonly DependencyProperty CurrentPageProperty = CurrentPagePropertyKey.DependencyProperty;
+
+    /// <summary>Identifies the read-only <see cref="HasPages"/> dependency property (drives the template's empty state).</summary>
+    private static readonly DependencyPropertyKey HasPagesPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HasPages), typeof(bool), typeof(Wizard), new PropertyMetadata(false));
+
+    /// <summary>Identifies the read-only <see cref="HasPages"/> dependency property.</summary>
+    public static readonly DependencyProperty HasPagesProperty = HasPagesPropertyKey.DependencyProperty;
+
     private Button? _backButton;
     private bool _restoringIndex;
     private Button? _nextButton;
     private Button? _cancelButton;
+    private TextBlock? _stepText;
 
     static Wizard()
     {
@@ -100,8 +117,14 @@ public class Wizard : Control
         set => SetValue(CurrentPageIndexProperty, value);
     }
 
-    /// <summary>The currently shown page (first page by default; null before load with no pages).</summary>
-    public WizardPage? CurrentPage => Pages.Count > 0 ? Pages[Math.Clamp(CurrentPageIndex, 0, Pages.Count - 1)] : null;
+    /// <summary>The currently shown page (first page by default; null with no pages).</summary>
+    public WizardPage? CurrentPage => (WizardPage?)GetValue(CurrentPageProperty);
+
+    /// <summary>Whether the wizard has any pages (the template's empty state follows it).</summary>
+    public bool HasPages => (bool)GetValue(HasPagesProperty);
+
+    private WizardPage? ComputeCurrentPage()
+        => Pages.Count > 0 ? Pages[Math.Clamp(CurrentPageIndex, 0, Pages.Count - 1)] : null;
 
     /// <summary>Whether the user can go back from the current page.</summary>
     public bool CanGoBack => CurrentPageIndex > 0;
@@ -109,12 +132,12 @@ public class Wizard : Control
     /// <summary>Whether forward navigation is possible (not on the last page and the page allows leaving).</summary>
     public bool CanGoNext => Pages.Count > 0
         && CurrentPageIndex < Pages.Count - 1
-        && (CurrentPage?.CanLeave ?? false);
+        && (ComputeCurrentPage()?.CanLeave ?? false);
 
     /// <summary>Whether the current page is the last one and may be finished.</summary>
     public bool CanFinish => Pages.Count > 0
         && CurrentPageIndex == Pages.Count - 1
-        && (CurrentPage?.CanLeave ?? false);
+        && (ComputeCurrentPage()?.CanLeave ?? false);
 
     /// <summary>Raised before leaving a page — cancel to keep the user on it.</summary>
     public event EventHandler<WizardPageChangingEventArgs>? PageChanging
@@ -195,6 +218,7 @@ public class Wizard : Control
         _backButton = GetTemplateChild(PartBack) as Button;
         _nextButton = GetTemplateChild(PartNext) as Button;
         _cancelButton = GetTemplateChild(PartCancel) as Button;
+        _stepText = GetTemplateChild(PartStepText) as TextBlock;
 
         if (_backButton is not null)
         {
@@ -229,7 +253,7 @@ public class Wizard : Control
         }
 
         var from = wizard.Pages.Count > 0 ? wizard.Pages[Math.Clamp((int)e.OldValue, 0, wizard.Pages.Count - 1)] : null;
-        var to = wizard.CurrentPage;
+        var to = wizard.ComputeCurrentPage();
         if (from is null || to is null || ReferenceEquals(from, to))
         {
             wizard.RefreshNavigation();
@@ -262,9 +286,43 @@ public class Wizard : Control
         wizard.RaiseEvent(new RoutedEventArgs(PageChangedEvent, wizard));
     }
 
-    /// <summary>Updates button states and the Next/Finish caption after any change.</summary>
+    /// <summary>
+    /// The keyboard surface of the dialog: Enter confirms (Next/Finish), Esc cancels —
+    /// the Windows wizard convention the guidelines demand. Keys a focused child already
+    /// consumed (a multi-line TextBox's Enter) never reach this class handler.
+    /// </summary>
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Key == Key.Escape)
+        {
+            Cancel();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Enter && (CanGoNext || CanFinish))
+        {
+            GoNext();
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>Updates button states, the Next/Finish caption, the header/step texts and the empty state after any change.</summary>
     private void RefreshNavigation()
     {
+        // The template binds these read-only DPs; a CLR CurrentPage property never
+        // notifies, and bindings on TemplatedParent paths without notifications go stale.
+        SetValue(CurrentPagePropertyKey, ComputeCurrentPage());
+        SetValue(HasPagesPropertyKey, Pages.Count > 0);
+
+        if (_stepText is not null)
+        {
+            _stepText.Text = Pages.Count == 0
+                ? string.Empty
+                : Localization.GridStrings.WizardStepFormat(CurrentPageIndex + 1, Pages.Count);
+        }
+
         if (_backButton is not null)
         {
             _backButton.IsEnabled = CanGoBack;

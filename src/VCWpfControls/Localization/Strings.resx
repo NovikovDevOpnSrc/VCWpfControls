@@ -52,6 +52,8 @@
   <data name="WizardFinish" xml:space="preserve"><value>Finish</value></data>
   <data name="WizardBack" xml:space="preserve"><value>Back</value></data>
   <data name="WizardCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="WizardStepFormat" xml:space="preserve"><value>Step {0} of {1}</value></data>
+  <data name="WizardNoPages" xml:space="preserve"><value>No pages to show</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Filter...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>Filter by values</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Column chooser</value></data>

@@ -52,6 +52,8 @@
   <data name="WizardFinish" xml:space="preserve"><value>完成</value></data>
   <data name="WizardBack" xml:space="preserve"><value>上一步</value></data>
   <data name="WizardCancel" xml:space="preserve"><value>取消</value></data>
+  <data name="WizardStepFormat" xml:space="preserve"><value>第 {0} 步，共 {1} 步</value></data>
+  <data name="WizardNoPages" xml:space="preserve"><value>没有可显示的页面</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>筛选...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>按值筛选</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>列选择器</value></data>

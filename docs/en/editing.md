@@ -206,7 +206,17 @@ Returns the number of cells written.
 - **PageChanging** (cancelable — set `e.Cancel` to keep the user on `e.From`),
   **PageChanged**, **Finished** (Next on the last page), **Cancelled**.
 - The Next button becomes **Finish** on the last page; captions are localized
-  (EN/RU/ZH). Custom templates: provide `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`.
+  (EN/RU/ZH). Custom templates: provide `PART_BackButton`/`PART_NextButton`/`PART_CancelButton`
+  and `PART_StepText`.
+- **Keyboard**: Enter confirms (Next/Finish), Esc cancels — the Windows wizard
+  convention; keys a focused child already consumed (a multi-line TextBox's Enter) are
+  left alone.
+- The default template renders each page's `Header` (Subtitle size, SemiBold) with a
+  localized step indicator ("Step 2 of 3"), styles Next/Finish as the **primary CTA**
+  (accent-filled via `GridResources.PrimaryButtonStyleKey`; high contrast keeps the
+  system chrome and marks the primary with weight) and shows a localized empty state
+  when `Pages` is empty. Buttons are the themed implicit Button style
+  (`OnAccentTextKey` pairs with `AccentKey` for text on accent fills).
 
 
 ## Condition builder
