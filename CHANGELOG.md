@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] — 2026-11-15
+
+The Wizard acceptance round: a themed implicit Button style (full themed template in
+every palette — the stock Aero2 chrome ignores Background setters), the accent primary
+CTA (`PrimaryButtonStyleKey` + `OnAccentTextKey`), wizard keyboard (Enter confirms,
+Esc cancels), page Header + step indicator in the default template, a localized empty
+state, and a re-anchored date-dependent scheduler regression. 4 injection-validated
+regressions.
+
 ### Added/Fixed — Wizard acceptance round: theming, keyboard, header/steps, empty state
 
 The fourth `vcwpf-ui-review` acceptance (the Wizard template, library mode) returned
