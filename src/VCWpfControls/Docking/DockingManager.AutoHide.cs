@@ -153,6 +153,7 @@ public partial class DockingManager
         var tab = new Button
         {
             Content = HeaderText(pane),
+            MinHeight = 0, // compact edge chrome: opts out of the implicit 32px floor
             Padding = new Thickness(6, 4, 6, 4),
             Margin = rotation == 0 ? new Thickness(1) : new Thickness(-4, 2, -4, 2),
             Tag = pane,
@@ -250,7 +251,7 @@ public partial class DockingManager
             return;
         }
 
-        var pin = new Button { Content = "📌", Padding = new Thickness(4), Margin = new Thickness(2) };
+        var pin = new Button { Content = "📌", MinHeight = 0, MinWidth = 0, Padding = new Thickness(4), Margin = new Thickness(2) }; // compact chrome: no 32px floor
         pin.Click += (_, _) =>
         {
             if (_flyoutPane is { } pane)

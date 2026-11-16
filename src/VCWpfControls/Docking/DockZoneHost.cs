@@ -138,6 +138,8 @@ public sealed class DockZoneHost : ContentControl
             {
                 Content = "\u2715",
                 Focusable = false,
+                MinHeight = 0, // compact chrome: opts out of the implicit Button 32px floor
+                MinWidth = 0,
                 Margin = new Thickness(6, 0, 0, 0),
                 Padding = new Thickness(2),
                 BorderThickness = new Thickness(0),

@@ -36,7 +36,9 @@ description: 使用类型化编辑器、分类和搜索查看并编辑任意对�
 - **元数据特性**：`[Display]`（`Name`、`Description`、`Order`、`GroupName`）、`[Category]`、
   `[DisplayName]`、`[ReadOnly]`、`[Browsable(false)]`。
 - **分类**以折叠组显示（`ShowCategories="False"` 显示平面列表）。
-- **搜索框**（`ShowSearchBox`）按显示名或 CLR 名称筛选属性。
+- **搜索框**（`ShowSearchBox`）按显示名或 CLR 名称筛选属性：空时显示水印提示，
+  Esc 清除筛选，并向辅助技术播报本地化提示。未设置 `SelectedObject` 时显示本地化
+  的空状态而非空白列表。
 - **可展开属性**：复杂对象带 “+” 开关，懒加载嵌套属性并缩进显示。
 - **实时更新**：当对象实现 `INotifyPropertyChanged` 时，值变化会刷新对应编辑器。
 - **事件**：`PropertyValueChanged` 在每次提交编辑后触发（值已写入对象）。

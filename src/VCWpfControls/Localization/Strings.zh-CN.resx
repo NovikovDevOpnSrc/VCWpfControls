@@ -23,6 +23,7 @@
   <data name="FilterMenuOk" xml:space="preserve"><value>确定</value></data>
   <data name="CategoryMisc" xml:space="preserve"><value>其他</value></data>
   <data name="PropertyGridSearchHint" xml:space="preserve"><value>搜索属性...</value></data>
+  <data name="PropertyGridNoObject" xml:space="preserve"><value>选择一个对象以查看其属性</value></data>
   <data name="BestFit" xml:space="preserve"><value>适配列宽（按内容）</value></data>
   <data name="BestFitAll" xml:space="preserve"><value>适配所有列宽</value></data>
   <data name="BestFitAllFill" xml:space="preserve"><value>适配所有列宽（填满宽度）</value></data>

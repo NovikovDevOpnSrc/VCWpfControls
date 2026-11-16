@@ -120,6 +120,9 @@
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
         <Setter Property="CaretBrush" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <!-- 24px baseline: at/above the WCAG icon-only floor without inflating grid
+             in-cell editing rows (form contexts set their own 32). -->
+        <Setter Property="MinHeight" Value="24" />
         <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static grid:GridResources.SelectionBackgroundKey}}" />
     </Style>
     <!-- Implicit DatePicker (GridDateColumn's editor): same stock-chrome class; its inner

@@ -173,6 +173,9 @@ public static class GridStrings
     /// <summary>Property grid search box hint.</summary>
     public static string PropertyGridSearchHint => Get("PropertyGridSearchHint");
 
+    /// <summary>The PropertyGrid empty-state text (no SelectedObject).</summary>
+    public static string PropertyGridNoObject => Get("PropertyGridNoObject");
+
     /// <summary>Context menu: export completed message.</summary>
     public static string ExportCompleted => Get("ExportCompleted");
 

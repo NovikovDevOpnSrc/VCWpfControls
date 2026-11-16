@@ -8,6 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using VCWpfControls.Grid;
 using VCWpfControls.Localization;
 using VCWpfControls.PropertyGrid.Primitives;
 
@@ -112,6 +113,7 @@ public class PropertyGrid : Control
         if (_searchBox is not null)
         {
             _searchBox.TextChanged -= OnSearchTextChanged;
+            _searchBox.PreviewKeyDown -= OnSearchBoxKeyDown;
         }
 
         _searchBox = GetTemplateChild(PartSearchBox) as TextBox;
@@ -120,6 +122,7 @@ public class PropertyGrid : Control
         if (_searchBox is not null)
         {
             _searchBox.TextChanged += OnSearchTextChanged;
+            _searchBox.PreviewKeyDown += OnSearchBoxKeyDown; // Esc clears the filter
         }
 
         RebuildVisualTree();
@@ -130,6 +133,16 @@ public class PropertyGrid : Control
         var grid = (PropertyGrid)d;
         grid.RebuildItems();
         grid.RebuildVisualTree();
+    }
+
+    private void OnSearchBoxKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        // Esc in the search box clears the filter (the standard search-field convention).
+        if (e.Key == System.Windows.Input.Key.Escape && !string.IsNullOrEmpty(_searchBox?.Text))
+        {
+            _searchBox.Clear();
+            e.Handled = true;
+        }
     }
 
     private static void OnDisplayOptionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -334,7 +347,7 @@ public class PropertyGrid : Control
         {
             Text = item.DisplayName,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(0, 5, 8, 0),
+            Margin = new Thickness(0, 4, 8, 0),
             TextTrimming = TextTrimming.CharacterEllipsis,
             ToolTip = string.IsNullOrEmpty(item.Description)
                 ? null
@@ -395,14 +408,18 @@ public class PropertyGrid : Control
             Content = "+",
             Width = 16,
             Height = 16,
-            Focusable = false,
-            Margin = new Thickness(0, 3, 2, 0),
+            // Tab-reachable: nested properties expand by keyboard (Space) — they were
+            // mouse-only before (Focusable=false with no Enter/Space alternative).
+            Margin = new Thickness(0, 4, 2, 0),
         };
+        // Code-built control: Foreground does NOT reliably reach it (the proven
+        // black-on-dark lesson) — resolve the theme token explicitly.
+        toggle.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, GridResources.TextBrushKey);
 
         var displayName = Themed(new TextBlock
         {
             Text = item.DisplayName,
-            Margin = new Thickness(0, 5, 8, 0),
+            Margin = new Thickness(0, 4, 8, 0),
             TextTrimming = TextTrimming.CharacterEllipsis,
         });
         System.Windows.Controls.Grid.SetColumn(displayName, 1);

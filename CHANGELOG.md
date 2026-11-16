@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — batch acceptance round: PropertyGrid search/empty/keyboard, docking chrome slivers
+
+The fifth `vcwpf-ui-review` round (PropertyGrid template + the compact-chrome blast
+radius of the themed Button style). The PropertyGrid search hint sat in `Tag` — which no
+template renders — so the box was an unexplained empty field at 18px; it now carries a
+watermark template (32px form-field minimum, MutedText hint, announced to UIA via its
+localized string) and Esc clears the filter. A null `SelectedObject` rendered a blank
+pane with a live search box filtering nothing — there is now a localized empty state
+with the search hidden. Nested-property expanders were mouse-only — the toggle is
+tab-reachable (Space expands) and its glyph resolves the text token explicitly (the
+code-built-foreground lesson). The implicit themed Button style's 32px floor turned the
+docking chrome buttons into 14x32 slivers (a v0.5.6 regression): compact chrome (pane
+close, auto-hide tabs, pin) opts out locally with MinHeight/MinWidth=0. The implicit
+TextBox style gained a 24px baseline (the WCAG icon-only floor) — form contexts set
+their own 32. Off-grid margins normalized; the PropertyGrid style now carries the
+typography tokens. Known limitation kept: property search matches top-level items only
+(nested children build lazily). 4 regressions, 2 guards injection-validated.
+
 ## [0.5.6] — 2026-11-15
 
 The Wizard acceptance round: a themed implicit Button style (full themed template in

@@ -38,7 +38,10 @@ A common pattern is pairing it with a `GridControl`:
 - **Metadata** via attributes: `[Display]` (`Name`, `Description`, `Order`, `GroupName`),
   `[Category]`, `[DisplayName]`, `[ReadOnly]`, `[Browsable(false)]`.
 - **Categories** rendered as expanders (`ShowCategories="False"` for a flat list).
-- **Search box** (`ShowSearchBox`) filtering properties by display or CLR name.
+- **Search box** (`ShowSearchBox`) filtering properties by display or CLR name: a
+  watermark hint while empty, Esc clears the filter, and the box announces its
+  localized hint to assistive tech. With no `SelectedObject` the pane shows a
+  localized empty state instead of a blank list.
 - **Expandable properties**: complex objects get a `+` toggle revealing nested properties
   (lazy, indented).
 - **Live updates**: when the selected object implements `INotifyPropertyChanged`, edited or
