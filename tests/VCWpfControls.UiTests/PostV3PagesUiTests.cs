@@ -135,7 +135,9 @@ public sealed class PostV3PagesUiTests : IDisposable
 
         // Removing the row returns the builder to the empty group.
         var remove = page.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button)
-            .And(cf.ByName("✕")))
+            .And(cf.ByName("Remove")))
+            ?? page.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button)
+                .And(cf.ByName("✕")))
             ?? throw new InvalidOperationException("row remove button not found");
         remove.Patterns.Invoke.Pattern.Invoke();
         System.Threading.Thread.Sleep(200);

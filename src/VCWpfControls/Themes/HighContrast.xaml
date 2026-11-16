@@ -28,6 +28,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.ErrorTextKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
 
     <!-- Implicit ComboBox (merged app-wide by ThemeManager): the setters resolve through
          the HC token aliases (Window/WindowText/WindowFrame), so the picker follows the
@@ -115,6 +116,10 @@
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
     </Style>
     <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+    </Style>
+
+    <Style TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
     </Style>
 

@@ -86,6 +86,9 @@ public static class GridResources
     /// <summary>Text color on accent fills — the primary CTA style pairs AccentKey background with this foreground (readable in both palettes; high contrast keeps system colors).</summary>
     public static readonly ComponentResourceKey OnAccentTextKey = new(typeof(GridResources), "OnAccentText");
 
+    /// <summary>Semantic error/validation text (parse errors, inline validation) — red-family, readable in every palette.</summary>
+    public static readonly ComponentResourceKey ErrorTextKey = new(typeof(GridResources), "ErrorText");
+
     /// <summary>The primary CTA button style: accent-filled, for the ONE main action of a dialog (the wizard's Next/Finish). High contrast keeps the standard chrome and marks the primary with weight.</summary>
     public static readonly ComponentResourceKey PrimaryButtonStyleKey = new(typeof(GridResources), "PrimaryButtonStyle");
 }

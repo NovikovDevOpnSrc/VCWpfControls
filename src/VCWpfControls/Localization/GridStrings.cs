@@ -210,6 +210,9 @@ public static class GridStrings
             value);
 
     private static string Get(string key) => Manager.GetString(key, CultureInfo.CurrentUICulture) ?? key;
+
+    /// <summary>Raw resource lookup (internal: library code needing one-off keys, e.g. operator captions).</summary>
+    internal static string Resource(string key) => Get(key);
 }
 
 /// <summary>Aggregate functions available for grid summaries.</summary>

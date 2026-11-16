@@ -7,6 +7,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="2*" />
         </Grid.RowDefinitions>
 
@@ -18,18 +19,22 @@
         <conditions:ConditionBuilder
             x:Name="Builder"
             Grid.Row="1"
-            Margin="0,0,0,8"
+            Margin="0,0,0,16"
             ConditionChanged="OnConditionChanged" />
 
+        <!-- The page's ONE primary action: bottom-right per the Windows button convention,
+             accent-filled via the primary CTA style (it used to float inside the builder
+             as a 90px neutral overlay). -->
         <Button
             x:Name="Apply"
-            Grid.Row="1"
-            Width="90"
+            Grid.Row="2"
+            MinWidth="104"
+            Margin="0,0,0,16"
             HorizontalAlignment="Right"
-            VerticalAlignment="Top"
             Click="OnApplyClick"
-            Content="Apply" />
+            Content="Apply"
+            Style="{DynamicResource {x:Static grid:GridResources.PrimaryButtonStyleKey}}" />
 
-        <grid:GridControl x:Name="Grid" Grid.Row="2" RowHeight="26" />
+        <grid:GridControl x:Name="Grid" Grid.Row="3" RowHeight="26" />
     </Grid>
 </UserControl>

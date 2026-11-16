@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — seventh acceptance round: ConditionBuilder theming/l10n/focus, page honesty
+
+The seventh `vcwpf-ui-review` round (Basic/Condition/Integration). The ConditionBuilder
+carried literal colors (`Firebrick` error text, `LightGray` group borders), an unthemable
+preview (opacity instead of a token) and RadioButtons no theme styled; hardcoded English
+operator captions ("contains", "is not null", …) while everything else localizes; an
+icon-only remove button with no accessibility name; a dead editor for a null/bare-root
+Condition (structural edits mutated a throwaway host — the user's condition stayed null);
+and the full rebuild on every edit destroyed keyboard focus. Fixed: a new
+`ErrorTextKey` semantic token (all four palettes), tokens for the preview/error/border,
+an implicit themed RadioButton style, all operator captions localized ×3, the remove
+button named, the root normalized into a real And-group assigned back to `Condition`, and
+focus restoration after structural edits (Add focuses the new row's first editor; the
+text commit refocuses its own box with the caret at the end). Demo: Apply moved
+bottom-right as the accent primary CTA (was a 90px neutral overlay inside the builder);
+the Integration chart now computes from the GRID's live data (was a fresh data copy
+regardless of grid state) with duplicate-group-add guarded. 4 regressions, 2 guards
+injection-validated.
+
 ### Fixed — sixth acceptance round: TreeList keyboard/a11y/targets, honest summaries
 
 The sixth `vcwpf-ui-review` round (TreeListView + Analytics/Pivot). Tree node checkboxes

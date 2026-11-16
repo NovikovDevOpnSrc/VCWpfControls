@@ -60,6 +60,17 @@
   <data name="TreeCheckNode" xml:space="preserve"><value>Select node</value></data>
   <data name="TreeNodeChecked" xml:space="preserve"><value>Selected</value></data>
   <data name="RowsWord" xml:space="preserve"><value>rows</value></data>
+  <data name="ConditionOpContains" xml:space="preserve"><value>contains</value></data>
+  <data name="ConditionOpNotContains" xml:space="preserve"><value>not contains</value></data>
+  <data name="ConditionOpStartsWith" xml:space="preserve"><value>starts with</value></data>
+  <data name="ConditionOpEndsWith" xml:space="preserve"><value>ends with</value></data>
+  <data name="ConditionOpBetween" xml:space="preserve"><value>between</value></data>
+  <data name="ConditionOpNotBetween" xml:space="preserve"><value>not between</value></data>
+  <data name="ConditionOpIn" xml:space="preserve"><value>in</value></data>
+  <data name="ConditionOpNotIn" xml:space="preserve"><value>not in</value></data>
+  <data name="ConditionOpIsNull" xml:space="preserve"><value>is null</value></data>
+  <data name="ConditionOpIsNotNull" xml:space="preserve"><value>is not null</value></data>
+  <data name="ConditionEmptyPreview" xml:space="preserve"><value>no conditions (the filter is empty)</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Filter...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>Filter by values</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Column chooser</value></data>

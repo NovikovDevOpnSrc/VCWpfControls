@@ -60,6 +60,17 @@
   <data name="TreeCheckNode" xml:space="preserve"><value>选择节点</value></data>
   <data name="TreeNodeChecked" xml:space="preserve"><value>已选择</value></data>
   <data name="RowsWord" xml:space="preserve"><value>行</value></data>
+  <data name="ConditionOpContains" xml:space="preserve"><value>包含</value></data>
+  <data name="ConditionOpNotContains" xml:space="preserve"><value>不包含</value></data>
+  <data name="ConditionOpStartsWith" xml:space="preserve"><value>开头是</value></data>
+  <data name="ConditionOpEndsWith" xml:space="preserve"><value>结尾是</value></data>
+  <data name="ConditionOpBetween" xml:space="preserve"><value>介于</value></data>
+  <data name="ConditionOpNotBetween" xml:space="preserve"><value>不介于</value></data>
+  <data name="ConditionOpIn" xml:space="preserve"><value>在列表</value></data>
+  <data name="ConditionOpNotIn" xml:space="preserve"><value>不在列表</value></data>
+  <data name="ConditionOpIsNull" xml:space="preserve"><value>为空</value></data>
+  <data name="ConditionOpIsNotNull" xml:space="preserve"><value>不为空</value></data>
+  <data name="ConditionEmptyPreview" xml:space="preserve"><value>无条件（筛选为空）</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>筛选...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>按值筛选</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>列选择器</value></data>

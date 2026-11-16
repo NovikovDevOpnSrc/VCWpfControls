@@ -90,12 +90,37 @@ public class ConditionBuilder : ContentControl
 
     private ConditionSchema EffectiveSchema => Schema ?? new ConditionSchema();
 
+    private string? _pendingFocus; // "text" or "firstEditorOfLastRow" — Rebuild restores focus
+
     private static void OnStructureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         => ((ConditionBuilder)d).Rebuild();
+
+    /// <summary>
+    /// A null or bare-expression root rendered inside a THROWAWAY host group — clicking
+    /// "Add condition" mutated the throwaway and the user's Condition stayed null (dead
+    /// editor, edits lost). Normalize the root into a real And-group assigned BACK to the
+    /// Condition property so structural edits persist.
+    /// </summary>
+    private void NormalizeRootCondition()
+    {
+        if (Condition is ConditionGroup)
+        {
+            return;
+        }
+
+        var group = new ConditionGroup(ConditionGroupOperator.And);
+        if (Condition is not null)
+        {
+            group.Children.Add(Condition);
+        }
+
+        SetCurrentValue(ConditionProperty, group); // raises the change that rebuilds — reentrant-safe via SetCurrentValue
+    }
 
     /// <summary>Rebuilds the editor surface (visual tree or text box) from the model.</summary>
     public void Rebuild()
     {
+        NormalizeRootCondition();
         var root = new DockPanel();
 
         var builderTab = new RadioButton
@@ -133,11 +158,12 @@ public class ConditionBuilder : ContentControl
 
         var preview = new TextBlock
         {
-            Text = GridStrings.ConditionPreview + ": " + ConditionParser.Format(Condition),
-            Opacity = 0.7,
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 6, 0, 0),
         };
+        // Code-built text: Foreground does NOT reliably inherit (the proven lesson) —
+        // the muted token replaces the old Opacity=0.7 trick.
+        preview.SetResourceReference(TextBlock.ForegroundProperty, Grid.GridResources.MutedTextKey);
         SetPreview(preview);
 
         var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(0) };
@@ -159,6 +185,76 @@ public class ConditionBuilder : ContentControl
         root.Children.Add(scroll);
         Content = root;
         PreviewText = ConditionParser.Format(Condition);
+        RestoreFocus(root);
+    }
+
+    /// <summary>
+    /// The full rebuild replaces Content — the focused element dies with it (a keyboard
+    /// user restarting Tab navigation on every structural edit). Handlers mark what should
+    /// receive focus after the rebuild; the text commit refocuses its own box.
+    /// </summary>
+    private void RestoreFocus(DependencyObject root)
+    {
+        var request = _pendingFocus;
+        _pendingFocus = null;
+        if (request is null)
+        {
+            return;
+        }
+
+        var target = request switch
+        {
+            "text" => FindTextBox(root),
+            "firstEditorOfLastRow" => FindLastRowFirstEditor(root),
+            _ => null,
+        };
+        target?.Focus();
+        if (target is TextBox { Text.Length: > 0 } box)
+        {
+            box.CaretIndex = box.Text.Length;
+        }
+    }
+
+    private static TextBox? FindTextBox(DependencyObject root)
+    {
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is TextBox tb)
+            {
+                return tb;
+            }
+
+            if (FindTextBox(child) is { } deeper)
+            {
+                return deeper;
+            }
+        }
+
+        return null;
+    }
+
+    private static System.Windows.Controls.Control? FindLastRowFirstEditor(DependencyObject root)
+    {
+        var combos = new List<ComboBox>();
+        CollectCombos(root, combos);
+        return combos.Count > 0 ? combos[^1] : null;
+    }
+
+    private static void CollectCombos(DependencyObject root, List<ComboBox> found)
+    {
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is ComboBox combo)
+            {
+                found.Add(combo);
+            }
+
+            CollectCombos(child, found);
+        }
     }
 
     private UIElement BuildSingleNodeView()
@@ -178,7 +274,8 @@ public class ConditionBuilder : ContentControl
             AcceptsReturn = false,
             Margin = new Thickness(0, 2, 0, 4),
         };
-        var error = new TextBlock { Foreground = System.Windows.Media.Brushes.Firebrick, TextWrapping = TextWrapping.Wrap };
+        var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
+        error.SetResourceReference(TextBlock.ForegroundProperty, Grid.GridResources.ErrorTextKey);
         box.LostFocus += (_, _) => ApplyText(box.Text, error);
         box.KeyDown += (_, e) =>
         {
@@ -198,6 +295,7 @@ public class ConditionBuilder : ContentControl
     {
         try
         {
+            _pendingFocus = "text"; // the rebuild replaces the box being typed in — restore it
             Condition = ConditionParser.Parse(text);
             ErrorText = string.Empty;
             error.Text = string.Empty;
@@ -235,6 +333,7 @@ public class ConditionBuilder : ContentControl
                 field?.Name ?? string.Empty,
                 GridFilterOperator.Equals,
                 field is null ? null : DefaultValueOf(field)));
+            _pendingFocus = "firstEditorOfLastRow";
             Rebuild();
             RaiseChanged();
         };
@@ -243,6 +342,7 @@ public class ConditionBuilder : ContentControl
         addGroup.Click += (_, _) =>
         {
             group.Children.Add(new ConditionGroup(ConditionGroupOperator.And));
+            _pendingFocus = "firstEditorOfLastRow";
             Rebuild();
             RaiseChanged();
         };
@@ -265,13 +365,14 @@ public class ConditionBuilder : ContentControl
             }
         }
 
-        return new Border
+        var border = new Border
         {
-            BorderBrush = System.Windows.Media.Brushes.LightGray,
             BorderThickness = new Thickness(depth == 0 ? 0 : 1, 0, 0, 0),
             Padding = new Thickness(depth == 0 ? 0 : 8, 0, 0, 4),
             Child = panel,
         };
+        border.SetResourceReference(Border.BorderBrushProperty, Grid.GridResources.SeparatorLineKey);
+        return border;
     }
 
     private UIElement BuildExpressionRow(ConditionGroup parent, ConditionExpression expression, int depth)
@@ -346,6 +447,7 @@ public class ConditionBuilder : ContentControl
         RefreshRow();
 
         var remove = new Button { Content = "✕", Margin = new Thickness(6, 0, 0, 4), Padding = new Thickness(6, 1, 6, 1), ToolTip = GridStrings.ConditionRemove };
+        System.Windows.Automation.AutomationProperties.SetName(remove, GridStrings.ConditionRemove);
         remove.Click += (_, _) =>
         {
             parent.Children.Remove(expression);
@@ -535,25 +637,29 @@ public class ConditionBuilder : ContentControl
         {
             GridFilterOperator.Equals => "=",
             GridFilterOperator.NotEquals => "!=",
-            GridFilterOperator.Contains => "contains",
-            GridFilterOperator.NotContains => "not contains",
-            GridFilterOperator.StartsWith => "starts with",
-            GridFilterOperator.EndsWith => "ends with",
+            GridFilterOperator.Contains => GridStrings.Resource("ConditionOpContains"),
+            GridFilterOperator.NotContains => GridStrings.Resource("ConditionOpNotContains"),
+            GridFilterOperator.StartsWith => GridStrings.Resource("ConditionOpStartsWith"),
+            GridFilterOperator.EndsWith => GridStrings.Resource("ConditionOpEndsWith"),
             GridFilterOperator.GreaterThan => ">",
             GridFilterOperator.GreaterThanOrEqual => ">=",
             GridFilterOperator.LessThan => "<",
             GridFilterOperator.LessThanOrEqual => "<=",
-            GridFilterOperator.Between => "between",
-            GridFilterOperator.NotBetween => "not between",
-            GridFilterOperator.In => "in",
-            GridFilterOperator.NotIn => "not in",
-            GridFilterOperator.IsNull => "is null",
-            GridFilterOperator.IsNotNull => "is not null",
+            GridFilterOperator.Between => GridStrings.Resource("ConditionOpBetween"),
+            GridFilterOperator.NotBetween => GridStrings.Resource("ConditionOpNotBetween"),
+            GridFilterOperator.In => GridStrings.Resource("ConditionOpIn"),
+            GridFilterOperator.NotIn => GridStrings.Resource("ConditionOpNotIn"),
+            GridFilterOperator.IsNull => GridStrings.Resource("ConditionOpIsNull"),
+            GridFilterOperator.IsNotNull => GridStrings.Resource("ConditionOpIsNotNull"),
             _ => kind.ToString(),
         };
 
     private void SetPreview(TextBlock preview)
-        => preview.Text = GridStrings.ConditionPreview + ": " + ConditionParser.Format(Condition);
+    {
+        var formatted = ConditionParser.Format(Condition);
+        preview.Text = GridStrings.ConditionPreview + ": "
+            + (string.IsNullOrEmpty(formatted) ? GridStrings.Resource("ConditionEmptyPreview") : formatted);
+    }
 
     private void RaiseChanged()
     {

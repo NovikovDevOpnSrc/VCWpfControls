@@ -23,6 +23,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#46479EF5" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF6A00" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E8C8C8C" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.ErrorTextKey}" Color="#FFFF99A4" />
 
     <!-- Implicit ComboBox (merged app-wide by ThemeManager): themed chrome + the 32px
          field minimum; the stock template would sit as a light box on the dark surface. -->
@@ -109,6 +110,10 @@
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
     </Style>
     <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+    </Style>
+
+    <Style TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
     </Style>
 

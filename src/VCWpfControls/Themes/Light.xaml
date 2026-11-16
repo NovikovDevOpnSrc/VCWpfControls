@@ -23,6 +23,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#461E78FF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF4500" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E696969" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.ErrorTextKey}" Color="#FFD13438" />
 
     <!-- Implicit ComboBox (merged app-wide by ThemeManager): stock WPF leaves a 22px
          light-chrome box that sits wrong on dark surfaces and under the 32px field
@@ -110,6 +111,10 @@
         <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
     </Style>
     <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+    </Style>
+
+    <Style TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
     </Style>
 

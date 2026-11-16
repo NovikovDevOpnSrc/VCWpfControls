@@ -28,9 +28,14 @@ public partial class IntegrationSampleView : UserControl
         RefreshChart();
     }
 
-    /// <summary>Groups the grid by department.</summary>
+    /// <summary>Groups the grid by department (guarded: no duplicate descriptions).</summary>
     public IRelayCommand GroupByDeptCommand => new RelayCommand(() =>
     {
+        if (Grid.GroupDescriptions.Any(d => d.FieldName == "Department"))
+        {
+            return; // already grouped — the old code stacked a duplicate per click
+        }
+
         Grid.GroupDescriptions.Add(new VCWpfControls.Grid.Data.GridGroupDescription("Department"));
         RefreshChart();
     });
@@ -44,8 +49,12 @@ public partial class IntegrationSampleView : UserControl
 
     private void RefreshChart()
     {
-        // Salary totals per department, straight from the demo data.
-        var totals = SampleData.CreateEmployees()
+        // Salary totals per department, FROM THE GRID's live data (filters/grouping shape
+        // the chart now) — it used to recompute from a fresh SampleData copy regardless
+        // of what the user did to the grid, while the page promised "grid aggregates".
+        var totals = Grid.DataEngine.DataRows
+            .Select(r => ((Grid.Data.GridDataRow)r).Item)
+            .Cast<Employee>()
             .GroupBy(e => e.Department)
             .OrderBy(g => g.Key)
             .ToList();
