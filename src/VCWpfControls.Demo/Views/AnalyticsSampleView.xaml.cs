@@ -28,7 +28,7 @@ public partial class AnalyticsSampleView : UserControl
     }
 
     private void UpdateRowCount()
-        => RowCountText.Text = GridStrings.Summary(GridSummaryFunction.Count, "rows", Grid.DataEngine.DataRows.Count);
+        => RowCountText.Text = GridStrings.Summary(GridSummaryFunction.Count, GridStrings.RowsWord, Grid.DataEngine.DataRows.Count);
 
     private void OnGroupByDepartment(object sender, RoutedEventArgs e)
     {
@@ -42,12 +42,36 @@ public partial class AnalyticsSampleView : UserControl
         => Grid.SortBy("Name", GridSortDirection.Ascending);
 
     private void OnExportCsv(object sender, RoutedEventArgs e)
-        => GridExporter.ExportToCsv(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.csv"));
+        => RunExport(path => GridExporter.ExportToCsv(Grid, path), "vcwpf_export.csv", sender);
 
     private void OnExportXlsx(object sender, RoutedEventArgs e)
-        => GridExporter.ExportToXlsx(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.xlsx"));
+        => RunExport(path => GridExporter.ExportToXlsx(Grid, path), "vcwpf_export.xlsx", sender);
 
     private void OnExportHtml(object sender, RoutedEventArgs e)
-        => GridExporter.ExportToHtml(Grid, System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vcwpf_export.html"));
+        => RunExport(path => GridExporter.ExportToHtml(Grid, path), "vcwpf_export.html", sender);
 
+    /// <summary>
+    /// Exports are no longer silent: the localized completion message carries the target
+    /// path, and the clicked button locks for the operation (no double-click = double
+    /// file; the &gt;300ms rule's re-click block).
+    /// </summary>
+    private void RunExport(Action<string> export, string fileName, object sender)
+    {
+        if (sender is not System.Windows.Controls.Primitives.ButtonBase { IsEnabled: true } button)
+        {
+            return;
+        }
+
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), fileName);
+        button.IsEnabled = false;
+        try
+        {
+            export(path);
+            RowCountText.Text = $"{GridStrings.ExportCompleted}: {path}";
+        }
+        finally
+        {
+            button.IsEnabled = true;
+        }
+    }
 }

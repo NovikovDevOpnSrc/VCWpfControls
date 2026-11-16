@@ -241,6 +241,58 @@ public class TreeListView : GridControl
         set => SetValue(HasChildrenPredicateProperty, value);
     }
 
+    /// <summary>
+    /// The tree keyboard surface (a preview override: the grid's own key handling runs
+    /// after). Left/Right collapse/expand the current node, Space in the FIRST column
+    /// toggles the node checkbox when shown — node checks and subtree expansion were
+    /// mouse-only before. Keys the base grid consumes elsewhere are left alone.
+    /// </summary>
+    protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+    {
+        base.OnPreviewKeyDown(e);
+        if (e.Handled || CurrentItem is not { } item)
+        {
+            return;
+        }
+
+        if (e.Key == System.Windows.Input.Key.Left && NodeHasChildren(item))
+        {
+            if (IsExpanded(item))
+            {
+                ToggleNode(item, false);
+                e.Handled = true;
+            }
+
+            return;
+        }
+
+        if (e.Key == System.Windows.Input.Key.Right && NodeHasChildren(item))
+        {
+            if (!IsExpanded(item))
+            {
+                ToggleNode(item, true);
+                e.Handled = true;
+            }
+
+            return;
+        }
+
+        // Space in the tree column toggles the node checkbox (checkbox COLUMN cells keep
+        // the grid's own Space handling — checked by column type below).
+        if (e.Key == System.Windows.Input.Key.Space
+            && ShowNodeCheckBoxes
+            && CurrentColumn is { } column
+            && ReferenceEquals(column, VisibleColumns.Count > 0 ? VisibleColumns[0] : null)
+            && !IsEditing)
+        {
+            SetNodeChecked(item, !(IsNodeChecked(item)));
+            e.Handled = true;
+        }
+    }
+
+    private bool NodeHasChildren(object item)
+        => _nodesByItem.TryGetValue(item, out var node) && HasChildrenHint(node);
+
     private static void OnTreeFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         => ((TreeListView)d).RebuildTree();
 

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — sixth acceptance round: TreeList keyboard/a11y/targets, honest summaries
+
+The sixth `vcwpf-ui-review` round (TreeListView + Analytics/Pivot). Tree node checkboxes
+and expanders were mouse-only, unnamed, and 16px targets: they now carry localized
+automation names (expand/collapse state-aware), meet the 24px WCAG floor, and the tree
+grows a keyboard surface — Left/Right collapse/expand the current node, Space in the tree
+column toggles the node checkbox. The row peer's name now announces the node check state
+and the OnRender-drawn per-level summary (previously pixels invisible to screen readers).
+The summary render itself: follows the selection foreground inversion (was unreadable on
+selected rows), uses the caption type token (was off-ladder 0.92×), never falls back to a
+literal color, and reserves the last column's slot when it carries content (the summary
+overprinted right-aligned cell values before). Demo honesty: exports report the localized
+completion message with the target path and lock the clicked button; the Pivot caption no
+longer claims in-UI field pickers; the row counter's "rows" word is localized
+(RU leak fixed). 3 regressions, 3 guards injection-validated.
+
 ### Fixed — batch acceptance round: PropertyGrid search/empty/keyboard, docking chrome slivers
 
 The fifth `vcwpf-ui-review` round (PropertyGrid template + the compact-chrome blast

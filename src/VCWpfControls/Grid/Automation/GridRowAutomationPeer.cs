@@ -48,7 +48,22 @@ public sealed class GridRowAutomationPeer : FrameworkElementAutomationPeer, ISel
             }
         }
 
-        return parts.Count > 0 ? string.Join(" ", parts) : base.GetNameCore() ?? string.Empty;
+        // Tree rows: the checkbox state and the OnRender-drawn per-level summary are
+        // pixels — the peer name is the only channel a screen reader gets them through.
+        if (grid is TreeList.TreeListView tree)
+        {
+            if (tree.ShowNodeCheckBoxes && tree.IsNodeChecked(item))
+            {
+                parts.Add(Localization.GridStrings.TreeNodeChecked);
+            }
+
+            if (tree.GetTreeSummaryText(item) is { Length: > 0 } summary)
+            {
+                parts.Add(summary);
+            }
+        }
+
+        return parts.Count > 0 ? string.Join(" ", parts).Trim() : base.GetNameCore() ?? string.Empty;
     }
 
     bool ISelectionItemProvider.IsSelected => _owner.IsSelected;

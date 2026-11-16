@@ -214,6 +214,11 @@ public class GridRow : Control
         {
             _treeToggle.Margin = new Thickness(TreeLevel * 16, 0, 0, 0);
             _treeToggle.IsChecked = TreeIsExpanded;
+            // Icon-only interactive element: announce its state (the all-buttons-named rule
+            // covers demo pages; library template parts carry names themselves).
+            System.Windows.Automation.AutomationProperties.SetName(
+                _treeToggle,
+                TreeIsExpanded == true ? Localization.GridStrings.TreeCollapseNode : Localization.GridStrings.TreeExpandNode);
         }
         finally
         {
@@ -239,6 +244,7 @@ public class GridRow : Control
 
         _nodeCheckBox.Margin = new Thickness(TreeLevel * 16 + 20, 0, 0, 0);
         _nodeCheckBox.IsChecked = NodeIsChecked;
+        System.Windows.Automation.AutomationProperties.SetName(_nodeCheckBox, Localization.GridStrings.TreeCheckNode);
     }
 
     private void OnTreeToggleChanged(object sender, RoutedEventArgs e)

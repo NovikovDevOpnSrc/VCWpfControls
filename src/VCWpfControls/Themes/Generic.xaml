@@ -226,8 +226,8 @@
                                 <primitives:GridCellsPanel x:Name="PART_Cells" />
                                 <CheckBox
                                     x:Name="PART_NodeCheckBox"
-                                    Width="16"
-                                    Height="16"
+                                    Width="24"
+                                    Height="24"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Left"
                                     Focusable="False"
@@ -235,8 +235,8 @@
                                     Visibility="Collapsed" />
                                 <ToggleButton
                                     x:Name="PART_TreeToggle"
-                                    Width="16"
-                                    Height="16"
+                                    Width="24"
+                                    Height="24"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Left"
                                     Focusable="False"
@@ -260,7 +260,7 @@
                                 </ToggleButton>
                                 <Border x:Name="PART_GroupHost" Visibility="Collapsed" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
-                                    <ToggleButton x:Name="PART_GroupToggle" Width="16" Height="16" Focusable="False">
+                                    <ToggleButton x:Name="PART_GroupToggle" Width="24" Height="24" Focusable="False">
                                         <ToggleButton.Template>
                                             <ControlTemplate TargetType="ToggleButton">
                                                 <Border Background="Transparent">

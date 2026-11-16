@@ -128,6 +128,21 @@ public static class GridStrings
     /// <summary>The wizard empty-state text (no pages).</summary>
     public static string WizardNoPages => Get("WizardNoPages");
 
+    /// <summary>Tree node a11y name: TreeExpandNode.</summary>
+    public static string TreeExpandNode => Get("TreeExpandNode");
+
+    /// <summary>Tree node a11y name: TreeCollapseNode.</summary>
+    public static string TreeCollapseNode => Get("TreeCollapseNode");
+
+    /// <summary>Tree node a11y name: TreeCheckNode.</summary>
+    public static string TreeCheckNode => Get("TreeCheckNode");
+
+    /// <summary>Tree node a11y name: TreeNodeChecked.</summary>
+    public static string TreeNodeChecked => Get("TreeNodeChecked");
+
+    /// <summary>The localized plural word for data rows ("rows").</summary>
+    public static string RowsWord => Get("RowsWord");
+
     /// <summary>The "From" label of the range filter.</summary>
     public static string FilterFrom => Get("FilterFrom");
 

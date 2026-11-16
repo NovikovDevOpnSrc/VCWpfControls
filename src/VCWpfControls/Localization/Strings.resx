@@ -55,6 +55,11 @@
   <data name="WizardCancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="WizardStepFormat" xml:space="preserve"><value>Step {0} of {1}</value></data>
   <data name="WizardNoPages" xml:space="preserve"><value>No pages to show</value></data>
+  <data name="TreeExpandNode" xml:space="preserve"><value>Expand node</value></data>
+  <data name="TreeCollapseNode" xml:space="preserve"><value>Collapse node</value></data>
+  <data name="TreeCheckNode" xml:space="preserve"><value>Select node</value></data>
+  <data name="TreeNodeChecked" xml:space="preserve"><value>Selected</value></data>
+  <data name="RowsWord" xml:space="preserve"><value>rows</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Filter...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>Filter by values</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Column chooser</value></data>

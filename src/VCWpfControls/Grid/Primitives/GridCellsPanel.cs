@@ -404,17 +404,46 @@ public sealed class GridCellsPanel : Panel
             && _row?.DataItem is { } nodeItem
             && tree.GetTreeSummaryText(nodeItem) is { Length: > 0 } summaryText)
         {
+            // The summary inverts WITH the row (selected rows wear the selection background
+            // where the plain text token is unreadable), uses the caption token size (no
+            // off-ladder 0.92 scaling) and never falls back to a literal color.
+            var brushKey = _row.IsSelected
+                ? GridResources.SelectionTextKey
+                : GridResources.TextBrushKey;
+            if (owner.TryFindResource(brushKey) is not Brush summaryBrush
+                || owner.TryFindResource(GridResources.FontSizeCaptionKey) is not double captionSize)
+            {
+                return;
+            }
+
             var typeface = new Typeface(owner.FontFamily, FontStyles.Italic, FontWeights.Normal, FontStretches.Normal);
             var text = new FormattedText(
                 summaryText,
                 System.Globalization.CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 typeface,
-                Math.Max(owner.FontSize * 0.92, 9),
-                (owner.TryFindResource(VCWpfControls.Grid.GridResources.TextBrushKey) as Brush) ?? Brushes.Black,
+                captionSize,
+                summaryBrush,
                 VisualTreeHelper.GetDpi(this).PixelsPerDip);
-            var x = Math.Max(RenderSize.Width - text.Width - 6, 0);
-            dc.DrawText(text, new System.Windows.Point(x, (RenderSize.Height - text.Height) / 2));
+
+            // Overprint guard: the LAST visible column's right-aligned value lives exactly
+            // at the right edge — when it has content, right-align the summary BEFORE its
+            // slot (skip when it doesn't fit).
+            var limitRight = RenderSize.Width - 6;
+            var summaryColumns = owner.VisibleColumns;
+            if (summaryColumns.Count > 0
+                && summaryColumns[^1].GetCellValue(nodeItem) is { } lastValue
+                && !string.IsNullOrEmpty(Convert.ToString(lastValue, System.Globalization.CultureInfo.CurrentCulture))
+                && owner.Layout.GetSlot(summaryColumns[^1]) is { } lastSlot)
+            {
+                var lastLeft = (lastSlot.IsFrozen ? lastSlot.X : lastSlot.X - owner.HorizontalOffset) + 2;
+                limitRight = Math.Min(limitRight, lastLeft - 8);
+            }
+
+            if (limitRight - text.Width >= 0)
+            {
+                dc.DrawText(text, new System.Windows.Point(limitRight - text.Width, (RenderSize.Height - text.Height) / 2));
+            }
         }
 
         // Selected cells: painted before the children so text stays on top. View-row spans

@@ -55,6 +55,11 @@
   <data name="WizardCancel" xml:space="preserve"><value>Отмена</value></data>
   <data name="WizardStepFormat" xml:space="preserve"><value>Шаг {0} из {1}</value></data>
   <data name="WizardNoPages" xml:space="preserve"><value>Нет страниц для показа</value></data>
+  <data name="TreeExpandNode" xml:space="preserve"><value>Развернуть узел</value></data>
+  <data name="TreeCollapseNode" xml:space="preserve"><value>Свернуть узел</value></data>
+  <data name="TreeCheckNode" xml:space="preserve"><value>Выбрать узел</value></data>
+  <data name="TreeNodeChecked" xml:space="preserve"><value>Выбран</value></data>
+  <data name="RowsWord" xml:space="preserve"><value>строк</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Фильтр...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>Фильтр по значениям</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Выбор столбцов</value></data>

@@ -12,7 +12,7 @@
         <TextBlock
             Margin="0,0,0,8"
             FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
-            Text="Region rows x Product columns, Sum(Amount); totals column + grand row. Change the fields/measures below in code — the grid recomputes." />
+            Text="Region rows x Product columns, Sum(Amount); totals column + grand row. The axes/measures are configured in code (RowFields/ColumnFields/Measures) — the pivot recomputes on every source change." />
 
         <pivot:PivotGrid x:Name="Pivot" Grid.Row="1" PivotItemsSource="{Binding Sales}" RowHeight="28" />
     </Grid>
