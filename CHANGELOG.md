@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.7] — 2026-11-17
+
+The acceptance campaign's final three rounds: PropertyGrid search watermark/Esc/empty
+state and docking chrome fixes, TreeList keyboard/a11y/summary honesty, and the
+ConditionBuilder theming/localization/focus overhaul — plus a new `ErrorTextKey` semantic
+token, localized operator captions ×3, and page-level honesty fixes (export feedback,
+primary CTA placement, a live-data chart). 11 new injection-validated regressions.
+
 ### Fixed — seventh acceptance round: ConditionBuilder theming/l10n/focus, page honesty
 
 The seventh `vcwpf-ui-review` round (Basic/Condition/Integration). The ConditionBuilder
