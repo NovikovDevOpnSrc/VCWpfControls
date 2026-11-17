@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — dark theme gaps in stock WPF elements (issue #17, pilot consumer report)
+
+Links and ToggleButtons stayed on the light system chrome in dark themed apps: no palette
+defined an implicit `Hyperlink` (system blue on #292929, ~1-2:1) or `ToggleButton` style —
+the reporter suspected a Light/Dark parity gap; the sets were actually equal, both styles
+were simply missing from ALL palettes. Fixed: an implicit Hyperlink style in every palette
+(Foreground = `AccentTextKey`; dark #77B7F7 = 6.86:1 WCAG PASS — exactly the value the
+reporter computed) and a full themed ToggleButton template (hover/pressed/checked states
+through tokens, 32px minimum — the stock chrome ignores Background setters). Plus a PARITY
+guard: the implicit style type set must be identical across Light/Dark/HighContrast (it
+caught a silent dictionary-insert miss during the fix itself). 3 regressions,
+injection-validated.
+
 ## [0.5.7] — 2026-11-17
 
 The acceptance campaign's final three rounds: PropertyGrid search watermark/Esc/empty
