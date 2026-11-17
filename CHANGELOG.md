@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.8] — 2026-11-18
+
+The chrome-completion release: every remaining stock WPF surface now follows the theme —
+Hyperlink and ToggleButton (issue #17, with a palette-parity guard), full themed menus
+(Menu/MenuItem/ContextMenu — one template for all roles, access keys, checkable items,
+themed separators, native HC hover) and status bars (StatusBar/StatusBarItem plus a live
+shell bar in the demo). Plus the menus acceptance round (check/arrow glyph fixes, Icon
+support) and the earlier dark-theme fixes. 8 new regression tests, all
+injection-validated.
+
 ### Added — themed status bar: implicit StatusBar/StatusBarItem styles + a live shell bar
 
 Status bars follow Light/Dark/HighContrast through implicit styles merged app-wide by
