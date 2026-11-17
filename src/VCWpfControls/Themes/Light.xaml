@@ -191,6 +191,52 @@
         </Setter>
     </Style>
 
+    <!-- ============ Status bar ============ -->
+    <!-- Implicit StatusBar (merged app-wide by ThemeManager): a bottom information strip —
+         caption-size text on the surface, a 1px top separator (Win11 status bars). -->
+    <Style TargetType="StatusBar">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource {x:Static grid:GridResources.FontFamilyKey}}" />
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static grid:GridResources.FontSizeCaptionKey}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="4,0,4,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="StatusBar">
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{DynamicResource {x:Static grid:GridResources.SeparatorLineKey}}"
+                        BorderThickness="0,1,0,0"
+                        SnapsToDevicePixels="True">
+                        <ItemsPresenter VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Implicit StatusBarItem: vertical centering, 8px horizontal rhythm. Item
+         separators are themed 1px Rectangles (StatusBarItem has NO SeparatorStyleKey in
+         WPF — unlike MenuItem; a plain <Separator/> renders a horizontal line). -->
+    <Style TargetType="StatusBarItem">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="8,0,8,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="StatusBarItem">
+                    <Border Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
     <!-- ============ Menus (main bar + context) ============ -->
     <!-- Implicit Menu: a transparent bar host — items carry the chrome. -->
     <Style TargetType="Menu">

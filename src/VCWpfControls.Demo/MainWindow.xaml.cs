@@ -46,7 +46,28 @@ public partial class MainWindow : Window
         Services.SystemThemeWatcher.Start();
         Services.SystemThemeWatcher.LightChanged += OnSystemThemeFlip;
         Services.SystemThemeWatcher.HighContrastChanged += OnSystemThemeFlip;
+
+        // Status bar: the current page + the live theme (follows ThemeManager swaps).
+        if (DataContext is MainViewModel main)
+        {
+            main.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.SelectedSample))
+                {
+                    StatusBarPage.Text = main.SelectedSample?.Title ?? string.Empty;
+                }
+            };
+            StatusBarPage.Text = main.SelectedSample?.Title ?? string.Empty;
+        }
+
+        UpdateStatusBarTheme();
+        Services.SystemThemeWatcher.LightChanged += (_, _) => UpdateStatusBarTheme();
+        Services.SystemThemeWatcher.HighContrastChanged += (_, _) => UpdateStatusBarTheme();
+        Themes.ThemeManager.ThemeChanged += (_, _) => UpdateStatusBarTheme();
     }
+
+    private void UpdateStatusBarTheme()
+        => StatusBarTheme.Text = $"Theme: {Themes.ThemeManager.CurrentTheme}";
 
     /// <inheritdoc />
     protected override void OnPreviewKeyDown(KeyEventArgs e)

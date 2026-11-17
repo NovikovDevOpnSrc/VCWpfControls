@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — themed status bar: implicit StatusBar/StatusBarItem styles + a live shell bar
+
+Status bars follow Light/Dark/HighContrast through implicit styles merged app-wide by
+`ThemeManager` (the stock chrome stays system-light in dark apps): caption-size text (12)
+on a 28px strip, the surface background, a 1px `SeparatorLineKey` top separator, 8px item
+rhythm. Item separators are themed 1px Rectangles — `StatusBarItem` has NO
+`SeparatorStyleKey` in WPF (unlike `MenuItem`; an initial keyed style silently compiled
+by resolving to MenuItem's key — removed; documented). The demo shell docks a live bottom
+bar spanning the window: the current page title and the current theme name, updated on
+navigation and `ThemeManager.ThemeChanged`, with the theme item a polite live region.
+Acceptance-run BEFORE shipping (the menus lesson): the critique caught the separator
+Rectangle rendering 0px tall (no Height) and the guard being blind to it — fixed with a
+16px rule and a height assert (injection-validated); right item gained a MinWidth so the
+theme label never folds to zero on narrow windows. docs status-bar.md ×3.
+
 ### Fixed — menus acceptance round (user report: the Autosave check glyph misaligned)
 
 The menus feature had shipped without its own `vcwpf-ui-review` pass — run now, it

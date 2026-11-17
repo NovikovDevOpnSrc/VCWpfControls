@@ -75,6 +75,10 @@
     </Window.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220" />
             <ColumnDefinition Width="*" />
@@ -176,5 +180,22 @@
             <ContentControl Grid.Row="2"
                             Content="{Binding SelectedSample}" />
         </Grid>
+
+        <!-- The shell status bar (follows the theme with every implicit style): current
+             page + current theme, updated live. -->
+        <StatusBar x:Name="ShellStatusBar" Grid.Row="1" Grid.ColumnSpan="2">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusBarPage" TextTrimming="CharacterEllipsis"
+                           AutomationProperties.AutomationId="StatusBarPage" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Rectangle Width="1" Height="16" Margin="4,4,4,4" Fill="{DynamicResource {x:Static grid:GridResources.SeparatorLineKey}}" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" MinWidth="80">
+                <TextBlock x:Name="StatusBarTheme" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           AutomationProperties.AutomationId="StatusBarTheme"
+                           AutomationProperties.LiveSetting="Polite" />
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>
