@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — themed menus: implicit Menu/MenuItem/ContextMenu styles in every palette
+
+Main menu bars and context menus follow Light/Dark/HighContrast through implicit styles
+merged app-wide by `ThemeManager` — plain WPF menus, no new types (the stock chrome
+ignores Background setters, the proven class). One MenuItem template serves all roles
+(top-level items collapse the check/gesture/arrow columns; an open top-level shows the
+accent underline, Win11-style; submenu items render the check glyph, the muted
+right-aligned `InputGestureText` and the submenu arrow); separators theme via
+`MenuItem.SeparatorStyleKey`; ContextMenu renders a surface card (8px corners, 4px
+padding); menu items are 32px minimum; keyboard is stock WPF (access keys via `_`,
+arrows, first-letter jumps) plus the shared focus ring. The grid's header context menu
+follows the theme automatically. Demo "Menus" page (bar + context area); docs ×3
+(`menus.md`). Parity guard auto-extended; 3 regressions, injection-validated.
+
 ### Fixed — dark theme gaps in stock WPF elements (issue #17, pilot consumer report)
 
 Links and ToggleButtons stayed on the light system chrome in dark themed apps: no palette

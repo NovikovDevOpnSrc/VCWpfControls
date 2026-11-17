@@ -31,4 +31,5 @@
 - name: Gantt
   href: gantt.md
 - name: Scheduler
+  href: menus.md
   href: scheduler.md

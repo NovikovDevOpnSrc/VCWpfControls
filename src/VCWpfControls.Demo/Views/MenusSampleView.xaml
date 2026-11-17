@@ -1,0 +1,73 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.MenusSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
+    <DockPanel>
+        <!-- The main menu bar: access keys (Alt+F/E/V/H), shortcuts, a checkable item,
+             a disabled item and a separator — everything themed through the implicit
+             Menu/MenuItem styles. -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" InputGestureText="Ctrl+N" Click="OnNewClick" />
+                <MenuItem Header="_Open…" InputGestureText="Ctrl+O" Click="OnOpenClick" />
+                <Separator />
+                <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="OnExitClick" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Cu_t" InputGestureText="Ctrl+X" Click="OnEditClick" />
+                <MenuItem Header="_Copy" InputGestureText="Ctrl+C" Click="OnEditClick" />
+                <MenuItem Header="_Paste" InputGestureText="Ctrl+V" Click="OnEditClick" />
+                <Separator />
+                <MenuItem Header="Autosave" IsCheckable="True" IsChecked="True" Click="OnEditClick" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Send to _mail" Click="OnSendClick" />
+                <MenuItem Header="Send to _archive" Click="OnSendClick" />
+                <MenuItem Header="_Unavailable (disabled)" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="OnAboutClick" />
+            </MenuItem>
+        </Menu>
+
+        <TextBlock
+            DockPanel.Dock="Bottom"
+            Margin="0,8,0,0"
+            FontSize="12"
+            Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+            Text="{Binding LastAction}"
+            AutomationProperties.AutomationId="MenusLastAction"
+            AutomationProperties.LiveSetting="Polite" />
+
+        <StackPanel Margin="0,24,0,0" MaxWidth="480" HorizontalAlignment="Left">
+            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Context menu" />
+            <TextBlock
+                Margin="0,4,0,8"
+                FontSize="12"
+                Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                TextWrapping="Wrap"
+                Text="The same themed MenuItem chrome serves context menus — right-click the area below (Alt+down opens the keyboard menu channel). The grid's header menu (right-click any header) follows the theme automatically." />
+            <Border
+                MinHeight="120"
+                Padding="12"
+                CornerRadius="8"
+                BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
+                BorderThickness="1"
+                Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="_Refresh" InputGestureText="F5" Click="OnRefreshClick" />
+                        <Separator />
+                        <MenuItem Header="Sort _ascending" Click="OnSortClick" />
+                        <MenuItem Header="Sort _descending" Click="OnSortClick" />
+                        <MenuItem Header="Pi_n" IsCheckable="True" Click="OnSortClick" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                    Text="Right-click here" />
+            </Border>
+        </StackPanel>
+    </DockPanel>
+</UserControl>

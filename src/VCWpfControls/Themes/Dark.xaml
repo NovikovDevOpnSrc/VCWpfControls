@@ -189,6 +189,184 @@
         </Setter>
     </Style>
 
+    <!-- ============ Menus (main bar + context) ============ -->
+    <!-- Implicit Menu: a transparent bar host — items carry the chrome. -->
+    <Style TargetType="Menu">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource {x:Static grid:GridResources.FontFamilyKey}}" />
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static grid:GridResources.FontSizeBodyKey}}" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Implicit ContextMenu: surface card, 8px radius, 4px inner padding (Win11 menus).
+         The grid's header menu and any consumer ContextMenu follow the theme. -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource {x:Static grid:GridResources.FontFamilyKey}}" />
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static grid:GridResources.FontSizeBodyKey}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border
+                        Margin="2"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8"
+                        SnapsToDevicePixels="True">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Implicit MenuItem — ONE template for all roles (top-level/submenu items & headers;
+         arrow/gesture columns collapse for top-level; the popup anchors to the role's
+         placement). The Separator role swaps the whole template for a themed line. -->
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static grid:GridResources.FocusVisualKey}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border
+                        x:Name="Root"
+                        Padding="8,0,8,0"
+                        Background="Transparent"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition x:Name="IconCol" Width="24" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition x:Name="ArrowCol" Width="16" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid x:Name="IconHost" Width="24">
+                                <Path
+                                    x:Name="Check"
+                                    Data="M 0 4 L 3 7 L 8 0"
+                                    Stroke="{TemplateBinding Foreground}"
+                                    StrokeThickness="1.6"
+                                    Visibility="Collapsed" />
+                            </Grid>
+
+                            <ContentPresenter
+                                x:Name="HeaderHost"
+                                Grid.Column="1"
+                                Margin="0,0,24,0"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                RecognizesAccessKey="True" />
+
+                            <TextBlock
+                                x:Name="Gesture"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                                Text="{TemplateBinding InputGestureText}" />
+
+                            <Path
+                                x:Name="Arrow"
+                                Grid.Column="3"
+                                Data="M 0 0 L 4 4 L 0 8 Z"
+                                Fill="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                                Visibility="Collapsed" />
+
+                            <!-- The accent underline marks an OPEN top-level menu (Win11). -->
+                            <Rectangle
+                                x:Name="Underline"
+                                Grid.ColumnSpan="4"
+                                Height="2"
+                                VerticalAlignment="Bottom"
+                                Fill="{DynamicResource {x:Static grid:GridResources.AccentKey}}"
+                                Visibility="Collapsed" />
+
+                            <Popup
+                                x:Name="PART_POPUP"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                Placement="Right"
+                                PopupAnimation="None">
+                                <Border
+                                    Margin="0,2,0,2"
+                                    Padding="4"
+                                    Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}"
+                                    BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="IconCol" Property="Width" Value="0" />
+                            <Setter TargetName="IconHost" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="ArrowCol" Property="Width" Value="0" />
+                            <Setter TargetName="Gesture" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="HeaderHost" Property="Margin" Value="0" />
+                            <Setter TargetName="PART_POPUP" Property="Placement" Value="Bottom" />
+                        </Trigger>
+                        <Trigger Property="Role" Value="TopLevelItem">
+                            <Setter TargetName="IconCol" Property="Width" Value="0" />
+                            <Setter TargetName="IconHost" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="ArrowCol" Property="Width" Value="0" />
+                            <Setter TargetName="Gesture" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="HeaderHost" Property="Margin" Value="0" />
+                            <Setter TargetName="PART_POPUP" Property="Placement" Value="Bottom" />
+                        </Trigger>
+                        <Trigger Property="IsCheckable" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="Check" Property="Visibility" Value="Hidden" />
+                        </Trigger>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                            <Setter TargetName="Underline" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Menu separators are themed through MenuItem.SeparatorStyleKey (the resource a
+         <Separator/> inside a Menu/ContextMenu picks up automatically). -->
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
+        <Setter Property="Background" Value="{DynamicResource {x:Static grid:GridResources.SeparatorLineKey}}" />
+        <Setter Property="Margin" Value="8,4,8,4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Rectangle Height="1" Fill="{TemplateBinding Background}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Implicit Hyperlink: the stock link wears system blue — ~1-2:1 on the dark
          surface (issue #17). AccentText follows the palette (dark #77B7F7 = 6.86:1). -->
     <Style TargetType="Hyperlink">

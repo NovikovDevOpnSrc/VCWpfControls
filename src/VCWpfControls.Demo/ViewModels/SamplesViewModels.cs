@@ -432,6 +432,16 @@ public partial class SchedulerSampleViewModel : SampleViewModelBase
     }
 }
 
+/// <summary>Menus sample VM.</summary>
+public partial class MenusSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Menus";
+
+    /// <inheritdoc />
+    public override string Description => "Themed main menu bar and context menu: access keys, shortcuts, checkable items, separators, submenus — implicit Menu/MenuItem/ContextMenu styles in every palette.";
+}
+
 /// <summary>Global demo settings: theme, accent preset and library language (persisted).</summary>
 public partial class SettingsSampleViewModel : SampleViewModelBase
 {

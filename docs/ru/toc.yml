@@ -31,4 +31,5 @@
 - name: Диаграмма Ганта
   href: gantt.md
 - name: Планировщик
+  href: menus.md
   href: scheduler.md

@@ -33,6 +33,7 @@ public partial class MainWindow : Window
             new SchedulerSampleViewModel(),
             new ConditionSampleViewModel(),
             new IntegrationSampleViewModel(),
+            new MenusSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
 
