@@ -29,6 +29,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.ErrorTextKey}" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.MenuHoverBackgroundKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
 
     <!-- Implicit ComboBox (merged app-wide by ThemeManager): the setters resolve through
          the HC token aliases (Window/WindowText/WindowFrame), so the picker follows the
@@ -218,7 +219,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
                     <Border
-                        Margin="2"
+                        Margin="4"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -257,11 +258,19 @@
                             </Grid.ColumnDefinitions>
 
                             <Grid x:Name="IconHost" Width="24">
+                                <ContentPresenter
+                                    x:Name="IconPresenter"
+                                    ContentSource="Icon"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
                                 <Path
                                     x:Name="Check"
                                     Data="M 0 4 L 3 7 L 8 0"
                                     Stroke="{TemplateBinding Foreground}"
                                     StrokeThickness="1.6"
+                                    Stretch="None"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
                                     Visibility="Collapsed" />
                             </Grid>
 
@@ -276,6 +285,7 @@
                             <TextBlock
                                 x:Name="Gesture"
                                 Grid.Column="2"
+                                Margin="0,0,12,0"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
                                 Text="{TemplateBinding InputGestureText}" />
@@ -285,6 +295,9 @@
                                 Grid.Column="3"
                                 Data="M 0 0 L 4 4 L 0 8 Z"
                                 Fill="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                                Stretch="None"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
                                 Visibility="Collapsed" />
 
                             <!-- The accent underline marks an OPEN top-level menu (Win11). -->
@@ -304,7 +317,7 @@
                                 Placement="Right"
                                 PopupAnimation="None">
                                 <Border
-                                    Margin="0,2,0,2"
+                                    Margin="0,4,0,4"
                                     Padding="4"
                                     Background="{DynamicResource {x:Static grid:GridResources.SurfaceBackgroundKey}}"
                                     BorderBrush="{DynamicResource {x:Static grid:GridResources.HeaderBorderKey}}"
@@ -336,6 +349,7 @@
                         </Trigger>
                         <Trigger Property="IsCheckable" Value="True">
                             <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="False">
                             <Setter TargetName="Check" Property="Visibility" Value="Hidden" />
@@ -344,12 +358,17 @@
                             <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="IsSubmenuOpen" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.MenuHoverBackgroundKey}}" />
                             <Setter TargetName="Underline" Property="Visibility" Value="Visible" />
                         </Trigger>
-                        <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.HoverBackgroundKey}}" />
-                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsHighlighted" Value="True" />
+                                <Condition Property="IsEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource {x:Static grid:GridResources.MenuHoverBackgroundKey}}" />
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static grid:GridResources.SelectionTextKey}}" />
+                        </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.45" />
                         </Trigger>

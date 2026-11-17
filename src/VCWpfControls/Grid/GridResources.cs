@@ -86,6 +86,9 @@ public static class GridResources
     /// <summary>Text color on accent fills — the primary CTA style pairs AccentKey background with this foreground (readable in both palettes; high contrast keeps system colors).</summary>
     public static readonly ComponentResourceKey OnAccentTextKey = new(typeof(GridResources), "OnAccentText");
 
+    /// <summary>Menu item hover/open fill — subtle in Light/Dark, the native Highlight pairing in high contrast (menu text flips to SelectionText with it).</summary>
+    public static readonly ComponentResourceKey MenuHoverBackgroundKey = new(typeof(GridResources), "MenuHoverBackground");
+
     /// <summary>Semantic error/validation text (parse errors, inline validation) — red-family, readable in every palette.</summary>
     public static readonly ComponentResourceKey ErrorTextKey = new(typeof(GridResources), "ErrorText");
 

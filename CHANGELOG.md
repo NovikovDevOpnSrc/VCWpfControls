@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — menus acceptance round (user report: the Autosave check glyph misaligned)
+
+The menus feature had shipped without its own `vcwpf-ui-review` pass — run now, it
+returned REWORK and everything is fixed: the check glyph AND the submenu arrow were
+Paths left on the default `Stretch` — smeared over / pinned to the top-left of their
+cells (both now `Stretch="None"`, centered); `MenuItem.Icon` was silently dropped by the
+template (an `IconPresenter` renders it; a check replaces the icon on checkable items,
+Win11-style); the demo's status line was a dead CLR-property binding (now a dependency
+property); hover feedback was invisible in High Contrast (the generic hover token aliases
+Window there) — menus gained a dedicated `MenuHoverBackgroundKey` token (subtle in
+Light/Dark, the native Highlight in HC) with the hover trigger pairing it to
+`SelectionTextKey` (the native HC pairing; a no-op in Light/Dark) and gated on `IsEnabled`
+(disabled items no longer light up); the gesture column got breathing room before the
+submenu arrow; popup gutters moved onto the 4px grid. 5 regressions, 2 new guards
+injection-validated.
+
 ### Added — themed menus: implicit Menu/MenuItem/ContextMenu styles in every palette
 
 Main menu bars and context menus follow Light/Dark/HighContrast through implicit styles

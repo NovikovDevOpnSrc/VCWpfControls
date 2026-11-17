@@ -14,8 +14,17 @@ public partial class MenusSampleView : UserControl
         DataContext = this;
     }
 
-    /// <summary>The last menu interaction (status line).</summary>
-    public string LastAction { get; private set; } = "Open a menu (Alt+F), click an item, right-click the area below.";
+    /// <summary>Identifies the <see cref="LastAction"/> dependency property.</summary>
+    public static readonly DependencyProperty LastActionProperty = DependencyProperty.Register(
+        nameof(LastAction), typeof(string), typeof(MenusSampleView),
+        new PropertyMetadata("Open a menu (Alt+F), click an item, right-click the area below."));
+
+    /// <summary>The last menu interaction (status line; a DP so the binding updates).</summary>
+    public string LastAction
+    {
+        get => (string)GetValue(LastActionProperty);
+        private set => SetValue(LastActionProperty, value);
+    }
 
     private void Report(string action) => LastAction = action;
 

@@ -156,12 +156,62 @@ public class MenuAcceptanceTests
             autosaveItem.IsChecked = false;
             TestWindowHost.Pump();
             Assert.Equal(Visibility.Hidden, check.Visibility);
+
+            // The glyph is a small centered mark, NOT stretched over the whole 24x32 cell
+            // (the stock Path default Stretch filled it — a distorted smear, user report).
+            autosaveItem.IsChecked = true;
+            TestWindowHost.Pump();
+            var glyphTop = check.TranslatePoint(new Point(0, 0), autosaveItem).Y;
+            var centered = (autosaveItem.ActualHeight - check.ActualHeight) / 2;
+            Assert.InRange(check.ActualHeight, 4, 16); // glyph-sized, not cell-sized
+            Assert.InRange(Math.Abs(glyphTop - centered), 0, 1.5); // vertically centered
+
+            // The submenu arrow is vertically centered too (the same stretch-at-origin
+            // bug the check glyph had — caught by the acceptance critique).
+            var arrowTop = arrow.TranslatePoint(new Point(0, 0), sendItem).Y;
+            var arrowCentered = (sendItem.ActualHeight - arrow.ActualHeight) / 2;
+            Assert.InRange(arrow.ActualHeight, 4, 16);
+            Assert.InRange(Math.Abs(arrowTop - arrowCentered), 0, 1.5);
+
+            // MenuItem.Icon renders (Win11: the check replaces the icon on checkable items).
+            var iconPresenter = (ContentPresenter)sendItem.Template.FindName("IconPresenter", sendItem);
+            sendItem.Icon = new System.Windows.Shapes.Ellipse { Width = 12, Height = 12, Fill = Brushes.Black };
+            TestWindowHost.Pump();
+            Assert.Equal(Visibility.Visible, iconPresenter.Visibility);
+            var checkableIcon = (ContentPresenter)autosaveItem.Template.FindName("IconPresenter", autosaveItem);
+            Assert.Equal(Visibility.Collapsed, checkableIcon.Visibility); // the check replaces the icon
+            var plainIcon = (ContentPresenter)open.Template.FindName("IconPresenter", open);
+            Assert.Equal(Visibility.Visible, plainIcon.Visibility); // non-checkable keeps its icon slot
+
+            // The hover trigger is ENABLED-gated (a disabled item must not light up) and
+            // pairs the background with the SelectionText foreground (native HC pairing).
+            Assert.Contains(open.Template.Triggers, t =>
+                t is System.Windows.MultiTrigger multi
+                && multi.Conditions.Any(c => c.Property.Name == "IsHighlighted")
+                && multi.Conditions.Any(c => c.Property.Name == "IsEnabled")
+                && multi.Setters.OfType<System.Windows.Setter>()
+                    .Any(setter => setter.Property.Name == "Foreground"));
         }
         finally
         {
             menu.IsOpen = false;
             window.Close();
         }
+    }
+
+    [StaFact]
+    public void HighContrast_MenuHover_IsTheNativeHighlight()
+    {
+        // In HC the generic hover token aliases Window (invisible on the Window
+        // surface) — menus carry a DEDICATED hover token aliasing Highlight, so hover
+        // feedback survives every contrast scheme.
+        _ = new GridControl();
+        var hc = new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/VCWpfControls;component/Themes/HighContrast.xaml"),
+        };
+        var hover = Assert.IsType<SolidColorBrush>(hc[GridResources.MenuHoverBackgroundKey]);
+        Assert.Equal(SystemColors.HighlightColor, hover.Color);
     }
 
     [StaFact]

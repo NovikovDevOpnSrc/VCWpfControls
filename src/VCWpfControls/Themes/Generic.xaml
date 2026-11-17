@@ -36,6 +36,7 @@
     <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF4500" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.OnAccentTextKey}" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.ErrorTextKey}" Color="#FFD13438" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.MenuHoverBackgroundKey}" Color="#FFF5F5F5" />
     <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E696969" />
 
 <FontFamily x:Key="{x:Static grid:GridResources.FontFamilyKey}">Segoe UI Variable Text, Segoe UI</FontFamily>
