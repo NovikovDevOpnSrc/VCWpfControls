@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.9] — 2026-11-19
+
+The stock-chrome completion release: every remaining common WPF surface now themes
+(TabControl/TabItem, Expander, GroupBox, Slider, ProgressBar, ListBox/TreeView with
+items, ToolTip — 22 implicit themed types across Light/Dark/HighContrast, guarded by
+the palette-parity test), the Gantt gains keyboard/a11y parity (`SelectedTask`, task
+automation peers, arrows/Enter/Delete/date-shift keys — plain arrows never reschedule),
+and the menus gained live UIA e2e coverage (expand/invoke/toggle; the stock Toggle
+pattern flips `IsChecked` without raising Click — wire Checked/Unchecked to react).
+
 ### Added — menus e2e coverage (the live UIA channel)
 
 The Menus page had zero FlaUI coverage of the bar itself (navigation smoke only) — the
