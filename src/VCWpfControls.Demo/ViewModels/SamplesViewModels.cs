@@ -432,6 +432,16 @@ public partial class SchedulerSampleViewModel : SampleViewModelBase
     }
 }
 
+/// <summary>Themed chrome sample VM.</summary>
+public partial class ChromeSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Chrome";
+
+    /// <inheritdoc />
+    public override string Description => "The remaining stock surfaces themed: tabs, expander, group box, slider, progress bar, lists, trees and tooltips — implicit styles in every palette.";
+}
+
 /// <summary>Menus sample VM.</summary>
 public partial class MenusSampleViewModel : SampleViewModelBase
 {

@@ -143,6 +143,15 @@ public static class GridStrings
     /// <summary>The localized plural word for data rows ("rows").</summary>
     public static string RowsWord => Get("RowsWord");
 
+    /// <summary>Slider/template part a11y name: SliderDecrease.</summary>
+    public static string SliderDecrease => Get("SliderDecrease");
+
+    /// <summary>Slider/template part a11y name: SliderIncrease.</summary>
+    public static string SliderIncrease => Get("SliderIncrease");
+
+    /// <summary>Slider/template part a11y name: ExpanderToggle.</summary>
+    public static string ExpanderToggle => Get("ExpanderToggle");
+
     /// <summary>The "From" label of the range filter.</summary>
     public static string FilterFrom => Get("FilterFrom");
 

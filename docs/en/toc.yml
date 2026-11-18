@@ -33,4 +33,5 @@
 - name: Scheduler
   href: menus.md
   href: status-bar.md
+  href: themed-chrome.md
   href: scheduler.md

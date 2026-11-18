@@ -34,6 +34,7 @@ public partial class MainWindow : Window
             new ConditionSampleViewModel(),
             new IntegrationSampleViewModel(),
             new MenusSampleViewModel(),
+            new ChromeSampleViewModel(),
         };
         DataContext = new MainViewModel(samples);
 

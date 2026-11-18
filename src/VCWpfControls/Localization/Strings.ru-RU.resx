@@ -71,6 +71,9 @@
   <data name="ConditionOpIsNull" xml:space="preserve"><value>пусто</value></data>
   <data name="ConditionOpIsNotNull" xml:space="preserve"><value>не пусто</value></data>
   <data name="ConditionEmptyPreview" xml:space="preserve"><value>нет условий (фильтр пуст)</value></data>
+  <data name="SliderDecrease" xml:space="preserve"><value>Уменьшить</value></data>
+  <data name="SliderIncrease" xml:space="preserve"><value>Увеличить</value></data>
+  <data name="ExpanderToggle" xml:space="preserve"><value>Переключить</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>Фильтр...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>Фильтр по значениям</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>Выбор столбцов</value></data>

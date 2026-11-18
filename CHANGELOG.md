@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — chrome completion II: tabs, expander, groupbox, slider, progress, lists, trees, tooltips
+
+The remaining stock WPF surfaces followed the light system chrome in themed apps — now
+implicit themed styles in every palette (the parity guard auto-extended to the 11 new
+types): **TabControl/TabItem** (a 1px strip; the selected tab carries the accent
+underline, painted over the strip), **Expander** (a transparent inline header toggle —
+critique-caught: the implicit ToggleButton chrome boxed it and painted a permanent
+selection while expanded), **GroupBox** (the header knockout binds the templated
+background — a surface-fixed knockout left white patches on any non-surface host),
+**Slider** (BarFill track + accent thumb, `PART_Track` keeps native arrows; the
+transparent RepeatButtons carry localized a11y names — the all-buttons-named FlaUI gate
+caught them), **ProgressBar** (BarFill track + accent `PART_Indicator`), **ListBox** and
+**TreeView** with 32px items and the grid's selection pairing, **ToolTip** (a surface
+card). Guards tightened per the critique: the Slider thumb and ProgressBar indicator
+assert the actual ACCENT brush (a parts-only check passes hardcoded colors), and the
+tab underline asserts flush geometry + the realized accent fill. Demo **Chrome** page;
+docs themed-chrome.md ×3.
+
 ## [0.5.8] — 2026-11-18
 
 The chrome-completion release: every remaining stock WPF surface now follows the theme —

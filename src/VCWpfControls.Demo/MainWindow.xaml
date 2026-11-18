@@ -15,6 +15,9 @@
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="MinHeight" Value="32" />
         </Style>
+        <DataTemplate DataType="{x:Type vm:ChromeSampleViewModel}">
+            <views:ChromeSampleView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:MenusSampleViewModel}">
             <views:MenusSampleView />
         </DataTemplate>

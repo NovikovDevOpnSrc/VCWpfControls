@@ -71,6 +71,9 @@
   <data name="ConditionOpIsNull" xml:space="preserve"><value>为空</value></data>
   <data name="ConditionOpIsNotNull" xml:space="preserve"><value>不为空</value></data>
   <data name="ConditionEmptyPreview" xml:space="preserve"><value>无条件（筛选为空）</value></data>
+  <data name="SliderDecrease" xml:space="preserve"><value>减少</value></data>
+  <data name="SliderIncrease" xml:space="preserve"><value>增大</value></data>
+  <data name="ExpanderToggle" xml:space="preserve"><value>切换</value></data>
   <data name="FilterEllipsis" xml:space="preserve"><value>筛选...</value></data>
   <data name="FilterByValues" xml:space="preserve"><value>按值筛选</value></data>
   <data name="ColumnChooserTitle" xml:space="preserve"><value>列选择器</value></data>

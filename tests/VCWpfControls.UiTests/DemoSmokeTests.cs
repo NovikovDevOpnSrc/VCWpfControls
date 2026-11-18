@@ -47,6 +47,7 @@ public sealed class DemoSmokeTests : IDisposable
             ["Gantt"] = "GanttSample",
             ["Scheduler"] = "SchedulerSample",
             ["Menus"] = "MenusSample",
+            ["Chrome"] = "ChromeSample",
             ["Conditions"] = "ConditionSample",
             ["Charts & Ribbon"] = "IntegrationSample",
         };
