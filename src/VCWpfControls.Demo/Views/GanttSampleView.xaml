@@ -33,6 +33,9 @@
                        VerticalAlignment="Center" Margin="16,0,0,0"
                        FontSize="12" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}" TextTrimming="CharacterEllipsis" />
         </StackPanel>
+        <TextBlock Margin="0,0,0,8" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                   Text="Keyboard: Up/Down select tasks, Enter activates, Delete removes, Shift+Left/Right move a day, Ctrl+Left/Right change duration, T — scroll to today." />
         <gantt:GanttView Tasks="{Binding Tasks}"
                          Dependencies="{Binding Dependencies}"
                          AutoSchedule="{Binding AutoSchedule}"

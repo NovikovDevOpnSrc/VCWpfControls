@@ -97,3 +97,17 @@ re-runs `AutoSchedule`/`CriticalPath`, so successors jump and the critical chain
 `GanttTask`/`GanttDependency` (FS/SS/FF/SF + lag/lead days), `GanttEngine.AutoSchedule`
 (forward-only; `GanttCycleException` carries the cycle path), `CriticalPath` (CPM floats),
 `BuildTimescale` (Day/Week/Month, culture first-day). Unit-tested without STA.
+
+## Keyboard and accessibility
+
+The chart carries a full keyboard surface (the timeline was mouse-only before):
+`Up`/`Down` walk the tasks — the selection outlines the bar, the tree row highlights
+and both halves scroll it into view; `Enter` activates the selection
+(`TaskActivated`); `Delete` removes the task from `Tasks` (raising `TaskRemoved`, the
+chart rebuilds); `Shift+Left/Right` move the task by a day, `Ctrl+Left/Right` change
+the duration by moving the finish edge (plain arrows never reschedule — looking around
+must not mutate the plan); `T` scrolls to today (`ScrollToToday`). Clicking a bar
+focuses the chart and selects the task. `SelectedTask` is two-way bindable.
+The automation surface exposes the tasks as DataItems ("Name, start – finish",
+completion in the status) with SelectionItem and Invoke — screen readers can list,
+select and activate tasks; the tree grid remains reachable alongside them.

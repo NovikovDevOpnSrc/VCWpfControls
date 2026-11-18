@@ -118,6 +118,42 @@ public sealed class GanttTimelinePanel : FrameworkElement
     private DateTime _rangeStart = DateTime.Today;
     private DateTime _rangeEnd = DateTime.Today;
     private int _hoverIndex = -1;
+    private GanttTask? _selectedTask;
+
+    /// <summary>The task whose bar carries the selection outline (the view's SelectedTask).</summary>
+    internal GanttTask? SelectedTask
+    {
+        get => _selectedTask;
+        set
+        {
+            _selectedTask = value;
+            InvalidateVisual();
+        }
+    }
+
+    /// <summary>Scrolls a day into view horizontally (the T key / ScrollToToday).</summary>
+    internal void BringDayIntoView(DateTime day, double viewportWidth)
+    {
+        var x = XOf(day) + HorizontalOffset; // XOf already discounts the offset — re-add
+        if (x < 0 || x > ActualWidth)
+        {
+            return;
+        }
+
+        // Map to the scroll extent: layout x = x + HorizontalOffset (already), center it.
+        var extentX = x;
+        var target = Math.Max(0, extentX - viewportWidth / 2);
+        RequestScrollTo?.Invoke(target);
+    }
+
+    /// <summary>Requests a horizontal scroll to an offset (the view wires it to its ScrollViewer).</summary>
+    internal event Action<double>? RequestScrollTo;
+
+    /// <summary>The owning view (focus + selection routing from mouse interaction).</summary>
+    internal GanttView? Owner { get; set; }
+
+    /// <summary>Raised when a click hit a task (the view maps it to SelectedTask).</summary>
+    internal event Action<GanttTask>? RequestSelectTask;
 
     static GanttTimelinePanel()
     {
@@ -604,6 +640,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
                 var size = 7;
                 var diamond = CreateDiamond(center, size);
                 drawingContext.DrawGeometry(i == _hoverIndex ? accent : muted, new Pen(textBrush, 0.8), diamond);
+                if (ReferenceEquals(task, _selectedTask))
+                {
+                    drawingContext.DrawRectangle(null, new Pen(accent, 1.8) { DashStyle = DashStyles.Dash }, Rect.Inflate(new Rect(center.X - size, center.Y - size, size * 2, size * 2), 2, 2));
+                }
+
                 continue;
             }
 
@@ -633,6 +674,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
                     drawingContext.DrawRectangle(null, new Pen(accent, 1.5), rect);
                 }
 
+                if (ReferenceEquals(task, _selectedTask))
+                {
+                    drawingContext.DrawRectangle(null, new Pen(accent, 1.8) { DashStyle = DashStyles.Dash }, Rect.Inflate(rect, 2, 2));
+                }
+
                 continue;
             }
 
@@ -647,6 +693,11 @@ public sealed class GanttTimelinePanel : FrameworkElement
             if (i == _hoverIndex)
             {
                 drawingContext.DrawRectangle(null, new Pen(accent, 1.5), rect);
+            }
+
+            if (ReferenceEquals(task, _selectedTask))
+            {
+                drawingContext.DrawRectangle(null, new Pen(accent, 1.8) { DashStyle = DashStyles.Dash }, Rect.Inflate(rect, 2, 2));
             }
 
             // Oracle taskbar label: after the bar, clipped to the chart width, toggleable.
@@ -883,9 +934,15 @@ public sealed class GanttTimelinePanel : FrameworkElement
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
         base.OnMouseLeftButtonDown(e);
-        Focus();
+        // The panel itself is not focusable — focus the OWNER (the keyboard surface).
+        Owner?.Focus();
         var point = e.GetPosition(this);
         var (index, mode) = TaskZoneAt(point);
+        if (index >= 0 && Tasks.Count > index)
+        {
+            RequestSelectTask?.Invoke(Tasks[index]); // a click selects (keyboard parity)
+        }
+
         DetectDoubleClick(index);
         if (index >= 0 && mode != DragMode.None)
         {

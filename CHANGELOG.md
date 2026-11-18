@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Gantt keyboard/a11y parity (SelectedTask, task automation surface)
+
+The timeline was mouse-only. `GanttView.SelectedTask` (two-way) drives a dashed accent
+outline on the bar (milestones and summary bands included), a tree-row highlight and a
+bring-into-view on BOTH halves. Keyboard: Up/Down walk the tasks, Enter activates
+(`TaskActivated`), Delete removes from `Tasks` (`TaskRemoved` + an explicit rebuild —
+the collection mutation alone left a ghost row), Shift+arrows move a task by a day,
+Ctrl+arrows change the duration (plain arrows NEVER reschedule — looking around must
+not mutate the plan), T scrolls to today. Clicking a bar focuses the chart and selects
+the task (the panel itself is not focusable — the owner gets the focus).
+`GanttViewAutomationPeer` exposes the tasks as DataItems ("Name, start – finish",
+completion in the status) with SelectionItem/Invoke, selection events raised on the
+task peer (a Pane-level event is ignored by UIA clients), and the tree grid stays
+reachable alongside them (base children kept — returning only task peers hid the
+editing surface). Acceptance critique drove the rework: ghost rows, off-screen walks,
+hidden tree, dead click-focus, ungated rescheduling and milestone-invisible outlines
+were all found and fixed with injection-validated guards. Demo hint + docs ×3.
+
 ### Added — chrome completion II: tabs, expander, groupbox, slider, progress, lists, trees, tooltips
 
 The remaining stock WPF surfaces followed the light system chrome in themed apps — now

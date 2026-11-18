@@ -89,3 +89,14 @@ view.LinkCreated += (_, dependency) => Save(dependency);          // 绘制的�
 `GanttTask`/`GanttDependency`（FS/SS/FF/SF + 延后/提前天数）、`GanttEngine.AutoSchedule`
 （仅前移；`GanttCycleException` 携带环路路径）、`CriticalPath`（CPM 浮动）、
 `BuildTimescale`（日/周/月，周首日随区域设置）。无需 STA 的单元测试。
+
+## 键盘与无障碍
+
+图表拥有完整的键盘表面（时间轴此前只能用鼠标）：`Up`/`Down` 遍历任务 —— 选中
+项外框高亮、树行高亮，两半都会滚动到可见；`Enter` 激活选中项（`TaskActivated`）；
+`Delete` 从 `Tasks` 移除任务（触发 `TaskRemoved`，图表重建）；`Shift+Left/Right`
+按天移动任务，`Ctrl+Left/Right` 通过移动结束边改变工期（普通方向键不会改排程 ——
+浏览不应修改计划）；`T` 滚动到今天（`ScrollToToday`）。点击条形会聚焦图表并选中
+任务。`SelectedTask` 支持双向绑定。自动化表面将任务暴露为 DataItem（「名称,
+开始 – 结束」，完成度在状态中）并支持 SelectionItem 与 Invoke —— 屏幕阅读器可以
+列出、选择并激活任务；树形网格仍可与之并行访问。

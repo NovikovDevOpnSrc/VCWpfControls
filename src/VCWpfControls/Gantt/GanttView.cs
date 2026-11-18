@@ -65,6 +65,11 @@ public class GanttView : Control
         nameof(TaskRowHeight), typeof(double), typeof(GanttView),
         new PropertyMetadata(26d, OnRowHeightChanged));
 
+    /// <summary>Identifies the <see cref="SelectedTask"/> dependency property.</summary>
+    public static readonly DependencyProperty SelectedTaskProperty = DependencyProperty.Register(
+        nameof(SelectedTask), typeof(GanttTask), typeof(GanttView),
+        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedTaskChanged));
+
     private TreeListView? _tree;
     private GanttTimelinePanel? _timeline;
     private ScrollViewer? _treeScroll;
@@ -81,6 +86,10 @@ public class GanttView : Control
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(GanttView), new FrameworkPropertyMetadata(typeof(GanttView)));
     }
+
+    /// <inheritdoc />
+    protected override System.Windows.Automation.Peers.AutomationPeer OnCreateAutomationPeer()
+        => new GanttViewAutomationPeer(this);
 
     /// <summary>Creates the view.</summary>
     public GanttView()
@@ -240,6 +249,12 @@ public class GanttView : Control
             _timeline.RowHeight = TaskRowHeight;
             _timeline.Unit = TimescaleUnit;
             _timeline.TaskEdited += OnTimelineTaskEdited;
+            _timeline.Owner = this;
+            _timeline.RequestSelectTask += task => SelectedTask = task;
+            _timeline.RequestScrollTo += offset =>
+            {
+                _timelineScroll?.ScrollToHorizontalOffset(offset);
+            };
             _timeline.LinkCreated += OnTimelineLinkCreated;
             _timeline.ZoomStepRequested += OnTimelineZoomStep;
             _timeline.PanRequested += OnTimelinePan;
@@ -248,11 +263,206 @@ public class GanttView : Control
         Rebuild();
     }
 
+    /// <summary>The selected task (bindable two-way; the timeline outlines its bar).</summary>
+    public GanttTask? SelectedTask
+    {
+        get => (GanttTask?)GetValue(SelectedTaskProperty);
+        set => SetValue(SelectedTaskProperty, value);
+    }
+
     /// <summary>Raised after a bar was moved/resized (dates already on the task).</summary>
     public event EventHandler<GanttTask>? TaskEdited;
 
+    /// <summary>Raised when the user activates a task (Enter or double-click channel).</summary>
+    public event EventHandler<GanttTask>? TaskActivated;
+
+    /// <summary>Raised after the Delete key removed a task from <see cref="Tasks"/>.</summary>
+    public event EventHandler<GanttTask>? TaskRemoved;
+
     /// <summary>Raised after the user drew a link (already added to <see cref="Dependencies"/>).</summary>
     public event EventHandler<GanttDependency>? LinkCreated;
+
+    /// <summary>
+    /// The keyboard surface: Up/Down walk the tasks, Enter activates the selection,
+    /// Delete removes it, Shift+Left/Right move the task by a day, Ctrl+Left/Right move
+    /// the finish edge (duration), T scrolls to today — the timeline was mouse-only
+    /// before. Keys the focused tree/editors already consumed never arrive here.
+    /// </summary>
+    protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        var tasks = Tasks;
+        if (tasks is null || tasks.Count == 0)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case System.Windows.Input.Key.Down or System.Windows.Input.Key.Up:
+            {
+                var delta = e.Key == System.Windows.Input.Key.Down ? 1 : -1;
+                var index = IndexOfTask(SelectedTask, tasks);
+                SelectedTask = tasks[Math.Clamp(index < 0 ? (delta > 0 ? 0 : tasks.Count - 1) : index + delta, 0, tasks.Count - 1)];
+                e.Handled = true;
+                break;
+            }
+
+            case System.Windows.Input.Key.Enter when SelectedTask is { } activated:
+                TaskActivated?.Invoke(this, activated);
+                e.Handled = true;
+                break;
+
+            case System.Windows.Input.Key.Delete when SelectedTask is { } doomed:
+                RemoveTask(doomed);
+                e.Handled = true;
+                break;
+
+            case System.Windows.Input.Key.Left or System.Windows.Input.Key.Right
+                when SelectedTask is { } shifted && SelectedTask.IsMilestone == false
+                && (EffectiveModifiers.HasFlag(System.Windows.Input.ModifierKeys.Shift)
+                    || EffectiveModifiers.HasFlag(System.Windows.Input.ModifierKeys.Control)):
+            {
+                var delta = e.Key == System.Windows.Input.Key.Right ? 1 : -1;
+                if (EffectiveModifiers.HasFlag(System.Windows.Input.ModifierKeys.Control))
+                {
+                    _timeline?.ResizeTaskFinish(shifted, delta);
+                }
+                else
+                {
+                    _timeline?.MoveTask(shifted, delta);
+                }
+
+                RefreshAfterEdit();
+                e.Handled = true;
+                break;
+            }
+
+            case System.Windows.Input.Key.T:
+                ScrollToToday();
+                e.Handled = true;
+                break;
+        }
+    }
+
+    /// <summary>Test seam for the keyboard modifiers (null = the real device state).</summary>
+    internal Func<System.Windows.Input.ModifierKeys>? ModifiersForTest { get; set; }
+
+    private System.Windows.Input.ModifierKeys EffectiveModifiers
+        => ModifiersForTest?.Invoke() ?? System.Windows.Input.Keyboard.Modifiers;
+
+    /// <summary>The automation activation channel (Invoke on a task peer).</summary>
+    internal void ActivateTaskForAutomation(GanttTask task)
+        => TaskActivated?.Invoke(this, task);
+
+    private static int IndexOfTask(GanttTask? task, IReadOnlyList<GanttTask> tasks)
+    {
+        if (task is null)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < tasks.Count; i++)
+        {
+            if (ReferenceEquals(tasks[i], task))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void RemoveTask(GanttTask task)
+    {
+        if (Tasks is not System.Collections.IList mutable || !mutable.Contains(task))
+        {
+            return;
+        }
+
+        SelectedTask = null;
+        mutable.Remove(task);
+        RefreshAfterEdit(); // the DP does NOT change on collection mutations — rebuild explicitly (ghost row otherwise)
+        TaskRemoved?.Invoke(this, task);
+    }
+
+    /// <summary>Scrolls the timeline so today's line is visible.</summary>
+    public void ScrollToToday()
+    {
+        if (_timeline is null || _timelineScroll is null)
+        {
+            return;
+        }
+
+        _timeline.BringDayIntoView(DateTime.Today, _timelineScroll.ViewportWidth);
+    }
+
+    private static void OnSelectedTaskChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var view = (GanttView)d;
+        if (view._timeline is not null)
+        {
+            view._timeline.SelectedTask = view.SelectedTask;
+        }
+
+        // The tree mirrors the selection (its own row highlight) and BOTH halves scroll
+        // the row into view — walking past the viewport had zero visible feedback before.
+        view.SyncTreeSelection();
+        view.BringTaskIntoView(view.SelectedTask);
+
+        if (System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(view) is GanttViewAutomationPeer peer)
+        {
+            peer.RaiseSelectionChanged();
+        }
+    }
+
+    private void SyncTreeSelection()
+    {
+        if (_tree is null || SelectedTask is not { } task)
+        {
+            return;
+        }
+
+        for (var i = 0; i < _tree.DataEngine.View.Count; i++)
+        {
+            if (_tree.DataEngine.View[i] is Grid.Data.GridDataRow row && ReferenceEquals(row.Item, task))
+            {
+                _tree.SelectedItem = row.Item;
+                _tree.ScrollIntoView(row.Item);
+                break;
+            }
+        }
+    }
+
+    private void BringTaskIntoView(GanttTask? task)
+    {
+        if (task is null || _timeline is null || _timelineScroll is null || Tasks is not { } tasks)
+        {
+            return;
+        }
+
+        for (var i = 0; i < tasks.Count; i++)
+        {
+            if (!ReferenceEquals(tasks[i], task))
+            {
+                continue;
+            }
+
+            var rowTop = _timeline.HeaderHeight + i * _timeline.RowHeight;
+            var viewportTop = _timeline.VerticalSyncOffset;
+            var viewportHeight = _timelineScroll.ViewportHeight;
+            if (rowTop < viewportTop)
+            {
+                _timelineScroll.ScrollToVerticalOffset(Math.Max(0, rowTop - 8));
+            }
+            else if (rowTop + _timeline.RowHeight > viewportTop + viewportHeight)
+            {
+                _timelineScroll.ScrollToVerticalOffset(rowTop + _timeline.RowHeight - viewportHeight + 8);
+            }
+
+            break;
+        }
+    }
 
     private void OnTimelineTaskEdited(object? sender, GanttTask task)
     {
