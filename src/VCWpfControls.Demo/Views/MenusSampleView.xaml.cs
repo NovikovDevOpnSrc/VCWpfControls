@@ -37,6 +37,9 @@ public partial class MenusSampleView : UserControl
     private void OnEditClick(object sender, RoutedEventArgs e)
         => Report($"Edit → {((MenuItem)sender).Header} / autosave={((MenuItem)sender).IsCheckable && ((MenuItem)sender).IsChecked}");
 
+    private void OnAutosaveChanged(object sender, RoutedEventArgs e)
+        => Report($"Edit → Autosave = {((MenuItem)sender).IsChecked}");
+
     private void OnSendClick(object sender, RoutedEventArgs e) => Report($"View → {((MenuItem)sender).Header}");
 
     private void OnAboutClick(object sender, RoutedEventArgs e) => Report("Help → About");

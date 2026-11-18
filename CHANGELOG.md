@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — menus e2e coverage (the live UIA channel)
+
+The Menus page had zero FlaUI coverage of the bar itself (navigation smoke only) — the
+live automation path (what screen readers and consumer test suites drive) had never run.
+New e2e tests: expand a top-level header through ExpandCollapsePattern, invoke a leaf
+item (InvokePattern) verifying the status line reacts, toggle a checkable item
+(TogglePattern) verified through the demo's new Checked/Unchecked reporting (the stock
+Toggle pattern flips `IsChecked` WITHOUT raising Click — apps that need to react to
+automation toggles must wire the Checked/Unchecked events, as the demo now shows), and
+the disabled item stays non-enabled. FlaUI facts encoded along the way: the page's WPF
+Menu maps to `ControlType.Menu` (the window-level MenuBar is the SYSTEM menu — scope
+searches to the page element), menu popups are separate HWNDs found by descendant
+MenuItems with the main window skipped, and item lookups must be MenuItem-typed (a
+ByName search also hits the template's TextBlocks, which carry no patterns).
+
 ### Added — Gantt keyboard/a11y parity (SelectedTask, task automation surface)
 
 The timeline was mouse-only. `GanttView.SelectedTask` (two-way) drives a dashed accent
