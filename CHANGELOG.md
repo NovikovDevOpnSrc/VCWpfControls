@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Grid: stale launch frame could leave header captions blank.** A user report showed
+  empty column headers right after demo launch — pixel forensics of the screenshot proved
+  the band had zero caption raster and theme-fallback token values (`#F3F4F6`/`#D1D5DB`
+  Generic instead of `#FAFAFA`/`#E0E0E0` Light), while the visual tree was correct (the
+  caption binding, column generation, header re-entry, theme-swap, re-parent, late-data
+  and ItemsSource-swap paths all verified across 40+ live launches). The surviving frame
+  was a launch raster that nothing invalidated again — the header band's layout and
+  RenderSize never change after load. The grid now force-repaints the whole header
+  subtree once after the first Render pass (`Loaded` fires below Render priority).
+  Regression: `HeaderRenderRefreshTests` (injection-validated: without the refresh the
+  counter stays 0 and both tests go red).
+
 ## [0.5.9] — 2026-11-19
 
 The stock-chrome completion release: every remaining common WPF surface now themes

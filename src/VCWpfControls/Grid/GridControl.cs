@@ -235,6 +235,7 @@ public partial class GridControl : ItemsControl
     private bool _autoColumnsGenerated;
     private double _lastConstraintWidth;
     private System.Windows.Controls.TextBlock? _emptyState;
+    private int _headerRenderRefreshCount;
 
     static GridControl()
     {
@@ -286,6 +287,53 @@ public partial class GridControl : ItemsControl
         CommandBindings.Add(new CommandBinding(GridCommands.Paste,
             (s, e) => { PasteFromClipboard(); e.Handled = true; },
             (s, e) => e.CanExecute = !IsReadOnly));
+
+        // A machine-hatched first frame can rasterize the header band before its content
+        // settles (a user report showed blank captions with theme-fallback colors right
+        // after app launch; every in-tree value was correct by the first inspection).
+        // Loaded fires after that first Render pass: repaint the band once so a stale
+        // launch frame cannot survive. See RefreshHeaderRender.
+        Loaded += OnLoadedRefreshHeaderRender;
+    }
+
+    private void OnLoadedRefreshHeaderRender(object sender, RoutedEventArgs e)
+    {
+        Loaded -= OnLoadedRefreshHeaderRender;
+        RefreshHeaderRender();
+    }
+
+    /// <summary>
+    /// Invalidates the whole header band subtree for repaint. Normally nothing needs this
+    /// (brush changes propagate by themselves), but a stale launch frame — rendered before
+    /// the caption bindings and theme resources settled — is never invalidated again,
+    /// because the band's layout and RenderSize do not change afterwards.
+    /// </summary>
+    internal void RefreshHeaderRender()
+    {
+        if (HeadersPresenter is null)
+        {
+            return;
+        }
+
+        foreach (System.Windows.UIElement child in HeadersPresenter.Children)
+        {
+            InvalidateVisualDeep(child);
+        }
+
+        _headerRenderRefreshCount++;
+    }
+
+    private static void InvalidateVisualDeep(System.Windows.UIElement element)
+    {
+        element.InvalidateVisual();
+        var children = VisualTreeHelper.GetChildrenCount(element);
+        for (var i = 0; i < children; i++)
+        {
+            if (VisualTreeHelper.GetChild(element, i) is System.Windows.UIElement child)
+            {
+                InvalidateVisualDeep(child);
+            }
+        }
     }
 
     /// <summary>Identifies the <see cref="AutoGeneratingColumn"/> routed event.</summary>
@@ -677,6 +725,9 @@ public partial class GridControl : ItemsControl
 
     /// <summary>The headers presenter (template part).</summary>
     internal GridColumnHeadersPresenter? HeadersPresenter { get; private set; }
+
+    /// <summary>How many times the header band was force-refreshed (the post-Loaded repaint guard).</summary>
+    internal int HeaderRenderRefreshCount => _headerRenderRefreshCount;
 
     /// <summary>The group panel (template part).</summary>
     internal GridGroupPanel? GroupPanel { get; private set; }
