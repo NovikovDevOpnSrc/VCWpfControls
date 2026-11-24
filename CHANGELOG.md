@@ -8,17 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- **Grid: stale launch frame could leave header captions blank.** A user report showed
-  empty column headers right after demo launch — pixel forensics of the screenshot proved
-  the band had zero caption raster and theme-fallback token values (`#F3F4F6`/`#D1D5DB`
-  Generic instead of `#FAFAFA`/`#E0E0E0` Light), while the visual tree was correct (the
-  caption binding, column generation, header re-entry, theme-swap, re-parent, late-data
-  and ItemsSource-swap paths all verified across 40+ live launches). The surviving frame
-  was a launch raster that nothing invalidated again — the header band's layout and
-  RenderSize never change after load. The grid now force-repaints the whole header
-  subtree once after the first Render pass (`Loaded` fires below Render priority).
-  Regression: `HeaderRenderRefreshTests` (injection-validated: without the refresh the
-  counter stays 0 and both tests go red).
+- **Grid: blank column headers after launch (two-layer fix).** A user reproduced on two
+  demo pages (Basic binding, Editing & validation): header captions blank right after
+  start, and — the decisive clue — hovering a header did NOT heal it while clicking one
+  did. A click sorts, and the sort pipeline re-runs `EnsureHeaders` (a full re-parent of
+  the cached header controls); hover only repaints the border background. That points at
+  the caption delivery: the template used
+  `{Binding Column.Header, RelativeSource=TemplatedParent}` — a templated-parent path
+  binding whose lifecycle is tied to template attach/re-parent — and at stale launch
+  rasters that nothing invalidates later (the band's layout and RenderSize never change
+  after load). Both are now eliminated:
+  - the caption is relayed **in code** (new `GridColumnHeader.Caption` DP synced from the
+    column in `OnColumnChanged`/`EnsureHeaders`, plus a live `Header`-change tracker) and
+    the template displays it via `{TemplateBinding Caption}` — no binding-expression
+    lifecycle at all;
+  - the whole header subtree is force-repainted once after the first Render pass
+    (`Loaded` fires below Render priority) and again on `HwndSource.DpiChanged` — RDP
+    reconnects and monitor moves re-layout the window after the first frame with no
+    natural invalidation for the band.
+  Regression: `HeaderRenderRefreshTests` ×4 (injection-validated: removing the caption
+  relay turns both caption tests red; removing the Loaded refresh turns both repaint
+  tests red).
 
 ## [0.5.9] — 2026-11-19
 

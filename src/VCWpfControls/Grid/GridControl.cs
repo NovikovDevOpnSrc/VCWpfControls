@@ -300,7 +300,18 @@ public partial class GridControl : ItemsControl
     {
         Loaded -= OnLoadedRefreshHeaderRender;
         RefreshHeaderRender();
+
+        // RDP reconnects and monitor moves re-layout the window at a new DPI AFTER the
+        // first frame — another chance for a stale band with no natural invalidation
+        // (the caption never changes value afterwards, so nothing repaints it).
+        if (PresentationSource.FromVisual(this) is System.Windows.Interop.HwndSource source)
+        {
+            source.DpiChanged += OnSourceDpiChangedRefreshHeaderRender;
+        }
     }
+
+    private void OnSourceDpiChangedRefreshHeaderRender(object sender, System.Windows.HwndDpiChangedEventArgs e)
+        => RefreshHeaderRender();
 
     /// <summary>
     /// Invalidates the whole header band subtree for repaint. Normally nothing needs this

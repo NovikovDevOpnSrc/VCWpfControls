@@ -18,6 +18,11 @@ public class GridColumnHeader : Control
         nameof(Column), typeof(GridColumnBase), typeof(GridColumnHeader),
         new PropertyMetadata(null, OnColumnChanged));
 
+    /// <summary>Identifies the <see cref="Caption"/> dependency property.</summary>
+    public static readonly DependencyProperty CaptionProperty = DependencyProperty.Register(
+        nameof(Caption), typeof(object), typeof(GridColumnHeader),
+        new PropertyMetadata(null));
+
     /// <summary>Identifies the <see cref="SortDirection"/> dependency property.</summary>
     public static readonly DependencyProperty SortDirectionProperty = DependencyProperty.Register(
         nameof(SortDirection), typeof(Data.GridSortDirection), typeof(GridColumnHeader),
@@ -49,6 +54,7 @@ public class GridColumnHeader : Control
     private Point _dragStartPoint;
     private bool _isDragging;
     private bool _mouseDownWithoutDrag;
+    private System.ComponentModel.DependencyPropertyDescriptor? _headerDescriptor;
 
     static GridColumnHeader()
     {
@@ -61,6 +67,21 @@ public class GridColumnHeader : Control
     {
         get => (GridColumnBase?)GetValue(ColumnProperty);
         internal set => SetValue(ColumnProperty, value);
+    }
+
+    /// <summary>
+    /// The caption content, relayed from <see cref="GridColumnBase.Header"/> in code. A
+    /// template binding to this DP (not a <c>RelativeSource TemplatedParent</c> binding
+    /// into <c>Column.Header</c>) keeps the caption immune to binding-expression lifecycle
+    /// trouble at launch — headers are re-parented by <see cref="GridColumnHeadersPresenter.EnsureHeaders"/>,
+    /// and a templated-parent path binding that fails to (re)attach leaves the caption
+    /// blank until the next re-parent (a user-visible launch glitch healed only by a
+    /// header click, which re-runs EnsureHeaders via the sort pipeline).
+    /// </summary>
+    public object? Caption
+    {
+        get => GetValue(CaptionProperty);
+        private set => SetValue(CaptionProperty, value);
     }
 
     /// <summary>The sort direction currently applied to the column.</summary>
@@ -303,10 +324,25 @@ public class GridColumnHeader : Control
     private static void OnColumnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var header = (GridColumnHeader)d;
+        if (header._headerDescriptor is not null && e.OldValue is GridColumnBase oldColumn)
+        {
+            header._headerDescriptor.RemoveValueChanged(oldColumn, header.OnColumnHeaderChanged);
+            header._headerDescriptor = null;
+        }
+
         if (e.NewValue is GridColumnBase column)
         {
-            // Content is delivered through template bindings to Column.*; refresh the glyph.
+            // Content is relayed through the Caption DP; refresh the glyph and the caption.
             header.SortDirection = column.SortDirection;
+            header.SyncCaption();
+            header._headerDescriptor = System.ComponentModel.DependencyPropertyDescriptor.FromProperty(
+                GridColumnBase.HeaderProperty, typeof(GridColumnBase));
+            header._headerDescriptor.AddValueChanged(column, header.OnColumnHeaderChanged);
         }
     }
+
+    private void OnColumnHeaderChanged(object? sender, EventArgs e) => SyncCaption();
+
+    /// <summary>Relays the column's Header into the caption the template displays.</summary>
+    internal void SyncCaption() => Caption = Column?.Header;
 }

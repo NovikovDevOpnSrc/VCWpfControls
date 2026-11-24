@@ -360,7 +360,7 @@
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="{Binding Column.HorizontalContentAlignment, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=Left}"
-                                    Content="{Binding Column.Header, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    Content="{TemplateBinding Caption}" />
 
                                 <ToggleButton
                                     x:Name="PART_FilterButton"
