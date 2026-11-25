@@ -55,13 +55,16 @@ internal sealed class GridLayoutController
     public IReadOnlyList<GridLayoutSlot> Slots => _slots;
 
     /// <summary>Reports a measured Auto width (header content or cell content); grows only.</summary>
-    public void ReportAutoWidth(GridColumnBase column, double desiredWidth)
+    public bool ReportAutoWidth(GridColumnBase column, double desiredWidth)
     {
         var value = desiredWidth + AutoPadding;
         if (!_autoWidths.TryGetValue(column, out var current) || value > current)
         {
             _autoWidths[column] = value;
+            return true;
         }
+
+        return false;
     }
 
     /// <summary>Recomputes all slots. Returns <see langword="true"/> when any width changed.</summary>

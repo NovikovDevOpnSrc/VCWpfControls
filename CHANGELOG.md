@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Grid: cell content slid into neighboring columns while scrolling (the 100k page).**
+  When a recycled row revealed wider content, the auto column grew — but the
+  already-visible rows were never re-arranged (their RenderSize did not change, so
+  nothing invalidated them), while recycled rows arranged at the new slots: rows visibly
+  disagreed on column positions and text crawled under the wrong headers. The
+  auto-width notification channel existed (`GridControl.NotifyAutoWidthsChanged`) but had
+  NO callers — dead code. Now `GridLayoutController.ReportAutoWidth` reports growth, and
+  the cells/headers panels raise the notification, which re-measures every realized row
+  (measure, not just arrange — cell text keeps the old trimming otherwise) and the header
+  band. Regression: `AutoWidthScrollAlignmentTests` (scroll into wider rows — every
+  realized row's cell inside the CURRENT slot + all rows agree on the position; the
+  header follows the grown slot). Injection-validated: disabling the notify makes the
+  alignment test red.
+
 ### Added
 - **Themes: Dark Blue (`GridTheme.DarkBlue`) — the customization showcase.** A complete
   palette that chains `Dark.xaml` through `MergedDictionaries` and overrides ONLY the 22

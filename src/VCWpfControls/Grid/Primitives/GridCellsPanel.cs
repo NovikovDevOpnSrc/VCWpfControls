@@ -231,6 +231,7 @@ public sealed class GridCellsPanel : Panel
         }
 
         double height = 0;
+        var autoGrew = false;
         var layout = _owner.Layout;
         var columns = _owner.VisibleColumns;
 
@@ -246,8 +247,18 @@ public sealed class GridCellsPanel : Panel
 
             if (column.Width.IsAuto)
             {
-                layout.ReportAutoWidth(column, child.DesiredSize.Width);
+                autoGrew |= layout.ReportAutoWidth(column, child.DesiredSize.Width);
             }
+        }
+
+        if (autoGrew)
+        {
+            // A recycled row just revealed wider content: without this, the recomputed
+            // slots reach only the rows invalidated by recycling — the still-visible
+            // rows keep their old cell positions (their RenderSize did not change, so
+            // nothing re-arranges them) and the content visibly slides under the
+            // neighboring columns while scrolling.
+            _owner.NotifyAutoWidthsChanged();
         }
 
         _focusVisual.Measure(new Size(availableSize.Width, height));

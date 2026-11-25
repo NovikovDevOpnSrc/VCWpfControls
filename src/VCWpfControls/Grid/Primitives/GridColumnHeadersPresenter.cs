@@ -78,13 +78,19 @@ public sealed class GridColumnHeadersPresenter : Panel
         var columns = Owner.VisibleColumns;
 
         // Auto columns: measure header content unconstrained to seed the auto width.
+        var autoGrew = false;
         foreach (var column in columns)
         {
             if (column.Width.IsAuto && _headersByColumn.TryGetValue(column, out var header))
             {
                 header.Measure(new Size(double.PositiveInfinity, availableSize.Height));
-                layout.ReportAutoWidth(column, header.DesiredSize.Width);
+                autoGrew |= layout.ReportAutoWidth(column, header.DesiredSize.Width);
             }
+        }
+
+        if (autoGrew)
+        {
+            Owner?.NotifyAutoWidthsChanged();
         }
 
         var height = 0d;
@@ -103,7 +109,7 @@ public sealed class GridColumnHeadersPresenter : Panel
             }
         }
 
-        var finalHeight = double.IsNaN(Owner.HeaderHeight) ? height : Owner.HeaderHeight;
+        var finalHeight = Owner is { } owner ? (double.IsNaN(owner.HeaderHeight) ? height : owner.HeaderHeight) : height;
         return new Size(availableSize.Width, finalHeight);
     }
 

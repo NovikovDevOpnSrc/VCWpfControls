@@ -989,7 +989,9 @@ public partial class GridControl : ItemsControl
         HeadersPresenter?.InvalidateMeasure();
         foreach (var row in _rowRegistry)
         {
-            row.CellsPanel?.InvalidateArrange();
+            // Measure (not just arrange): cells were measured with the OLD slot width —
+            // without re-measuring, their text keeps the old trimming until recycled.
+            row.CellsPanel?.InvalidateMeasure();
         }
 
         UpdateHorizontalScrollBar();
