@@ -453,6 +453,15 @@ public partial class MenusSampleViewModel : SampleViewModelBase
 }
 
 /// <summary>Global demo settings: theme, accent preset and library language (persisted).</summary>
+public partial class PropertyExplorerSampleViewModel : SampleViewModelBase
+{
+    /// <inheritdoc />
+    public override string Title => "Property explorer";
+
+    /// <inheritdoc />
+    public override string Description => "The DevExpress-style live property editor: pick a library control and edit its real instance through the library's own PropertyGrid — every change applies to the sample immediately.";
+}
+
 public partial class SettingsSampleViewModel : SampleViewModelBase
 {
     private readonly Services.DemoSettings _settings;

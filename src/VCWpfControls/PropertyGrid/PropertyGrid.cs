@@ -35,6 +35,11 @@ public class PropertyGrid : Control
     public static readonly DependencyProperty ShowCategoriesProperty = DependencyProperty.Register(
         nameof(ShowCategories), typeof(bool), typeof(PropertyGrid), new PropertyMetadata(true, OnDisplayOptionsChanged));
 
+    /// <summary>Identifies the <see cref="ShowDeclaredPropertiesOnly"/> dependency property.</summary>
+    public static readonly DependencyProperty ShowDeclaredPropertiesOnlyProperty = DependencyProperty.Register(
+        nameof(ShowDeclaredPropertiesOnly), typeof(bool), typeof(PropertyGrid),
+        new PropertyMetadata(false, OnDisplayOptionsChanged));
+
     /// <summary>Identifies the <see cref="LabelWidth"/> dependency property.</summary>
     /// <summary>Identifies the <see cref="CommitMode"/> dependency property.</summary>
     public static readonly DependencyProperty CommitModeProperty = DependencyProperty.Register(
@@ -69,6 +74,9 @@ public class PropertyGrid : Control
     /// <summary>Occurs after a property value was edited.</summary>
     public event EventHandler<PropertyValueChangedEventArgs>? PropertyValueChanged;
 
+    /// <summary>The materialized property rows (internal: the live-explorer tests).</summary>
+    internal System.Collections.Generic.IReadOnlyList<PropertyItem> Items => _items;
+
     /// <summary>The object whose properties are displayed (bindable).</summary>
     public object? SelectedObject
     {
@@ -88,6 +96,17 @@ public class PropertyGrid : Control
     {
         get => (bool)GetValue(ShowCategoriesProperty);
         set => SetValue(ShowCategoriesProperty, value);
+    }
+
+    /// <summary>
+    /// Only properties DECLARED on the selected object's own class are listed. Point the
+    /// grid at a control instance and you edit that control's API — the inherited
+    /// ItemsControl/Control surface (Items, Background, ...) stays out of the way.
+    /// </summary>
+    public bool ShowDeclaredPropertiesOnly
+    {
+        get => (bool)GetValue(ShowDeclaredPropertiesOnlyProperty);
+        set => SetValue(ShowDeclaredPropertiesOnlyProperty, value);
     }
 
     /// <summary>Width of the label column in pixels.</summary>
@@ -158,7 +177,7 @@ public class PropertyGrid : Control
             return;
         }
 
-        foreach (var item in PropertyItemBuilder.Build(target))
+        foreach (var item in PropertyItemBuilder.Build(target, ShowDeclaredPropertiesOnly))
         {
             _items.Add(item);
         }

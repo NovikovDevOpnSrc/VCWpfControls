@@ -77,3 +77,22 @@ description: Просмотр и редактирование свойств л�
 (`Guid`, `CultureInfo`, кастомные структуры...), редактируются как текст: отображение через
 `ConvertToString(culture)`, разбор ввода через `ConvertFromString(culture)`. Типы без
 конвертера остаются read-only текстом.
+
+## Редактирование живых контролов (паттерн property-explorer)
+
+Укажите сетке ЭКЗЕМПЛЯР КОНТРОЛА — и она редактирует его вживую: страница демо
+«Property explorer» делает ровно это (выберите GridControl / TreeListView /
+SchedulerView и крутите образец слева):
+
+```xml
+<propertyGrid:PropertyGrid SelectedObject="{Binding ElementName=Sample, Path=Content}"
+                           ShowDeclaredPropertiesOnly="True"
+                           CommitMode="Immediate" />
+```
+
+- `ShowDeclaredPropertiesOnly` показывает свойства, объявленные в иерархии сборки самого
+  объекта, — полный API контрола (TreeListView несёт и свойства GridControl) без
+  унаследованного шума `ItemsControl`/`Control` (`Items`, `Background`, ...);
+- `CommitMode="Immediate"` применяет каждый переключатель/нажатие сразу — живой отклик в
+  стиле DevExpress (по умолчанию `OnCommit` ждёт Enter/потери фокуса).
+

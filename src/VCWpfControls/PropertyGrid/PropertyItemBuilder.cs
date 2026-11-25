@@ -19,14 +19,29 @@ public static class PropertyItemBuilder
         return Build(target, target.GetType());
     }
 
+    /// <summary>Returns the property items of the object, optionally declared-only.</summary>
+    public static List<PropertyItem> Build(object target, bool declaredPropertiesOnly)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        return Build(target, target.GetType(), declaredPropertiesOnly);
+    }
+
     /// <summary>Returns the property items for the given type instantiated on the target.</summary>
     public static List<PropertyItem> Build(object target, Type type)
+        => Build(target, type, declaredPropertiesOnly: false);
+
+    /// <summary>Returns the property items for the given type instantiated on the target;
+    /// with <paramref name="declaredPropertiesOnly"/> only the type's OWN declarations are
+    /// listed (bind to a control and edit its API without the inherited noise).</summary>
+    public static List<PropertyItem> Build(object target, Type type, bool declaredPropertiesOnly)
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(type);
 
         var result = new List<PropertyItem>();
-        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var properties = declaredPropertiesOnly
+            ? GetPropertiesDeclaredInOwnAssembly(type)
+            : type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
         foreach (var property in properties)
         {
             if (!property.CanRead
@@ -52,6 +67,27 @@ public static class PropertyItemBuilder
             .ThenBy(i => i.SortOrder)
             .ThenBy(i => i.DisplayName, StringComparer.CurrentCulture)
             .ToList();
+    }
+
+    /// <summary>
+    /// The hierarchy walk behind <c>declaredPropertiesOnly</c>: every declaration from the
+    /// concrete type up while the types live in the SAME assembly — editing a library
+    /// control lists its whole API (TreeListView includes GridControl's dependency
+    /// properties) while the inherited platform surface (ItemsControl, Control) stays out.
+    /// </summary>
+    private static IEnumerable<PropertyInfo> GetPropertiesDeclaredInOwnAssembly(Type type)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var current = type; current is not null && current != typeof(object) && current.Assembly == type.Assembly; current = current.BaseType)
+        {
+            foreach (var property in current.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            {
+                if (seen.Add(property.Name))
+                {
+                    yield return property; // the most-derived declaration wins
+                }
+            }
+        }
     }
 
     /// <summary>Builds the nested items of an expandable property value.</summary>

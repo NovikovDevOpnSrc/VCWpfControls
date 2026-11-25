@@ -77,3 +77,22 @@ Properties whose type has a registered `TypeConverter` that converts from `strin
 (`Guid`, `CultureInfo`, custom structs...) are editable as text: the display goes through
 `ConvertToString(culture)` and the input is parsed by `ConvertFromString(culture)`.
 Types without a converter remain read-only text.
+
+## Editing live controls (the property-explorer pattern)
+
+Point the grid at a CONTROL INSTANCE and it edits that control live — the demo's
+"Property explorer" page does exactly this (pick GridControl / TreeListView /
+SchedulerView and tweak the sample on the left):
+
+```xml
+<propertyGrid:PropertyGrid SelectedObject="{Binding ElementName=Sample, Path=Content}"
+                           ShowDeclaredPropertiesOnly="True"
+                           CommitMode="Immediate" />
+```
+
+- `ShowDeclaredPropertiesOnly` lists the properties declared in the object's own assembly
+  hierarchy — the control's full API (a TreeListView carries GridControl's properties)
+  without the inherited `ItemsControl`/`Control` noise (`Items`, `Background`, ...);
+- `CommitMode="Immediate"` pushes every toggle/keystroke at once — the DevExpress-style
+  live feel (the default `OnCommit` waits for Enter/focus loss).
+

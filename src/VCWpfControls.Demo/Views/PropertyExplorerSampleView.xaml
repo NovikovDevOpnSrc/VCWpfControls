@@ -1,0 +1,49 @@
+<UserControl x:Class="VCWpfControls.Demo.Views.PropertyExplorerSampleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls"
+             xmlns:propertyGrid="clr-namespace:VCWpfControls.PropertyGrid;assembly=VCWpfControls">
+    <Grid Margin="24,16,24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="Target:" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <ComboBox x:Name="TargetCombo" MinWidth="220" AutomationProperties.AutomationId="ExplorerTargetCombo"
+                      SelectionChanged="OnTargetSelectionChanged">
+                <ComboBoxItem Content="GridControl" IsSelected="True" />
+                <ComboBoxItem Content="TreeListView" />
+                <ComboBoxItem Content="SchedulerView" />
+            </ComboBox>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,0,0,12"
+                   Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                   Text="The property grid edits the LIVE control instance — flip ShowGroupPanel, change RowHeight or FrozenColumnCount, switch SelectionMode; the sample on the left reacts immediately." />
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="320" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <ContentControl Grid.Column="0" x:Name="SampleHost"
+                    BorderBrush="{DynamicResource {x:Static grid:GridResources.SeparatorLineKey}}"
+                    BorderThickness="0,1,1,1" Margin="0,0,-1,0" Focusable="False" />
+
+            <Border Grid.Column="1"
+                    BorderBrush="{DynamicResource {x:Static grid:GridResources.SeparatorLineKey}}"
+                    BorderThickness="1,1,0,1">
+                <propertyGrid:PropertyGrid x:Name="Explorer"
+                                           SelectedObject="{Binding ElementName=SampleHost, Path=Content, Mode=OneWay}"
+                                           ShowDeclaredPropertiesOnly="True"
+                                           CommitMode="Immediate"
+                                           ShowSearchBox="True"
+                                           Padding="8" />
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

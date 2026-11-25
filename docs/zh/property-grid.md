@@ -68,3 +68,20 @@ description: 使用类型化编辑器、分类和搜索查看并编辑任意对�
 类型注册了支持从 `string` 转换的 `TypeConverter`（`Guid`、`CultureInfo`、自定义结构体等）
 的属性可作为文本编辑：显示走 `ConvertToString(culture)`，输入由 `ConvertFromString(culture)`
 解析。没有转换器的类型仍显示为只读文本。
+
+## 编辑活动控件（property-explorer 模式）
+
+将属性网格指向某个控件实例，它就会实时编辑该控件 — 演示的“Property explorer”页面正是这样做的
+（选择 GridControl / TreeListView / SchedulerView，直接调整左侧的示例）：
+
+```xml
+<propertyGrid:PropertyGrid SelectedObject="{Binding ElementName=Sample, Path=Content}"
+                           ShowDeclaredPropertiesOnly="True"
+                           CommitMode="Immediate" />
+```
+
+- `ShowDeclaredPropertiesOnly` 只列出对象所在程序集层次中声明的属性 — 控件的完整 API
+  （TreeListView 包含 GridControl 的属性），而继承的 `ItemsControl`/`Control` 噪音（`Items`、`Background` 等）不会出现；
+- `CommitMode="Immediate"` 让每次切换/按键立即生效 — DevExpress 式的实时体验
+  （默认的 `OnCommit` 等待回车或失焦）。
+
