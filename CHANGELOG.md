@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.10] — 2026-11-25
+
+The blank-headers-at-launch fix release: grid header captions that sometimes rendered blank over RDP (corrupt retained glyph render data — healed automatically by re-parenting the band after the first frame), binding-free caption delivery, and demo-side diagnostics (build stamp + live header status) with an all-pages UIA guard.
+
 ### Fixed
 - **Grid: blank column headers after launch (the RDP glyph-state bug, root-caused live).**
   Reported on two demo pages: header captions sometimes blank right after start, hovering
