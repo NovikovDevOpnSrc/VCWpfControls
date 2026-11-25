@@ -194,6 +194,16 @@
             <StatusBarItem>
                 <Rectangle Width="1" Height="16" Margin="4,4,4,4" Fill="{DynamicResource {x:Static grid:GridResources.SeparatorLineKey}}" />
             </StatusBarItem>
+            <StatusBarItem>
+                <!-- Blank-header-launch diagnostics: the state of the page grid's header
+                     band, measured from the LIVE visual tree (column count + the narrowest
+                     caption ActualWidth). Width > 0 with blank pixels on screen = raster
+                     problem; width = 0 = caption content genuinely absent. -->
+                <TextBlock x:Name="StatusBarGrid" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
+                           TextTrimming="CharacterEllipsis"
+                           AutomationProperties.AutomationId="StatusBarGrid"
+                           AutomationProperties.LiveSetting="Polite" />
+            </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right" MinWidth="80">
                 <TextBlock x:Name="StatusBarTheme" Foreground="{DynamicResource {x:Static grid:GridResources.MutedTextKey}}"
                            AutomationProperties.AutomationId="StatusBarTheme"

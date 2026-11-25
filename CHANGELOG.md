@@ -29,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Regression: `HeaderRenderRefreshTests` ×4 (injection-validated: removing the caption
   relay turns both caption tests red; removing the Loaded refresh turns both repaint
   tests red).
+- **Demo: build stamp + live header diagnostics.** The window title now carries the exe
+  build stamp (`built MMdd-HHmmUTC`) and the status bar shows the page grid's header
+  state measured from the live visual tree (`grid: N cols, captions Xpx`) — on the next
+  blank-header sighting this answers two questions at a glance: WHICH build is on
+  screen, and whether the captions are laid out (X > 0 with blank pixels = raster-level
+  failure) or genuinely absent (X = 0). Guard: `GridHeadersAcrossPagesTests` walks every
+  demo page with a grid and asserts every header materializes its caption element.
 
 ## [0.5.9] — 2026-11-19
 
