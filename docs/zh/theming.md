@@ -160,6 +160,32 @@ WPF 之所以能找到它，是因为 `GridControl` 重写了自身的 `DefaultS
 按条件合并该字典（默认浅色，应用处于深色模式时切换为它）—— `DynamicResource`
 查找会自动采用当前合并的值。
 
+## 自定义调色板：Dark Blue 模式
+
+内置的 **Dark Blue** 主题（`GridTheme.DarkBlue`，可在演示设置的选项中选择）同时也是自定义调色板的参考配方：
+它**只覆盖画笔令牌**，并通过 `MergedDictionaries` 完整继承 `Dark.xaml` 的所有模板和隐式样式 — 无需复制任何 ControlTemplate：
+
+```xml
+<ResourceDictionary xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- 自身条目优先于被合并字典中的值 -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FF1B2A41" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="#FF152238" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FFD9E2F1" />
+    <!-- ...其余 22 个画笔令牌... -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF4D9FFF" />
+</ResourceDictionary>
+```
+
+像 `ThemeManager` 那样在应用层合并你的字典，所有控件都会跟随。三个契约（均由测试保障）让这类调色板保持可靠：
+
+- **完整性** — 必须定义所有画笔令牌（`ThemeManagerTests.EveryTheme_DefinesEveryToken`）；
+- **对等性** — 链式调色板的隐式样式集合与 Light/Dark 一致（`Issue17ThemeGapTests` 透过合并字典解析键）；
+- **可读性** — 从实际生效的画笔断言关键 WCAG 对比度（`DarkBlueThemeTests`）。
+
 ## 更进一步
 
 如需更深入的样式定制，控件在替换整个 `ControlTemplate` 时暴露常见的模板部件

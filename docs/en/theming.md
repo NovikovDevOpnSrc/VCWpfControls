@@ -168,6 +168,37 @@ are all it takes to run the grid dark:
 Merge this dictionary conditionally (light by default, dark when your app is in dark mode)
 — the `DynamicResource` lookups pick the currently merged values.
 
+## Custom palettes: the Dark Blue pattern
+
+The built-in **Dark Blue** theme (`GridTheme.DarkBlue`, selectable in the demo settings)
+is also the reference recipe for building a palette of your own: it overrides **only the
+brush tokens** and chains `Dark.xaml` for every template and implicit style — no
+ControlTemplate is copied anywhere:
+
+```xml
+<ResourceDictionary xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- own entries win over the merged dictionary's -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FF1B2A41" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="#FF152238" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FFD9E2F1" />
+    <!-- ...the rest of the 22 brush tokens... -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF4D9FFF" />
+</ResourceDictionary>
+```
+
+Merge your dictionary at the application level (like `ThemeManager` does) and every
+control follows. Two contracts keep such palettes honest — both enforced by tests:
+
+- **Completeness** — every brush token must be defined (`ThemeManagerTests.EveryTheme_DefinesEveryToken`);
+- **Parity** — the implicit style set of a chained palette equals Light/Dark's
+  (`Issue17ThemeGapTests` resolves keys through merged dictionaries);
+- **Readability** — the key WCAG pairs are asserted from the realized brushes
+  (`DarkBlueThemeTests`).
+
 ## Going further
 
 For deeper restyling, the control exposes the usual template parts

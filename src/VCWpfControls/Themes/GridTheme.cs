@@ -14,6 +14,9 @@ public enum GridTheme
 
     /// <summary>High Contrast theme — every brush follows the live Windows contrast scheme (system colors are never overridden).</summary>
     HighContrast = 2,
+
+    /// <summary>Dark Blue theme — the customization showcase: chains <c>Dark.xaml</c> and overrides only the brush tokens.</summary>
+    DarkBlue = 3,
 }
 
 /// <summary>
@@ -32,6 +35,7 @@ public static class GridThemeManager
         {
             GridTheme.Dark => MakeUri("/VCWpfControls;component/Themes/Dark.xaml"),
             GridTheme.HighContrast => MakeUri("/VCWpfControls;component/Themes/HighContrast.xaml"),
+            GridTheme.DarkBlue => MakeUri("/VCWpfControls;component/Themes/DarkBlue.xaml"),
             _ => MakeUri("/VCWpfControls;component/Themes/Light.xaml"),
         };
 

@@ -166,6 +166,37 @@ Scheduler), `BaselineFillKey` (базлайны Gantt), `NowLineKey` (линия
 Подключайте этот словарь по условию (по умолчанию — светлый, при тёмном режиме приложения —
 тёмный): запросы `DynamicResource` подхватят актуальные значения.
 
+## Кастомные палитры: паттерн Dark Blue
+
+Встроенная тема **Dark Blue** (`GridTheme.DarkBlue`, выбирается в настройках демо) — это
+одновременно эталонный рецепт собственной палитры: она переопределяет **только
+кисти-токены** и подключает `Dark.xaml` целиком через `MergedDictionaries` — ни один
+ControlTemplate не копируется:
+
+```xml
+<ResourceDictionary xmlns:grid="clr-namespace:VCWpfControls.Grid;assembly=VCWpfControls">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- собственные записи побеждают значения из подключённого словаря -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FF1B2A41" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="#FF152238" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FFD9E2F1" />
+    <!-- ...остальные 22 кисти-токена... -->
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF4D9FFF" />
+</ResourceDictionary>
+```
+
+Подключите свой словарь на уровне приложения (как это делает `ThemeManager`) — и все
+контролы последуют. Палитры держат в узде три контракта, закреплённых тестами:
+
+- **Полнота** — определены все кисти-токены (`ThemeManagerTests.EveryTheme_DefinesEveryToken`);
+- **Паритет** — набор неявных стилей цепочечной палитры равен Light/Dark
+  (`Issue17ThemeGapTests` разрешает ключи сквозь merged-словари);
+- **Читаемость** — ключевые WCAG-пары проверяются по реализованным кистям
+  (`DarkBlueThemeTests`).
+
 ## Если нужно больше
 
 Для глубокого изменения стиля контрол предоставляет стандартные части шаблона

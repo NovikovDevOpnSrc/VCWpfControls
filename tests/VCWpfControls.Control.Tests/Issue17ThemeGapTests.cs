@@ -32,10 +32,10 @@ public class Issue17ThemeGapTests
     public void ThemedPalettes_DefineTheSameImplicitStyleSet()
     {
         var byTheme = new Dictionary<string, HashSet<Type>>();
-        foreach (var name in new[] { "Light", "Dark", "HighContrast" })
+        foreach (var name in new[] { "Light", "Dark", "DarkBlue", "HighContrast" })
         {
             var set = new HashSet<Type>();
-            foreach (var key in Load(name).Keys)
+            foreach (var key in AllKeys(Load(name)))
             {
                 if (key is Type targetType)
                 {
@@ -56,7 +56,25 @@ public class Issue17ThemeGapTests
         }
 
         AssertSame("Light", "Dark");
+        AssertSame("Light", "DarkBlue"); // chained palette: implicit chrome arrives via the merged Dark
         AssertSame("Light", "HighContrast");
+    }
+
+    /// <summary>A dictionary's own keys plus everything reachable through merged dictionaries.</summary>
+    private static IEnumerable<object> AllKeys(ResourceDictionary dictionary)
+    {
+        foreach (var key in dictionary.Keys)
+        {
+            yield return key;
+        }
+
+        foreach (var merged in dictionary.MergedDictionaries)
+        {
+            foreach (var key in AllKeys(merged))
+            {
+                yield return key;
+            }
+        }
     }
 
     [StaFact]

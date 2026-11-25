@@ -1,0 +1,38 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:grid="clr-namespace:VCWpfControls.Grid">
+
+    <!-- Dark Blue — the customization showcase: a complete palette that overrides ONLY the
+         brush tokens and chains Dark.xaml for every template and implicit style. This is
+         the extension pattern a consumer follows to brand the whole control set without
+         copying a single ControlTemplate (the token→template decoupling in action).
+         Navy surfaces #1B2A41/#152238, blue-tinted text ramp, #27548C selection,
+         #4D9FFF accent. -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/VCWpfControls;component/Themes/Dark.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SurfaceBackgroundKey}" Color="#FF1B2A41" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBackgroundKey}" Color="#FF152238" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderForegroundKey}" Color="#FFD9E2F1" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HeaderBorderKey}" Color="#FF31435F" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionBackgroundKey}" Color="#FF27548C" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SelectionTextKey}" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.CurrentCellBorderBrushKey}" Color="#FF5CA8E8" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.GridLineKey}" Color="#FF2A3B57" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentKey}" Color="#FF4D9FFF" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AccentTextKey}" Color="#FF82B7F5" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.HoverBackgroundKey}" Color="#FF233650" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.TextBrushKey}" Color="#FFF2F6FC" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.AlternatingRowBackgroundKey}" Color="#FF20304A" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.MutedTextKey}" Color="#FFA9BAD1" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BarFillKey}" Color="#FF31435F" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.SeparatorLineKey}" Color="#FF2E3F5B" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.EventFillKey}" Color="#465CA8E8" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.NowLineKey}" Color="#FFFF6A00" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.BaselineFillKey}" Color="#6E8C9DBB" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.ErrorTextKey}" Color="#FFFF99A4" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.MenuHoverBackgroundKey}" Color="#FF243653" />
+    <SolidColorBrush x:Key="{x:Static grid:GridResources.OnAccentTextKey}" Color="#FFFFFFFF" />
+</ResourceDictionary>

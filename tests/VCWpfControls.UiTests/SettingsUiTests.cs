@@ -93,6 +93,17 @@ public sealed class SettingsUiTests : IDisposable
             _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
             Assert.True(dark.Patterns.SelectionItem.Pattern.IsSelected, "the dark radio must stay selected");
 
+            // Dark Blue (the custom-palette showcase) applies app-wide: the shell status
+            // bar follows ThemeManager.CurrentTheme.
+            var darkBlue = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeDarkBlueRadio"))
+                ?? throw new InvalidOperationException("dark blue radio not found");
+            darkBlue.Patterns.SelectionItem.Pattern.Select();
+            _app.WaitWhileBusy(TimeSpan.FromSeconds(5));
+            var statusTheme = _window.FindFirstDescendant(cf => cf.ByAutomationId("StatusBarTheme"))
+                ?.Properties.Name.ValueOrDefault ?? "";
+            Assert.Contains("DarkBlue", statusTheme, StringComparison.Ordinal);
+            dark.Patterns.SelectionItem.Pattern.Select(); // back to dark for the rest of the test
+
             // The System mode radio exists and selects without crashing (the OS preference
             // itself can't be flipped from a test — only the wiring is asserted).
             var system = flyout.FindFirstDescendant(cf => cf.ByAutomationId("SettingsThemeSystemRadio"))

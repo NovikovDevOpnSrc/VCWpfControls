@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Themes: Dark Blue (`GridTheme.DarkBlue`) — the customization showcase.** A complete
+  palette that chains `Dark.xaml` through `MergedDictionaries` and overrides ONLY the 22
+  brush tokens (navy surfaces `#1B2A41`/`#152238`, `#27548C` selection, `#4D9FFF` accent)
+  — no ControlTemplate copied anywhere, proving the token→template decoupling: consumers
+  brand the whole control set with one small dictionary. Wired into `ThemeManager` and
+  per-grid `GridThemeManager` (dark accent variants follow it), selectable in the demo
+  settings and persisted. Guards: `EveryTheme_DefinesEveryToken` and the issue-#17 parity
+  guard now resolve keys THROUGH merged dictionaries (a chained palette's implicit chrome
+  arrives via the merge); new `DarkBlueThemeTests` assert the key WCAG pairs from the
+  realized brushes and that the chain is live (values differ from Dark, implicit styles
+  reachable). Docs: the custom-palette pattern section in theming.md (en/ru/zh).
+
 ## [0.5.10] — 2026-11-25
 
 The blank-headers-at-launch fix release: grid header captions that sometimes rendered blank over RDP (corrupt retained glyph render data — healed automatically by re-parenting the band after the first frame), binding-free caption delivery, and demo-side diagnostics (build stamp + live header status) with an all-pages UIA guard.
