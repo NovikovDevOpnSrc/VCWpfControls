@@ -19,11 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   arrives via the merge); new `DarkBlueThemeTests` assert the key WCAG pairs from the
   realized brushes and that the chain is live (values differ from Dark, implicit styles
   reachable). Docs: the custom-palette pattern section in theming.md (en/ru/zh).
-- **PropertyGrid: `ShowDeclaredPropertiesOnly` + the live property-explorer demo page.**
-  The DevExpress-style showcase: point the grid at a LIBRARY CONTROL INSTANCE and edit it
-  live — the new "Property explorer" page picks GridControl / TreeListView /
-  SchedulerView and every edit (checkbox, enum, numeric) applies to the sample on the
-  left immediately (`CommitMode="Immediate"`). The new filter lists the properties
+- **PropertyGrid: `ShowDeclaredPropertiesOnly` — edit live control instances.** Point the
+  grid at a LIBRARY CONTROL INSTANCE and edit it: every edit (checkbox, enum, numeric)
+  lands on the instance immediately (`CommitMode="Immediate"`). A DevExpress-style
+  "Property explorer" demo page was built for this (GridControl / TreeListView /
+  SchedulerView targets) and is currently HIDDEN from the navigation at the author's
+  request. The new filter lists the properties
   declared in the object's own assembly hierarchy — the control's full API (a
   TreeListView carries GridControl's properties) without the inherited
   ItemsControl/Control noise. Guards: `LivePropertyExplorerTests` (filter contents +

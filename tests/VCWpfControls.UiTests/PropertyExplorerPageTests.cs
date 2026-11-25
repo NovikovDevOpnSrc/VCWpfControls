@@ -36,7 +36,7 @@ public sealed class PropertyExplorerPageTests : IDisposable
         Assert.False(_app.HasExited, $"application crashed on '{navItemText}'");
     }
 
-    [Fact]
+    [Fact(Skip = "the Property explorer page is hidden from the navigation at the user's request")]
     public void TogglingShowColumnHeaders_EditsTheLiveGrid()
     {
         Navigate("Property explorer");
