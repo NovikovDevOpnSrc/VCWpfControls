@@ -314,10 +314,13 @@ public partial class GridControl : ItemsControl
         => RefreshHeaderRender();
 
     /// <summary>
-    /// Invalidates the whole header band subtree for repaint. Normally nothing needs this
-    /// (brush changes propagate by themselves), but a stale launch frame — rendered before
-    /// the caption bindings and theme resources settled — is never invalidated again,
-    /// because the band's layout and RenderSize do not change afterwards.
+    /// Re-parents the header band (the exact operation a header click performs through the
+    /// sort pipeline) and invalidates it for repaint. In some process states — reproduced
+    /// over RDP at fractional DPI — the caption TextBlocks keep correct content, layout,
+    /// position, clip, brush and font, yet their retained render data draws nothing, on
+    /// screen AND through a fresh offscreen VisualBrush render; only detaching and
+    /// re-attaching the visuals (which resets the retained render state) brings the text
+    /// back. A stale band is never healed naturally — its layout never changes after load.
     /// </summary>
     internal void RefreshHeaderRender()
     {
@@ -326,6 +329,7 @@ public partial class GridControl : ItemsControl
             return;
         }
 
+        HeadersPresenter.EnsureHeaders(); // Children.Clear + re-add: the proven reset
         foreach (System.Windows.UIElement child in HeadersPresenter.Children)
         {
             InvalidateVisualDeep(child);

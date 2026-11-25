@@ -8,34 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- **Grid: blank column headers after launch (two-layer fix).** A user reproduced on two
-  demo pages (Basic binding, Editing & validation): header captions blank right after
-  start, and — the decisive clue — hovering a header did NOT heal it while clicking one
-  did. A click sorts, and the sort pipeline re-runs `EnsureHeaders` (a full re-parent of
-  the cached header controls); hover only repaints the border background. That points at
-  the caption delivery: the template used
-  `{Binding Column.Header, RelativeSource=TemplatedParent}` — a templated-parent path
-  binding whose lifecycle is tied to template attach/re-parent — and at stale launch
-  rasters that nothing invalidates later (the band's layout and RenderSize never change
-  after load). Both are now eliminated:
-  - the caption is relayed **in code** (new `GridColumnHeader.Caption` DP synced from the
-    column in `OnColumnChanged`/`EnsureHeaders`, plus a live `Header`-change tracker) and
-    the template displays it via `{TemplateBinding Caption}` — no binding-expression
-    lifecycle at all;
-  - the whole header subtree is force-repainted once after the first Render pass
-    (`Loaded` fires below Render priority) and again on `HwndSource.DpiChanged` — RDP
-    reconnects and monitor moves re-layout the window after the first frame with no
-    natural invalidation for the band.
-  Regression: `HeaderRenderRefreshTests` ×4 (injection-validated: removing the caption
-  relay turns both caption tests red; removing the Loaded refresh turns both repaint
-  tests red).
-- **Demo: build stamp + live header diagnostics.** The window title now carries the exe
-  build stamp (`built MMdd-HHmmUTC`) and the status bar shows the page grid's header
-  state measured from the live visual tree (`grid: N cols, captions Xpx`) — on the next
-  blank-header sighting this answers two questions at a glance: WHICH build is on
-  screen, and whether the captions are laid out (X > 0 with blank pixels = raster-level
-  failure) or genuinely absent (X = 0). Guard: `GridHeadersAcrossPagesTests` walks every
-  demo page with a grid and asserts every header materializes its caption element.
+- **Grid: blank column headers after launch (the RDP glyph-state bug, root-caused live).**
+  Reported on two demo pages: header captions sometimes blank right after start, hovering
+  did not heal, clicking a header did. A live instrumentation chain (status-bar probes
+  sampling the running app every second) proved that during the blank state the captions
+  were fully correct in the visual tree — content, 13px layout, on-screen position, clip,
+  realized brush (`#424242`), font family — while a fresh OFFSCREEN VisualBrush render
+  ALSO dropped them: the caption TextBlocks' retained render data was corrupt (a WPF
+  glyph-pipeline state class triggered at fractional DPI over RDP). The only operation
+  that resets it is re-parenting the band (detach + re-attach) — exactly what a header
+  click does through the sort pipeline's `EnsureHeaders`. The grid now performs that
+  re-parent automatically right after the first Render pass (`Loaded` fires below Render
+  priority) and again on `HwndSource.DpiChanged`; `RefreshHeaderRender` additionally
+  invalidates the whole band subtree. Verified live on the reproducing machine: all grid
+  pages render captions after the fix. Regression: `HeaderRenderRefreshTests` ×4
+  (injection-validated — including that the refresh goes through `EnsureHeaders`, not
+  just visual invalidation, which provably does not heal this state); demo guard
+  `GridHeadersAcrossPagesTests` walks every page with a grid.
+- **Demo: build stamp + header diagnostics in the shell.** The window title carries the
+  exe build time (`built MMdd-HHmmUTC`) and the status bar shows the page grid's live
+  header state (`grid: N cols, captions Xpx`) — the instrumentation that closed this bug
+  stays available for the next mystery.
 
 ## [0.5.9] — 2026-11-19
 

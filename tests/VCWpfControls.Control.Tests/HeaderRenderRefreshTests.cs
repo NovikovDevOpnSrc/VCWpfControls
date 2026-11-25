@@ -90,16 +90,22 @@ public sealed class HeaderRenderRefreshTests
     }
 
     [StaFact]
-    public void RefreshHeaderRender_TouchesEveryMaterializedHeader()
+    public void RefreshHeaderRender_ReParentsTheBand()
     {
         var grid = MakeGrid();
         var window = TestWindowHost.Show(grid);
         TestWindowHost.Pump();
         try
         {
-            // The manual path works too (used by the Loaded hook; assertible by repeat calls).
+            // The refresh must go through EnsureHeaders (Children.Clear + re-add of the
+            // cached headers) — the ONLY operation proven to reset the retained render
+            // state that draws nothing in the corrupted-launch case. InvalidateVisual
+            // alone (the round-1 attempt) provably does NOT heal it.
+            var before = grid.HeadersPresenter!.EnsureHeadersCount;
             grid.RefreshHeaderRender();
             Assert.Equal(2, grid.HeaderRenderRefreshCount);
+            Assert.True(grid.HeadersPresenter.EnsureHeadersCount > before,
+                "RefreshHeaderRender must re-run EnsureHeaders (the re-parent), not just invalidate visuals");
         }
         finally
         {

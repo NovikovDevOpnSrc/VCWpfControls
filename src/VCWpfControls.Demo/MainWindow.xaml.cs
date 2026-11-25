@@ -105,10 +105,15 @@ public partial class MainWindow : Window
             captions.Add(width);
         }
 
-        StatusBarGrid.Text = captions.Count == 0
-            ? "grid: no headers"
-            : $"grid: {captions.Count} cols, captions {captions.Min():F0}px";
+        if (captions.Count == 0)
+        {
+            StatusBarGrid.Text = "grid: no headers";
+            return;
+        }
+
+        StatusBarGrid.Text = $"grid: {captions.Count} cols, captions {captions.Min():F0}px";
     }
+
 
     private static T? FindVisualChild<T>(System.Windows.DependencyObject root)
         where T : System.Windows.DependencyObject

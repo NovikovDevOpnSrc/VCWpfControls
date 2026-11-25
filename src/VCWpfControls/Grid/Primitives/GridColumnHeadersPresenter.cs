@@ -17,6 +17,9 @@ public sealed class GridColumnHeadersPresenter : Panel
     /// <summary>The owning grid, attached when the control template is applied.</summary>
     internal GridControl? Owner { get; set; }
 
+    /// <summary>How many times the headers were (re)built — the post-Loaded re-parent guard.</summary>
+    internal int EnsureHeadersCount { get; private set; }
+
     /// <summary>Rebuilds header children so that one exists per visible column.</summary>
     internal void EnsureHeaders()
     {
@@ -24,6 +27,8 @@ public sealed class GridColumnHeadersPresenter : Panel
         {
             return;
         }
+
+        EnsureHeadersCount++;
 
         Children.Clear();
         foreach (var column in Owner.VisibleColumns)
