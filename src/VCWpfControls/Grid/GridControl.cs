@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -877,9 +878,22 @@ public partial class GridControl : ItemsControl
             row.Prepare(rowInfo, this);
         }
 
-        row.Background = ItemsControl.GetAlternationIndex(row) % 2 == 1
-            ? AlternatingRowBackground ?? RowBackground
-            : RowBackground;
+        // BIND the row background to the grid's brushes (not copy the VALUE): a copied
+        // brush goes stale on theme swaps — the grid's DynamicResource re-resolves, but
+        // nothing re-prepares already-realized rows, and the zebra rows kept the old
+        // palette after a DarkBlue -> Light switch. PriorityBinding preserves the
+        // AlternatingRowBackground ?? RowBackground fallback for odd rows.
+        if (ItemsControl.GetAlternationIndex(row) % 2 == 1)
+        {
+            var priority = new PriorityBinding();
+            priority.Bindings.Add(new Binding(nameof(AlternatingRowBackground)) { Source = this });
+            priority.Bindings.Add(new Binding(nameof(RowBackground)) { Source = this });
+            row.SetBinding(GridRow.BackgroundProperty, priority);
+        }
+        else
+        {
+            row.SetBinding(GridRow.BackgroundProperty, new Binding(nameof(RowBackground)) { Source = this });
+        }
     }
 
     /// <inheritdoc />

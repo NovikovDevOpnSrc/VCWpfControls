@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Grid: zebra rows kept the previous palette after a theme switch.**
+  `PrepareContainerForItemOverride` COPIED the resolved brush values into
+  `row.Background` — when the palette dictionary swapped (e.g. DarkBlue -> Light), the
+  grid's `DynamicResource` re-resolved, but nothing re-propagated to already-realized
+  rows: the odd rows visibly kept the old theme's stripes. Rows now BIND to the grid's
+  `RowBackground` / `AlternatingRowBackground` (a PriorityBinding preserves the
+  odd-row `AlternatingRowBackground ?? RowBackground` fallback), so every re-resolve —
+  theme swap or a runtime brush change — reaches every realized row. Regression:
+  `RowBackgroundThemeSwapTests` (brush swap propagation + a real dictionary swap with
+  no stale stripes + the null fallback). Injection-validated: reverting to the value
+  copy turns both swap tests red.
+
+### Fixed
 - **Grid: cell content slid into neighboring columns while scrolling (the 100k page).**
   When a recycled row revealed wider content, the auto column grew — but the
   already-visible rows were never re-arranged (their RenderSize did not change, so
