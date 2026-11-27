@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Architecture tests (the deslop-please idea, C# edition).** The layering that AGENTS.md
+  states in prose is now executable: `ArchitectureTests` (Core.Tests, reflection over the
+  library) enforces that the data engine (`Grid/Data/`) references NO System.Windows type
+  anywhere in its shape (bases, interfaces, members, parameters, attributes — generics and
+  arrays unwrapped), that it uses nothing else from the library besides itself and the
+  `Localization` strings, and that `Localization` stays pure resx. Injection-validated: a
+  WPF field planted in a GridDataManager struct turns the guard red. Documented (not yet
+  enforced) edges: GridCellsPanel's `TreeList.TreeListView` type check and the
+  Grid ↔ Conditions namespace cycle via the filter dialog.
+
 ### Fixed
 - **Grid: zebra rows kept the previous palette after a theme switch.**
   `PrepareContainerForItemOverride` COPIED the resolved brush values into

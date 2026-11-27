@@ -127,7 +127,7 @@ dotnet test tests/VCWpfControls.Control.Tests/...   # STA-тесты
 
 ## Архитектурные правила
 
-- Движок данных (`Grid/Data/`) не знает WPF — тестируется без STA. UI-слой в
+- Движок данных (`Grid/Data/`) не знает WPF — тестируется без STA; граница ОХРАНЯЕТСЯ тестом `ArchitectureTests` (Core.Tests): System.Windows-типы запрещены в движке отражением, инъекция проверена. UI-слой в
   `Grid/Primitives/`, общая геометрия колонок в `GridLayoutController`.
 - Сентинел add-row живёт ТОЛЬКО в обёртке `GridItemsView` — внутрь `DataEngine.View`
   его класть нельзя (рассинхрон индексов ListCollectionView).
