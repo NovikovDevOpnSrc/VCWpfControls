@@ -14,7 +14,13 @@ public abstract class GridColumnBase : DependencyObject
 {
     /// <summary>Identifies the <see cref="Header"/> dependency property.</summary>
     public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
-        nameof(Header), typeof(object), typeof(GridColumnBase), new PropertyMetadata(string.Empty));
+        nameof(Header), typeof(object), typeof(GridColumnBase), new PropertyMetadata(string.Empty, OnHeaderChanged));
+
+    /// <summary>Raised after <see cref="Header"/> changed (headers re-sync their caption).</summary>
+    internal event EventHandler? HeaderChanged;
+
+    private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((GridColumnBase)d).HeaderChanged?.Invoke(d, EventArgs.Empty);
 
     /// <summary>Identifies the <see cref="FieldName"/> dependency property.</summary>
     public static readonly DependencyProperty FieldNameProperty = DependencyProperty.Register(

@@ -40,9 +40,9 @@ public class PasteTests
                 System.Windows.Clipboard.SetDataObject(text, copy: true);
                 return;
             }
-            catch (COMException) when (attempt < 10)
+            catch (COMException) when (attempt < 20)
             {
-                System.Threading.Thread.Sleep(50);
+                System.Threading.Thread.Sleep(150);
             }
         }
     }

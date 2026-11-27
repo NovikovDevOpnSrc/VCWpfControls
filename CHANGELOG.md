@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Library: removed every `DependencyPropertyDescriptor` — a latent cross-thread crash.**
+  The WPF descriptor mutates a PROCESS-STATIC table that is not thread-safe; the parallel
+  STA test collections corrupted it on CI ("a concurrent update was performed on this
+  collection") and every later test cascaded. Runtime-rename tracking is now plain
+  instance events: `GridColumnBase.HeaderChanged` (the header caption follows column
+  renames) and `WizardPage.CanLeaveChanged` (the wizard's button states) — zero statics,
+  same behavior (the rename regression tests stay green). Also: PasteTests' clipboard
+  retry window extended (the local flake was plain clipboard contention).
+
 ### Added
 - **Architecture tests (the deslop-please idea, C# edition).** The layering that AGENTS.md
   states in prose is now executable: `ArchitectureTests` (Core.Tests, reflection over the

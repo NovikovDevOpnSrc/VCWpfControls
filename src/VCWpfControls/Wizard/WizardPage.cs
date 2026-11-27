@@ -43,13 +43,20 @@ public class WizardPage : ContentControl
         set => SetValue(CanLeaveProperty, value);
     }
 
+    /// <summary>Raised after <see cref="CanLeave"/> changed (the owning wizard re-enables its buttons).</summary>
+    internal event EventHandler? CanLeaveChanged;
+
     private static void OnCanLeaveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
+        var page = (WizardPage)d;
+
         // The owning wizard refreshes its button states through the logical parent.
-        if (((WizardPage)d).Parent is Wizard wizard)
+        if (page.Parent is Wizard wizard)
         {
             wizard.RefreshNavigationForPageChange();
         }
+
+        page.CanLeaveChanged?.Invoke(page, EventArgs.Empty);
     }
 
     internal void NotifyCanLeaveChanged() => OnCanLeaveChanged(this, default);

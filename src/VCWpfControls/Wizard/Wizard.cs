@@ -73,9 +73,6 @@ public class Wizard : Control
             new FrameworkPropertyMetadata(typeof(Wizard)));
     }
 
-    private static readonly System.ComponentModel.DependencyPropertyDescriptor CanLeaveDescriptor =
-        System.ComponentModel.DependencyPropertyDescriptor.FromProperty(WizardPage.CanLeaveProperty, typeof(WizardPage));
-
     /// <summary>Creates the wizard.</summary>
     public Wizard()
     {
@@ -90,7 +87,7 @@ public class Wizard : Control
         {
             foreach (WizardPage page in e.OldItems)
             {
-                CanLeaveDescriptor.RemoveValueChanged(page, OnAnyPageCanLeaveChanged);
+                page.CanLeaveChanged -= OnAnyPageCanLeaveChanged;
             }
         }
 
@@ -98,7 +95,10 @@ public class Wizard : Control
         {
             foreach (WizardPage page in e.NewItems)
             {
-                CanLeaveDescriptor.AddValueChanged(page, OnAnyPageCanLeaveChanged);
+                // A plain instance event — the WPF DependencyPropertyDescriptor mutates a
+                // process-static table that is not thread-safe (corrupted under parallel
+                // STA tests).
+                page.CanLeaveChanged += OnAnyPageCanLeaveChanged;
             }
         }
 

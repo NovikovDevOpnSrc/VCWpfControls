@@ -54,7 +54,7 @@ public class GridColumnHeader : Control
     private Point _dragStartPoint;
     private bool _isDragging;
     private bool _mouseDownWithoutDrag;
-    private System.ComponentModel.DependencyPropertyDescriptor? _headerDescriptor;
+    private GridColumnBase? _subscribedColumn;
 
     static GridColumnHeader()
     {
@@ -324,20 +324,22 @@ public class GridColumnHeader : Control
     private static void OnColumnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var header = (GridColumnHeader)d;
-        if (header._headerDescriptor is not null && e.OldValue is GridColumnBase oldColumn)
+        if (header._subscribedColumn is not null)
         {
-            header._headerDescriptor.RemoveValueChanged(oldColumn, header.OnColumnHeaderChanged);
-            header._headerDescriptor = null;
+            header._subscribedColumn.HeaderChanged -= header.OnColumnHeaderChanged;
+            header._subscribedColumn = null;
         }
 
         if (e.NewValue is GridColumnBase column)
         {
             // Content is relayed through the Caption DP; refresh the glyph and the caption.
+            // A plain instance event tracks runtime Header renames — the WPF
+            // DependencyPropertyDescriptor mutates a PROCESS-STATIC table that is not
+            // thread-safe and corrupted under parallel STA tests.
             header.SortDirection = column.SortDirection;
             header.SyncCaption();
-            header._headerDescriptor = System.ComponentModel.DependencyPropertyDescriptor.FromProperty(
-                GridColumnBase.HeaderProperty, typeof(GridColumnBase));
-            header._headerDescriptor.AddValueChanged(column, header.OnColumnHeaderChanged);
+            column.HeaderChanged += header.OnColumnHeaderChanged;
+            header._subscribedColumn = column;
         }
     }
 
