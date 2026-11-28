@@ -27,6 +27,10 @@
                              Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=DarkBlue}"
                              Margin="0,0,0,8" AutomationProperties.AutomationId="SettingsThemeDarkBlueRadio" />
+                <RadioButton Content="Monokai"
+                             Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"
+                             IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=Monokai}"
+                             Margin="0,0,0,8" AutomationProperties.AutomationId="SettingsThemeMonokaiRadio" />
                 <RadioButton Content="High contrast"
                              IsChecked="{Binding Theme, Converter={StaticResource EqualsConverter}, ConverterParameter=HighContrast}"
                              Foreground="{DynamicResource {x:Static grid:GridResources.TextBrushKey}}"

@@ -32,7 +32,7 @@ public class Issue17ThemeGapTests
     public void ThemedPalettes_DefineTheSameImplicitStyleSet()
     {
         var byTheme = new Dictionary<string, HashSet<Type>>();
-        foreach (var name in new[] { "Light", "Dark", "DarkBlue", "HighContrast" })
+        foreach (var name in new[] { "Light", "Dark", "DarkBlue", "Monokai", "HighContrast" })
         {
             var set = new HashSet<Type>();
             foreach (var key in AllKeys(Load(name)))
@@ -57,6 +57,7 @@ public class Issue17ThemeGapTests
 
         AssertSame("Light", "Dark");
         AssertSame("Light", "DarkBlue"); // chained palette: implicit chrome arrives via the merged Dark
+        AssertSame("Light", "Monokai");
         AssertSame("Light", "HighContrast");
     }
 

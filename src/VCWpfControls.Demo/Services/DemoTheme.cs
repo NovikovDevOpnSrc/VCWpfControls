@@ -31,6 +31,7 @@ public static class DemoTheme
                 : SystemThemeWatcher.IsLightPreferred() ? GridTheme.Light : GridTheme.Dark,
             "Dark" => GridTheme.Dark,
             "DarkBlue" => GridTheme.DarkBlue,
+            "Monokai" => GridTheme.Monokai,
             "HighContrast" => GridTheme.HighContrast,
             _ => GridTheme.Light,
         };

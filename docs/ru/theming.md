@@ -168,7 +168,7 @@ Scheduler), `BaselineFillKey` (базлайны Gantt), `NowLineKey` (линия
 
 ## Кастомные палитры: паттерн Dark Blue
 
-Встроенная тема **Dark Blue** (`GridTheme.DarkBlue`, выбирается в настройках демо) — это
+Встроенные темы **Dark Blue** и **Monokai** (`GridTheme.DarkBlue` / `GridTheme.Monokai`, выбираются в настройках демо) — это
 одновременно эталонный рецепт собственной палитры: она переопределяет **только
 кисти-токены** и подключает `Dark.xaml` целиком через `MergedDictionaries` — ни один
 ControlTemplate не копируется:

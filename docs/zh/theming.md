@@ -162,7 +162,7 @@ WPF 之所以能找到它，是因为 `GridControl` 重写了自身的 `DefaultS
 
 ## 自定义调色板：Dark Blue 模式
 
-内置的 **Dark Blue** 主题（`GridTheme.DarkBlue`，可在演示设置的选项中选择）同时也是自定义调色板的参考配方：
+内置的 **Dark Blue** 与 **Monokai** 主题（`GridTheme.DarkBlue` / `GridTheme.Monokai`，可在演示设置的选项中选择）同时也是自定义调色板的参考配方：
 它**只覆盖画笔令牌**，并通过 `MergedDictionaries` 完整继承 `Dark.xaml` 的所有模板和隐式样式 — 无需复制任何 ControlTemplate：
 
 ```xml

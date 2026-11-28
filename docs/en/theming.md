@@ -170,7 +170,7 @@ Merge this dictionary conditionally (light by default, dark when your app is in 
 
 ## Custom palettes: the Dark Blue pattern
 
-The built-in **Dark Blue** theme (`GridTheme.DarkBlue`, selectable in the demo settings)
+The built-in **Dark Blue** and **Monokai** themes (`GridTheme.DarkBlue` / `GridTheme.Monokai`, selectable in the demo settings)
 is also the reference recipe for building a palette of your own: it overrides **only the
 brush tokens** and chains `Dark.xaml` for every template and implicit style — no
 ControlTemplate is copied anywhere:

@@ -97,6 +97,7 @@ public static class ThemeManager
             GridTheme.Dark => "/VCWpfControls;component/Themes/Dark.xaml",
             GridTheme.HighContrast => "/VCWpfControls;component/Themes/HighContrast.xaml",
             GridTheme.DarkBlue => "/VCWpfControls;component/Themes/DarkBlue.xaml",
+            GridTheme.Monokai => "/VCWpfControls;component/Themes/Monokai.xaml",
             _ => "/VCWpfControls;component/Themes/Light.xaml",
         };
         var dictionary = new ResourceDictionary
@@ -108,7 +109,7 @@ public static class ThemeManager
 
     private static void SwapAccent(ResourceDictionary resources, AccentOverride accent, GridTheme theme)
     {
-        var color = (Color)ColorConverter.ConvertFromString(theme is GridTheme.Dark or GridTheme.DarkBlue ? accent.DarkHex : accent.LightHex);
+        var color = (Color)ColorConverter.ConvertFromString(theme is GridTheme.Dark or GridTheme.DarkBlue or GridTheme.Monokai ? accent.DarkHex : accent.LightHex);
         var dictionary = new ResourceDictionary
         {
             [GridResources.AccentKey] = Frozen(color),
@@ -117,9 +118,9 @@ public static class ThemeManager
 
         // A readable text variant of the accent: lightened on dark, darkened on light.
         var text = Color.FromRgb(
-            theme is GridTheme.Dark or GridTheme.DarkBlue ? (byte)Math.Min(color.R + 40, 255) : (byte)Math.Max(color.R - 25, 0),
-            theme is GridTheme.Dark or GridTheme.DarkBlue ? (byte)Math.Min(color.G + 40, 255) : (byte)Math.Max(color.G - 25, 0),
-            theme is GridTheme.Dark or GridTheme.DarkBlue ? (byte)Math.Min(color.B + 40, 255) : (byte)Math.Max(color.B - 40, 0));
+            theme is GridTheme.Dark or GridTheme.DarkBlue or GridTheme.Monokai ? (byte)Math.Min(color.R + 40, 255) : (byte)Math.Max(color.R - 25, 0),
+            theme is GridTheme.Dark or GridTheme.DarkBlue or GridTheme.Monokai ? (byte)Math.Min(color.G + 40, 255) : (byte)Math.Max(color.G - 25, 0),
+            theme is GridTheme.Dark or GridTheme.DarkBlue or GridTheme.Monokai ? (byte)Math.Min(color.B + 40, 255) : (byte)Math.Max(color.B - 40, 0));
         dictionary[GridResources.AccentTextKey] = Frozen(text);
         Replace(resources, AccentKey, dictionary);
     }

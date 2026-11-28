@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Themes: Monokai (`GridTheme.Monokai`).** The second chained palette — Dark.xaml
+  merged for every template and implicit style, only the 22 brush tokens overridden:
+  classic `#272822`/`#F8F8F2` surfaces and text, `#49483E` selection, cyan `#66D9EF`
+  accent/links, orange `#FD971F` current-cell border, pink `#F92672` now-line; the
+  comment gray brightened to `#A1A08D` to pass the WCAG gate. Selectable in the demo
+  settings, dark accent variants follow it. Guards: token completeness + parity
+  (merged-dictionary resolution) pick it up automatically; new `MonokaiThemeTests`
+  (WCAG pairs from realized brushes, chain liveness, Hyperlink accent) —
+  injection-validated.
+
 ## [0.6.0] — 2026-11-28
 
 The theming-and-hardening minor: the Dark Blue palette (the chained-dictionary

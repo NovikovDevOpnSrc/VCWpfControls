@@ -17,6 +17,9 @@ public enum GridTheme
 
     /// <summary>Dark Blue theme — the customization showcase: chains <c>Dark.xaml</c> and overrides only the brush tokens.</summary>
     DarkBlue = 3,
+
+    /// <summary>Monokai theme — the second chained palette (brush tokens only, templates inherited from Dark).</summary>
+    Monokai = 4,
 }
 
 /// <summary>
@@ -36,6 +39,7 @@ public static class GridThemeManager
             GridTheme.Dark => MakeUri("/VCWpfControls;component/Themes/Dark.xaml"),
             GridTheme.HighContrast => MakeUri("/VCWpfControls;component/Themes/HighContrast.xaml"),
             GridTheme.DarkBlue => MakeUri("/VCWpfControls;component/Themes/DarkBlue.xaml"),
+            GridTheme.Monokai => MakeUri("/VCWpfControls;component/Themes/Monokai.xaml"),
             _ => MakeUri("/VCWpfControls;component/Themes/Light.xaml"),
         };
 

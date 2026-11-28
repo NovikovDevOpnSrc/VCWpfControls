@@ -482,7 +482,7 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
         Apply();
     }
 
-    /// <summary>The theme name ("Light", "Dark", "DarkBlue", "HighContrast" or "System").</summary>
+    /// <summary>The theme name ("Light", "Dark", "DarkBlue", "Monokai", "HighContrast" or "System").</summary>
     [ObservableProperty]
     private string _theme = "Light";
 
@@ -495,7 +495,7 @@ public partial class SettingsSampleViewModel : SampleViewModelBase
     private string _language = "en-US";
 
     /// <summary>The selectable options.</summary>
-    public string[] ThemeOptions { get; } = { "Light", "Dark", "DarkBlue", "HighContrast", "System" };
+    public string[] ThemeOptions { get; } = { "Light", "Dark", "DarkBlue", "Monokai", "HighContrast", "System" };
 
     /// <summary>The selectable accent presets.</summary>
     public string[] AccentOptions { get; } = Services.DemoAccent.All.Select(a => a.Name).ToArray();
