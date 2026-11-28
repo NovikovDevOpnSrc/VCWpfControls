@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-11-28
+
+The theming-and-hardening minor: the Dark Blue palette (the chained-dictionary
+customization showcase, `GridTheme.DarkBlue`), `PropertyGrid.ShowDeclaredPropertiesOnly`
+(edit live control instances DevExpress-style), and a hardening sweep — the scroll
+auto-width bleed, stale zebra rows on theme switches, a latent cross-thread
+`DependencyPropertyDescriptor` crash, plus executable architecture rules and a
+silent-binding-failure detector in the test infrastructure.
+
 ### Added
 - **Test infrastructure: silent-binding-failure detector (the browser-verification idea,
   WPF edition).** `BindingErrorScanner` walks a realized visual tree and reports every
