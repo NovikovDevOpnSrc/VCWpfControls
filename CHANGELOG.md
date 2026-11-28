@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Test infrastructure: silent-binding-failure detector (the browser-verification idea,
+  WPF edition).** `BindingErrorScanner` walks a realized visual tree and reports every
+  local binding whose `BindingExpression.Status` is a hard failure (path/update-source) —
+  the bug class where the Department editor once rendered empty because a path missed the
+  `Data.` prefix: nothing crashed, nothing was logged. Guard tests: a deliberately broken
+  binding IS detected (with a working-binding control proving evaluation ran) and a
+  realistic themed grid produces zero failures — injection-validated (a broken cell
+  binding in GridTextColumn turns the health test red). Finding recorded in the scanner:
+  the classic global channel (`PresentationTraceSources.DataBindingSource`) is dead on
+  .NET Core WPF — verified empirically with the canonical listener/Refresh/level order,
+  per-binding `TraceLevel=High`, and a working-binding control; zero events. The
+  per-expression status API is the only reliable instrument.
+
 ### Fixed
 - **Library: removed every `DependencyPropertyDescriptor` — a latent cross-thread crash.**
   The WPF descriptor mutates a PROCESS-STATIC table that is not thread-safe; the parallel

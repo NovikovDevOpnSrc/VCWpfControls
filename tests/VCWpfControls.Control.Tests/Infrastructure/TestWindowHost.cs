@@ -9,6 +9,7 @@ namespace VCWpfControls.Control.Tests.Infrastructure;
 /// <summary>Helpers for control tests: hosting, layout pumping and bitmap snapshots.</summary>
 public static class TestWindowHost
 {
+
     /// <summary>Hosts the element in a window, shows it and pumps layout synchronously.</summary>
     public static Window Show(FrameworkElement element, double width = 900, double height = 500)
     {
